@@ -1,4 +1,3 @@
-import os
 from .template import Processor, Settings
 
 
@@ -62,10 +61,7 @@ class ExportFeatureSequence(Processor):
         self.call(' \\\n  '.join(lines))
 
     def move_fa(self):
-        os.rename(
-            f'{self.workdir}/dna-sequences.fasta',
-            self.output_fa
-        )
+        self.call(f'mv {self.workdir}/dna-sequences.fasta {self.output_fa}')
 
 
 class ExportAlignedSequence(Processor):
@@ -96,10 +92,7 @@ class ExportAlignedSequence(Processor):
         self.call(' \\\n  '.join(lines))
 
     def move_fa(self):
-        os.rename(
-            f'{self.workdir}/aligned-dna-sequences.fasta',
-            self.output_fa
-        )
+        self.call(f'mv {self.workdir}/aligned-dna-sequences.fasta {self.output_fa}')
 
 
 class ExportTree(Processor):
@@ -130,10 +123,7 @@ class ExportTree(Processor):
         self.call(' \\\n  '.join(lines))
 
     def move_nwk(self):
-        os.rename(
-            f'{self.workdir}/tree.nwk',
-            self.output_nwk
-        )
+        self.call(f'mv {self.workdir}/tree.nwk {self.output_nwk}')
 
 
 class ExportTaxonomy(Processor):
@@ -161,7 +151,4 @@ class ExportTaxonomy(Processor):
         self.call(' \\\n  '.join(lines))
 
     def move_tsv(self):
-        os.rename(
-            f'{self.workdir}/taxonomy.tsv',
-            self.output_tsv
-        )
+        self.call(f'mv {self.workdir}/taxonomy.tsv {self.output_tsv}')

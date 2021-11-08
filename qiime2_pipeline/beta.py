@@ -1,4 +1,4 @@
-import os
+from os.path import basename
 from .template import Processor, Settings
 
 
@@ -139,8 +139,5 @@ class QzaToTsv(Processor):
         self.call(' \\\n  '.join(lines))
 
     def move_tsv(self):
-        fname = os.path.basename(self.qza)[:-len('.qza')] + '.tsv'
-        os.rename(
-            f'{self.workdir}/distance-matrix.tsv',
-            f'{self.outdir}/{fname}'
-        )
+        fname = basename(self.qza)[:-len('.qza')] + '.tsv'
+        self.call(f'mv {self.workdir}/distance-matrix.tsv {self.outdir}/{fname}')
