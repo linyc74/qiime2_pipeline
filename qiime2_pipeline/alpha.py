@@ -3,9 +3,9 @@ from .template import Processor, Settings
 
 
 ALPHA_METRICS = [
-    'chao1', 'osd', 'singles', 'doubles', 'ace', 'shannon', 'gini_index', 'mcintosh_e',
-    'michaelis_menten_fit', 'chao1_ci', 'pielou_e', 'simpson', 'observed_features',
-    'fisher_alpha',
+    'chao1', 'osd', 'singles', 'shannon', 'gini_index', 'mcintosh_e',
+    'michaelis_menten_fit', 'chao1_ci', 'pielou_e', 'simpson',
+    'observed_features', 'fisher_alpha',
 ]
 
 

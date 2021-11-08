@@ -6,7 +6,7 @@ __version__ = '1.0.0-beta'
 
 
 PROG = 'python qiime2_pipeline'
-DESCRIPTION = f'Custom built Qiime2 pipeline (version {__version__}) by Yu-Cheng Lin (ylin@nycu.edu.tw)'
+DESCRIPTION = f'Custom-built Qiime2 pipeline (version {__version__}) by Yu-Cheng Lin (ylin@nycu.edu.tw)'
 REQUIRED = [
     {
         'keys': ['-f', '--fq-dir'],
