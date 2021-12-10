@@ -1,4 +1,5 @@
 from .setup import TestCase
+from qiime2_pipeline.beta import BetaDiversity
 
 
 class MyTest(TestCase):
@@ -10,4 +11,7 @@ class MyTest(TestCase):
         self.tear_down()
 
     def test_me(self):
-        pass
+        BetaDiversity(self.settings).main(
+            feature_table_qza=f'{self.indir}/dada2-table.qza',
+            rooted_tree_qza=f'{self.indir}/rooted-fasttree.qza',
+        )

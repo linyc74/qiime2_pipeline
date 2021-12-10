@@ -18,30 +18,40 @@ class BetaDiversity(Processor):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
-        self.run_one_beta_metric = RunOneBetaMetric(self.settings).main
-        self.run_one_beta_phylogenetic_metric = RunOneBetaPhylogeneticMetric(self.settings).main
-        self.qza_to_tsv = QzaToTsv(self.settings).main
 
     def main(
             self,
-            feature_tabe_qza: str,
+            feature_table_qza: str,
             rooted_tree_qza: str):
 
-        self.feature_table_qza = feature_tabe_qza
+        self.feature_table_qza = feature_table_qza
         self.rooted_tree_qza = rooted_tree_qza
 
         for metric in BETA_METRICS:
-            qza = self.run_one_beta_metric(
-                feature_table_qza=self.feature_table_qza,
-                metric=metric)
-            self.qza_to_tsv(qza=qza)
+            self.run_one_beta_metric_to_tsv(metric=metric)
 
         for metric in BETA_PHYLOGENETIC_METRICS:
-            qza = self.run_one_beta_phylogenetic_metric(
-                feature_table_qza=self.feature_table_qza,
-                rooted_tree_qza=self.rooted_tree_qza,
-                metric=metric)
-            self.qza_to_tsv(qza=qza)
+            try:
+                self.run_one_beta_phylogenetic_metric_to_tsv(metric=metric)
+            except Exception as e:
+                self.log_error(metric=metric, exception_instance=e)
+
+    def run_one_beta_metric_to_tsv(self, metric: str):
+        qza = RunOneBetaMetric(self.settings).main(
+            feature_table_qza=self.feature_table_qza,
+            metric=metric)
+        QzaToTsv(self.settings).main(qza=qza)
+
+    def run_one_beta_phylogenetic_metric_to_tsv(self, metric: str):
+        qza = RunOneBetaPhylogeneticMetric(self.settings).main(
+            feature_table_qza=self.feature_table_qza,
+            rooted_tree_qza=self.rooted_tree_qza,
+            metric=metric)
+        QzaToTsv(self.settings).main(qza=qza)
+
+    def log_error(self, metric: str, exception_instance: Exception):
+        msg = f'"{metric}" results error:\n{exception_instance}'
+        self.logger.info(msg)
 
 
 class RunOneBetaMetric(Processor):

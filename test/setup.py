@@ -25,7 +25,7 @@ class TestCase(unittest.TestCase):
         self.settings = Settings(
             workdir=self.workdir,
             outdir=self.outdir,
-            threads=6,
+            threads=2,
             debug=True,
             mock=False)
 

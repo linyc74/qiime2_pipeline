@@ -87,7 +87,7 @@ class Qiime2Pipeline(Processor):
 
     def beta_diversity(self):
         BetaDiversity(self.settings).main(
-            feature_tabe_qza=self.feature_table_qza,
+            feature_table_qza=self.feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza)
 
     def export_data(self):
