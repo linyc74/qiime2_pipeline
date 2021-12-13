@@ -48,3 +48,48 @@ class Dada2Paired(Processor):
             f'--o-denoising-stats {self.denoising_stats_qza}',
         ]
         self.call(' \\\n  '.join(lines))
+
+
+class VsearchPaired(Processor):
+
+    demultiplexed_seq_qza: str
+    truncate_length: int
+
+    joined_sequences: str
+    representative_seq_qza: str
+    table_qza: str
+    stats_qza: str
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+
+    def main(
+            self,
+            demultiplexed_seq_qza: str,
+            truncate_length: int) -> Tuple[str, str]:
+
+        self.demultiplexed_seq_qza = demultiplexed_seq_qza
+        self.truncate_length = truncate_length
+
+        self.set_output_paths()
+        self.execute()
+
+        return self.representative_seq_qza, self.table_qza
+
+    def set_output_paths(self):
+        self.joined_sequences = f'{self.workdir}/vsearch-joined-sequences.qza'
+        self.representative_seq_qza = f'{self.workdir}/vsearch-representative-sequences.qza'
+        self.table_qza = f'{self.workdir}/vsearch-table.qza'
+        self.stats_qza = f'{self.workdir}/vsearch-stats.qza'
+
+    def execute(self):
+        lines = [
+            'qiime vsearch join-pairs',
+            f'--i-demultiplexed-seqs {self.demultiplexed_seq_qza}',
+            f'--o-joined-sequences {self.joined_sequences}',
+        ]
+        self.call(' \\\n  '.join(lines))
+
+        lines = [
+            ''
+        ]
