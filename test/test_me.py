@@ -1,6 +1,6 @@
 from .setup import TestCase
 from qiime2_pipeline.denoise import Dada2Paired
-from qiime2_pipeline.trimming import TrimGalore
+from qiime2_pipeline.trimming import TrimGalore, BatchTrimGalore
 from qiime2_pipeline.importing import ImportPairedEndFastq
 from qiime2_pipeline.concat import ConcatRead1Read2
 
@@ -23,6 +23,14 @@ class MyTest(TestCase):
             (f'{self.workdir}/R2_val_2.fq.gz', trimmed_fq2),
         ]:
             self.assertFileExists(expected, actual)
+
+    def test_batch_trim_galore(self):
+        actual = BatchTrimGalore(self.settings).main(
+            fq_dir=f'{self.indir}/fq_dir',
+            fq1_suffix='_L001_R1_001.fastq.gz',
+            fq2_suffix='_L001_R2_001.fastq.gz')
+        expected = f'{self.workdir}/trimmed_fastqs'
+        self.assertFileExists(expected, actual)
 
     def __test_concat(self):
         actual = ConcatRead1Read2(self.settings).main(
