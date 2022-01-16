@@ -126,8 +126,6 @@ class BatchTrimGalore(Processor):
     fq2_suffix: str
 
     sample_names: List[str]
-    fq1_paths: List[str]
-    fq2_paths: List[str]
     out_fq_dir: str
 
     def __init__(self, settings: Settings):

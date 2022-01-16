@@ -2,7 +2,7 @@ from .setup import TestCase
 from qiime2_pipeline.denoise import Dada2Paired
 from qiime2_pipeline.trimming import TrimGalore, BatchTrimGalore
 from qiime2_pipeline.importing import ImportPairedEndFastq
-from qiime2_pipeline.concat import ConcatRead1Read2
+from qiime2_pipeline.concat import Concat, BatchConcat
 
 
 class MyTest(TestCase):
@@ -24,7 +24,7 @@ class MyTest(TestCase):
         ]:
             self.assertFileExists(expected, actual)
 
-    def test_batch_trim_galore(self):
+    def __test_batch_trim_galore(self):
         actual = BatchTrimGalore(self.settings).main(
             fq_dir=f'{self.indir}/fq_dir',
             fq1_suffix='_L001_R1_001.fastq.gz',
@@ -33,12 +33,20 @@ class MyTest(TestCase):
         self.assertFileExists(expected, actual)
 
     def __test_concat(self):
-        actual = ConcatRead1Read2(self.settings).main(
+        actual = Concat(self.settings).main(
             fq1=f'{self.indir}/R1.fastq.gz',
             fq2=f'{self.indir}/R2.fastq.gz'
         )
         expected = f'{self.workdir}/concat.fq'
         self.assertFileExists(expected, actual)
+
+    def __test_batch_concat(self):
+        fq_dir, fq_suffix = BatchConcat(self.settings).main(
+            fq_dir=f'{self.indir}/fq_dir',
+            fq1_suffix='_L001_R1_001.fastq.gz',
+            fq2_suffix='_L001_R2_001.fastq.gz')
+        self.assertFileExists(f'{self.workdir}/concat_fastqs', fq_dir)
+        self.assertEqual('.fq', fq_suffix)
 
     def __test_import_paired_end_fastq(self):
         actual = ImportPairedEndFastq(self.settings).main(
