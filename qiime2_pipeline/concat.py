@@ -1,7 +1,7 @@
 import os
 import gzip
 from typing import IO, List, Tuple
-from .tools import get_files
+from .tools import get_files, rev_comp
 from .template import Processor, Settings
 
 
@@ -45,11 +45,17 @@ class Concat(Processor):
 
             is_seq = i % 4 == 2
             is_qual = i % 4 == 0
+            l1 = line1.strip()
+            l2 = line2.strip()
 
-            if is_seq or is_qual:
-                self.writer.write(f'{line1.strip()}{line2}')
+            if is_seq:
+                new = f'{l1}{rev_comp(l2)}\n'
+            elif is_qual:
+                new = f'{l1}{l2[::-1]}\n'
             else:
-                self.writer.write(line1)
+                new = f'{l1}\n'
+
+            self.writer.write(new)
 
     def close_files(self):
         self.reader1.close()

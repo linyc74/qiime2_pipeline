@@ -40,7 +40,7 @@ class MyTest(TestCase):
         expected = f'{self.workdir}/concat.fq'
         self.assertFileExists(expected, actual)
 
-    def __test_batch_concat(self):
+    def test_batch_concat(self):
         fq_dir, fq_suffix = BatchConcat(self.settings).main(
             fq_dir=f'{self.indir}/fq_dir',
             fq1_suffix='_L001_R1_001.fastq.gz',
@@ -63,7 +63,7 @@ class MyTest(TestCase):
         expected = f'{self.workdir}/paired-end-demultiplexed.qza'
         self.assertFileExists(expected, actual)
 
-    def test_dada2_single_end(self):
+    def __test_dada2_single_end(self):
         Dada2SingleEnd(self.settings).main(
             demultiplexed_seq_qza=f'{self.indir}/single-end-demultiplexed.qza'
         )
