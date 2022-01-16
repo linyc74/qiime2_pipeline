@@ -1,12 +1,13 @@
 from os.path import basename
 from .beta import BetaDiversity
-from .denoise import Dada2PairedEnd
+from .concat import BatchConcat
 from .alpha import AlphaDiversity
+from .denoise import Dada2PairedEnd
 from .phylogeny import MafftFasttree
+from .trimming import BatchTrimGalore
 from .taxonomy import FeatureClassifier
-from .trimming import CutadaptTrimPaired
 from .template import Processor, Settings
-from .importing import ImportPairedEndFastq
+from .importing import ImportSingleEndFastq
 from .exporting import ExportTaxonomy, ExportTree, ExportAlignedSequence
 
 
@@ -18,7 +19,10 @@ class Qiime2Pipeline(Processor):
     nb_classifier_qza: str
     read_length: int
 
-    untrimmed_reads_qza: str
+    trimmed_fq_dir: str
+    concat_fq_dir: str
+    fq_suffix: str
+
     trimmed_reads_qza: str
     representative_seq_qza: str
     feature_table_qza: str
@@ -45,28 +49,40 @@ class Qiime2Pipeline(Processor):
         self.nb_classifier_qza = nb_classifier_qza
         self.read_length = read_length
 
-        self.import_paired_end_fastq()
         self.trimming()
+        self.concat()
+        self.importing()
         self.denoise()
+        self.cluster()
         self.taxonomic_classification()
         self.phylogenetic_tree()
         self.alpha_diversity()
         self.beta_diversity()
         self.export_data()
 
-    def import_paired_end_fastq(self):
-        self.untrimmed_reads_qza = ImportPairedEndFastq(self.settings).main(
+    def trimming(self):
+        self.trimmed_fq_dir = BatchTrimGalore(self.settings).main(
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix)
 
-    def trimming(self):
-        self.trimmed_reads_qza = CutadaptTrimPaired(self.settings).main(
-            untrimmed_reads_qza=self.untrimmed_reads_qza)
+    def concat(self):
+        self.concat_fq_dir, self.fq_suffix = BatchConcat(self.settings).main(
+            fq_dir=self.trimmed_fq_dir,
+            fq1_suffix=self.fq1_suffix,
+            fq2_suffix=self.fq2_suffix)
+
+    def importing(self):
+        self.trimmed_reads_qza = ImportSingleEndFastq(self.settings).main(
+            fq_dir=self.concat_fq_dir,
+            fq_suffix=self.fq_suffix)
 
     def denoise(self):
         self.representative_seq_qza, self.feature_table_qza = Dada2PairedEnd(self.settings).main(
             demultiplexed_seq_qza=self.trimmed_reads_qza)
+
+    def cluster(self):
+        pass
 
     def taxonomic_classification(self):
         self.taxonomy_qza = FeatureClassifier(self.settings).main(
@@ -91,8 +107,6 @@ class Qiime2Pipeline(Processor):
 
     def export_data(self):
         ExportData(self.settings).main(
-            representative_seq_qza=self.representative_seq_qza,
-            feature_table_qza=self.feature_table_qza,
             taxonomy_qza=self.taxonomy_qza,
             aligned_seq_qza=self.aligned_seq_qza,
             masked_aligned_seq_qza=self.masked_aligned_seq_qza,
@@ -102,8 +116,6 @@ class Qiime2Pipeline(Processor):
 
 class ExportData(Processor):
 
-    representative_seq_qza: str
-    feature_table_qza: str
     taxonomy_qza: str
     aligned_seq_qza: str
     masked_aligned_seq_qza: str
@@ -115,16 +127,12 @@ class ExportData(Processor):
 
     def main(
             self,
-            representative_seq_qza: str,
-            feature_table_qza: str,
             taxonomy_qza: str,
             aligned_seq_qza: str,
             masked_aligned_seq_qza: str,
             unrooted_tree_qza: str,
             rooted_tree_qza: str):
 
-        self.representative_seq_qza = representative_seq_qza
-        self.feature_table_qza = feature_table_qza
         self.taxonomy_qza = taxonomy_qza
         self.aligned_seq_qza = aligned_seq_qza
         self.masked_aligned_seq_qza = masked_aligned_seq_qza

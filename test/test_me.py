@@ -10,8 +10,8 @@ class MyTest(TestCase):
     def setUp(self):
         self.set_up(py_path=__file__)
 
-    # def tearDown(self):
-    #     self.tear_down()
+    def tearDown(self):
+        self.tear_down()
 
     def __test_trim_galore(self):
         trimmed_fq1, trimmed_fq2 = TrimGalore(self.settings).main(
@@ -40,7 +40,7 @@ class MyTest(TestCase):
         expected = f'{self.workdir}/concat.fq'
         self.assertFileExists(expected, actual)
 
-    def test_batch_concat(self):
+    def __test_batch_concat(self):
         fq_dir, fq_suffix = BatchConcat(self.settings).main(
             fq_dir=f'{self.indir}/fq_dir',
             fq1_suffix='_L001_R1_001.fastq.gz',
