@@ -1,6 +1,6 @@
 from os.path import basename
 from .beta import BetaDiversity
-from .denoise import Dada2Paired
+from .denoise import Dada2PairedEnd
 from .alpha import AlphaDiversity
 from .phylogeny import MafftFasttree
 from .taxonomy import FeatureClassifier
@@ -65,7 +65,7 @@ class Qiime2Pipeline(Processor):
             untrimmed_reads_qza=self.untrimmed_reads_qza)
 
     def denoise(self):
-        self.representative_seq_qza, self.feature_table_qza = Dada2Paired(self.settings).main(
+        self.representative_seq_qza, self.feature_table_qza = Dada2PairedEnd(self.settings).main(
             demultiplexed_seq_qza=self.trimmed_reads_qza)
 
     def taxonomic_classification(self):

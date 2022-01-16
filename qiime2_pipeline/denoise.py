@@ -2,14 +2,12 @@ from typing import Tuple
 from .template import Processor, Settings
 
 
-class Dada2Paired(Processor):
+class Dada2(Processor):
 
     TRIM_LEFT = 0
     TRUNCATE_LENGTH = 0
-    MIN_OVERLAP = 4
 
     demultiplexed_seq_qza: str
-    truncate_length: int
 
     feature_sequence_qza: str
     feature_sequence_fa: str
@@ -19,6 +17,27 @@ class Dada2Paired(Processor):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
+
+    def set_output_paths(self):
+        self.feature_sequence_qza = f'{self.workdir}/dada2-feature-sequence.qza'
+        self.feature_sequence_fa = f'{self.outdir}/dada2-feature-sequence.fa'
+        self.feature_table_qza = f'{self.workdir}/dada2-feature-table.qza'
+        self.feature_table_tsv = f'{self.outdir}/dada2-feature-table.tsv'
+        self.denoising_stats_qza = f'{self.workdir}/dada2-stats.qza'
+
+    def export(self):
+        ExportFeatureSequence(self.settings).main(
+            feature_sequence_qza=self.feature_sequence_qza,
+            output_fa=self.feature_sequence_fa
+        )
+
+        ExportFeatureTable(self.settings).main(
+            feature_table_qza=self.feature_table_qza,
+            output_tsv=self.feature_table_tsv
+        )
+
+
+class Dada2SingleEnd(Dada2):
 
     def main(
             self,
@@ -32,15 +51,38 @@ class Dada2Paired(Processor):
 
         return self.feature_sequence_qza, self.feature_table_qza
 
-    def set_output_paths(self):
-        self.feature_sequence_qza = f'{self.workdir}/dada2-feature-sequence.qza'
-        self.feature_sequence_fa = f'{self.outdir}/dada2-feature-sequence.fa'
-        self.feature_table_qza = f'{self.workdir}/dada2-feature-table.qza'
-        self.feature_table_tsv = f'{self.outdir}/dada2-feature-table.tsv'
-        self.denoising_stats_qza = f'{self.workdir}/dada2-stats.qza'
+    def execute(self):
+        cmd = self.CMD_LINEBREAK.join([
+            'qiime dada2 denoise-single',
+            f'--i-demultiplexed-seqs {self.demultiplexed_seq_qza}',
+            f'--p-trim-left {self.TRIM_LEFT}',
+            f'--p-trunc-len {self.TRUNCATE_LENGTH}',
+            f'--p-n-threads {self.threads}',
+            f'--o-representative-sequences {self.feature_sequence_qza}',
+            f'--o-table {self.feature_table_qza}',
+            f'--o-denoising-stats {self.denoising_stats_qza}',
+        ])
+        self.call(cmd)
+
+
+class Dada2PairedEnd(Dada2):
+
+    MIN_OVERLAP = 12
+
+    def main(
+            self,
+            demultiplexed_seq_qza: str) -> Tuple[str, str]:
+
+        self.demultiplexed_seq_qza = demultiplexed_seq_qza
+
+        self.set_output_paths()
+        self.execute()
+        self.export()
+
+        return self.feature_sequence_qza, self.feature_table_qza
 
     def execute(self):
-        lines = [
+        cmd = self.CMD_LINEBREAK.join([
             'qiime dada2 denoise-paired',
             f'--i-demultiplexed-seqs {self.demultiplexed_seq_qza}',
             f'--p-trim-left-f {self.TRIM_LEFT}',
@@ -52,19 +94,8 @@ class Dada2Paired(Processor):
             f'--o-representative-sequences {self.feature_sequence_qza}',
             f'--o-table {self.feature_table_qza}',
             f'--o-denoising-stats {self.denoising_stats_qza}',
-        ]
-        self.call(' \\\n  '.join(lines))
-
-    def export(self):
-        ExportFeatureSequence(self.settings).main(
-            feature_sequence_qza=self.feature_sequence_qza,
-            output_fa=self.feature_sequence_fa
-        )
-
-        ExportFeatureTable(self.settings).main(
-            feature_table_qza=self.feature_table_qza,
-            output_tsv=self.feature_table_tsv
-        )
+        ])
+        self.call(cmd)
 
 
 class ExportFeatureTable(Processor):
