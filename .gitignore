@@ -5,6 +5,9 @@ __pycache__/
 # PyCharm
 .idea/
 
+# Mac OS
+.DS_Store
+
 # Test / data
 .pytest_cache/
 test/test_*/

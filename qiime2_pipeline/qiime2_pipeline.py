@@ -7,7 +7,7 @@ from .taxonomy import FeatureClassifier
 from .trimming import CutadaptTrimPaired
 from .template import Processor, Settings
 from .importing import ImportPairedEndFastq
-from .exporting import ExportTaxonomy, ExportTree, ExportFeatureTable, ExportFeatureSequence, ExportAlignedSequence
+from .exporting import ExportTaxonomy, ExportTree, ExportAlignedSequence
 
 
 class Qiime2Pipeline(Processor):
@@ -66,8 +66,7 @@ class Qiime2Pipeline(Processor):
 
     def denoise(self):
         self.representative_seq_qza, self.feature_table_qza = Dada2Paired(self.settings).main(
-            demultiplexed_seq_qza=self.trimmed_reads_qza,
-            truncate_length=self.read_length)
+            demultiplexed_seq_qza=self.trimmed_reads_qza)
 
     def taxonomic_classification(self):
         self.taxonomy_qza = FeatureClassifier(self.settings).main(
@@ -132,25 +131,9 @@ class ExportData(Processor):
         self.unrooted_tree_qza = unrooted_tree_qza
         self.rooted_tree_qza = rooted_tree_qza
 
-        self.export_feature_sequence()
-        self.export_feature_table()
         self.export_taxonomy()
         self.export_aligned_sequences()
         self.export_trees()
-
-    def export_feature_sequence(self):
-        fname = basename(self.representative_seq_qza)[:-len('.qza')] + '.fa'
-        ExportFeatureSequence(self.settings).main(
-            feature_sequence_qza=self.representative_seq_qza,
-            output_fa=f'{self.outdir}/{fname}'
-        )
-
-    def export_feature_table(self):
-        fname = basename(self.feature_table_qza)[:-len('.qza')] + '.tsv'
-        ExportFeatureTable(self.settings).main(
-            feature_table_qza=self.feature_table_qza,
-            output_tsv=f'{self.outdir}/{fname}'
-        )
 
     def export_taxonomy(self):
         fname = basename(self.taxonomy_qza)[:-len('.qza')] + '.tsv'
