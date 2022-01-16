@@ -47,3 +47,7 @@ class TestCase(unittest.TestCase):
                 if pd.isna(a) and pd.isna(b):
                     continue
                 self.assertAlmostEqual(a, b)
+
+    def assertFileExists(self, expected: str, actual: str):
+        self.assertEqual(expected, actual)
+        assert os.path.exists(actual)

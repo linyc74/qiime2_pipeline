@@ -51,6 +51,8 @@ class Logger:
 
 class Processor:
 
+    CMD_LINEBREAK = ' \\\n  '
+
     settings: Settings
     workdir: str
     outdir: str
