@@ -1,9 +1,9 @@
 from .beta import BetaDiversity
 from .alpha import AlphaDiversity
 from .phylogeny import MafftFasttree
-from .generate_asv import GenerateASV
 from .taxonomy import FeatureClassifier
 from .template import Processor, Settings
+from .generate_asv import FactoryGenerateASVCallable
 
 
 class Qiime2Pipeline(Processor):
@@ -12,6 +12,7 @@ class Qiime2Pipeline(Processor):
     fq1_suffix: str
     fq2_suffix: str
     nb_classifier_qza: str
+    generate_asv_mode: str
 
     feature_sequence_qza: str
     feature_table_qza: str
@@ -25,12 +26,14 @@ class Qiime2Pipeline(Processor):
             fq_dir: str,
             fq1_suffix: str,
             fq2_suffix: str,
-            nb_classifier_qza: str):
+            nb_classifier_qza: str,
+            generate_asv_mode: str):
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
         self.nb_classifier_qza = nb_classifier_qza
+        self.generate_asv_mode = generate_asv_mode
 
         self.generate_asv()
         self.taxonomic_classification()
@@ -39,7 +42,10 @@ class Qiime2Pipeline(Processor):
         self.beta_diversity()
 
     def generate_asv(self):
-        self.feature_sequence_qza, self.feature_table_qza = GenerateASV(self.settings).main(
+        generate_asv = FactoryGenerateASVCallable(self.settings).main(
+            mode=self.generate_asv_mode)
+
+        self.feature_sequence_qza, self.feature_table_qza = generate_asv(
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix)
