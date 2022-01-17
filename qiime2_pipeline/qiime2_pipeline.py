@@ -13,10 +13,6 @@ class Qiime2Pipeline(Processor):
     fq2_suffix: str
     nb_classifier_qza: str
 
-    trimmed_fq_dir: str
-    concat_fq_dir: str
-    fq_suffix: str
-    trimmed_reads_qza: str
     feature_sequence_qza: str
     feature_table_qza: str
     rooted_tree_qza: str
