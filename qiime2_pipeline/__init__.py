@@ -9,7 +9,6 @@ class Main:
     fq1_suffix: str
     fq2_suffix: str
     nb_classifier_qza: str
-    read_length: int
 
     settings: Settings
 
@@ -19,7 +18,6 @@ class Main:
             fq1_suffix: str,
             fq2_suffix: str,
             nb_classifier_qza: str,
-            read_length: str,
             outdir: str,
             threads: str,
             debug: bool):
@@ -28,7 +26,6 @@ class Main:
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
         self.nb_classifier_qza = nb_classifier_qza
-        self.read_length = int(read_length)
 
         self.settings = Settings(
             workdir='./qiime2_pipeline_workdir',
@@ -44,5 +41,4 @@ class Main:
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix,
-            nb_classifier_qza=self.nb_classifier_qza,
-            read_length=self.read_length)
+            nb_classifier_qza=self.nb_classifier_qza)

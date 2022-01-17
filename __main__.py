@@ -40,14 +40,6 @@ REQUIRED = [
             'help': 'pre-trained naive Bayes classifier (.qza file) for feature classification (https://docs.qiime2.org/2021.8/data-resources)',
         }
     },
-    {
-        'keys': ['-l', '--read-length'],
-        'properties': {
-            'type': int,
-            'required': True,
-            'help': 'read length (bp)',
-        }
-    },
 ]
 OPTIONAL = [
     {
@@ -127,7 +119,6 @@ class EntryPoint:
             fq1_suffix=args.fq1_suffix,
             fq2_suffix=args.fq2_suffix,
             nb_classifier_qza=args.nb_classifier_qza,
-            read_length=args.read_length,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)

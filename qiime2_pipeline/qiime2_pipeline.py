@@ -1,9 +1,9 @@
 from .beta import BetaDiversity
 from .alpha import AlphaDiversity
 from .phylogeny import MafftFasttree
+from .generate_asv import GenerateASV
 from .taxonomy import FeatureClassifier
 from .template import Processor, Settings
-from .generate_asv import GenerateASV
 
 
 class Qiime2Pipeline(Processor):
