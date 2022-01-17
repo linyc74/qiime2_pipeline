@@ -1,3 +1,4 @@
+import os
 from os.path import basename
 from .template import Processor, Settings
 
@@ -37,17 +38,15 @@ class BetaDiversity(Processor):
                 self.log_error(metric=metric, exception_instance=e)
 
     def run_one_beta_metric_to_tsv(self, metric: str):
-        qza = RunOneBetaMetric(self.settings).main(
+        RunOneBetaMetric(self.settings).main(
             feature_table_qza=self.feature_table_qza,
             metric=metric)
-        QzaToTsv(self.settings).main(qza=qza)
 
     def run_one_beta_phylogenetic_metric_to_tsv(self, metric: str):
-        qza = RunOneBetaPhylogeneticMetric(self.settings).main(
+        RunOneBetaPhylogeneticMetric(self.settings).main(
             feature_table_qza=self.feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza,
             metric=metric)
-        QzaToTsv(self.settings).main(qza=qza)
 
     def log_error(self, metric: str, exception_instance: Exception):
         msg = f'"{metric}" results error:\n{exception_instance}'
@@ -64,20 +63,16 @@ class RunOneBetaMetric(Processor):
     def __init__(self, settings: Settings):
         super().__init__(settings)
 
-    def main(self, feature_table_qza: str, metric: str) -> str:
+    def main(self, feature_table_qza: str, metric: str):
 
         self.feature_table_qza = feature_table_qza
         self.metric = metric
 
-        self.set_output_qza()
         self.execute()
-
-        return self.output_qza
-
-    def set_output_qza(self):
-        self.output_qza = f'{self.workdir}/beta-{self.metric}.qza'
+        self.export()
 
     def execute(self):
+        self.output_qza = f'{self.workdir}/beta-{self.metric}.qza'
         lines = [
             'qiime diversity beta',
             f'--i-table {self.feature_table_qza}',
@@ -85,6 +80,9 @@ class RunOneBetaMetric(Processor):
             f'--o-distance-matrix {self.output_qza}'
         ]
         self.call(' \\\n  '.join(lines))
+
+    def export(self):
+        ExportBetaDiversityQza(self.settings).main(qza=self.output_qza)
 
 
 class RunOneBetaPhylogeneticMetric(Processor):
@@ -102,21 +100,17 @@ class RunOneBetaPhylogeneticMetric(Processor):
             self,
             feature_table_qza: str,
             rooted_tree_qza: str,
-            metric: str) -> str:
+            metric: str):
 
         self.feature_table_qza = feature_table_qza
         self.rooted_tree_qza = rooted_tree_qza
         self.metric = metric
 
-        self.set_output_qza()
         self.execute()
-
-        return self.output_qza
-
-    def set_output_qza(self):
-        self.output_qza = f'{self.workdir}/beta-phylogenetic-{self.metric}.qza'
+        self.export()
 
     def execute(self):
+        self.output_qza = f'{self.workdir}/beta-phylogenetic-{self.metric}.qza'
         lines = [
             'qiime diversity beta-phylogenetic',
             f'--i-table {self.feature_table_qza}',
@@ -126,8 +120,11 @@ class RunOneBetaPhylogeneticMetric(Processor):
         ]
         self.call(' \\\n  '.join(lines))
 
+    def export(self):
+        ExportBetaDiversityQza(self.settings).main(qza=self.output_qza)
 
-class QzaToTsv(Processor):
+
+class ExportBetaDiversityQza(Processor):
 
     qza: str
 
@@ -135,7 +132,6 @@ class QzaToTsv(Processor):
         super().__init__(settings)
 
     def main(self, qza: str):
-
         self.qza = qza
         self.qza_to_tsv()
         self.move_tsv()
