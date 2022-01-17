@@ -1,4 +1,5 @@
 from typing import Tuple
+from os.path import basename
 from .template import Processor, Settings
 
 
@@ -10,9 +11,7 @@ class Dada2(Processor):
     demultiplexed_seq_qza: str
 
     feature_sequence_qza: str
-    feature_sequence_fa: str
     feature_table_qza: str
-    feature_table_tsv: str
     denoising_stats_qza: str
 
     def __init__(self, settings: Settings):
@@ -20,21 +19,15 @@ class Dada2(Processor):
 
     def set_output_paths(self):
         self.feature_sequence_qza = f'{self.workdir}/dada2-feature-sequence.qza'
-        self.feature_sequence_fa = f'{self.outdir}/dada2-feature-sequence.fa'
         self.feature_table_qza = f'{self.workdir}/dada2-feature-table.qza'
-        self.feature_table_tsv = f'{self.outdir}/dada2-feature-table.tsv'
         self.denoising_stats_qza = f'{self.workdir}/dada2-stats.qza'
 
     def export(self):
         ExportFeatureSequence(self.settings).main(
-            feature_sequence_qza=self.feature_sequence_qza,
-            output_fa=self.feature_sequence_fa
-        )
+            feature_sequence_qza=self.feature_sequence_qza)
 
         ExportFeatureTable(self.settings).main(
-            feature_table_qza=self.feature_table_qza,
-            output_tsv=self.feature_table_tsv
-        )
+            feature_table_qza=self.feature_table_qza)
 
 
 class Dada2SingleEnd(Dada2):
@@ -106,11 +99,11 @@ class ExportFeatureTable(Processor):
     def __init__(self, settings: Settings):
         super().__init__(settings)
 
-    def main(self, feature_table_qza: str, output_tsv: str):
+    def main(self, feature_table_qza: str):
         self.feature_table_qza = feature_table_qza
-        self.output_tsv = output_tsv
 
         self.qza_to_biom()
+        self.set_output_tsv()
         self.biom_to_tsv()
 
     def qza_to_biom(self):
@@ -120,6 +113,10 @@ class ExportFeatureTable(Processor):
             f'--output-path {self.workdir}',
         ]
         self.call(' \\\n  '.join(lines))
+
+    def set_output_tsv(self):
+        fname = basename(self.feature_table_qza)[:-len('.qza')] + '.tsv'
+        self.output_tsv = f'{self.outdir}/{fname}'
 
     def biom_to_tsv(self):
         lines = [
@@ -138,15 +135,12 @@ class ExportFeatureSequence(Processor):
     def __init__(self, settings: Settings):
         super().__init__(settings)
 
-    def main(
-            self,
-            feature_sequence_qza: str,
-            output_fa: str):
+    def main(self, feature_sequence_qza: str):
 
         self.feature_sequence_qza = feature_sequence_qza
-        self.output_fa = output_fa
 
         self.qza_to_fa()
+        self.set_output_fa()
         self.move_fa()
 
     def qza_to_fa(self):
@@ -156,6 +150,10 @@ class ExportFeatureSequence(Processor):
             f'--output-path {self.workdir}',
         ]
         self.call(' \\\n  '.join(lines))
+
+    def set_output_fa(self):
+        fname = basename(self.feature_sequence_qza)[:-len('.qza')] + '.fa'
+        self.output_fa = f'{self.outdir}/{fname}'
 
     def move_fa(self):
         self.call(f'mv {self.workdir}/dna-sequences.fasta {self.output_fa}')
