@@ -114,9 +114,9 @@ class FactoryGenerateASVCallable(Processor):
     def __init__(self, settings: Settings):
         super().__init__(settings)
 
-    def main(self, mode: str) -> Callable:
-        assert mode in self.MODE_TO_CLASS.keys(), \
-            f'"{mode}" is not a valid mode for GenerateASV'
+    def main(self, paired_end_mode: str) -> Callable:
+        assert paired_end_mode in self.MODE_TO_CLASS.keys(), \
+            f'"{paired_end_mode}" is not a valid mode for GenerateASV'
 
-        _Class = self.MODE_TO_CLASS[mode]
+        _Class = self.MODE_TO_CLASS[paired_end_mode]
         return _Class(self.settings).main

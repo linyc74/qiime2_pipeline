@@ -1,8 +1,8 @@
 from .setup import TestCase
-from qiime2_pipeline.denoise import Dada2PairedEnd, Dada2SingleEnd
-from qiime2_pipeline.trimming import TrimGalore, BatchTrimGalore
-from qiime2_pipeline.importing import ImportPairedEndFastq, ImportSingleEndFastq
 from qiime2_pipeline.concat import Concat, BatchConcat
+from qiime2_pipeline.trimming import TrimGalore, BatchTrimGalore
+from qiime2_pipeline.denoise import Dada2PairedEnd, Dada2SingleEnd
+from qiime2_pipeline.importing import ImportPairedEndFastq, ImportSingleEndFastq
 
 
 class MyTest(TestCase):

@@ -52,6 +52,15 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['-m', '--paired-end-mode'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'concat',
+            'help': 'mode to combine paired end reads, "concat" or "merge" (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['-t', '--threads'],
         'properties': {
             'type': int,
@@ -119,6 +128,7 @@ class EntryPoint:
             fq1_suffix=args.fq1_suffix,
             fq2_suffix=args.fq2_suffix,
             nb_classifier_qza=args.nb_classifier_qza,
+            paired_end_mode=args.paired_end_mode,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)

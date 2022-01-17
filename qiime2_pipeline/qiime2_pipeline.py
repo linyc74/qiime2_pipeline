@@ -12,7 +12,7 @@ class Qiime2Pipeline(Processor):
     fq1_suffix: str
     fq2_suffix: str
     nb_classifier_qza: str
-    generate_asv_mode: str
+    paired_end_mode: str
 
     feature_sequence_qza: str
     feature_table_qza: str
@@ -27,13 +27,13 @@ class Qiime2Pipeline(Processor):
             fq1_suffix: str,
             fq2_suffix: str,
             nb_classifier_qza: str,
-            generate_asv_mode: str):
+            paired_end_mode: str):
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
         self.nb_classifier_qza = nb_classifier_qza
-        self.generate_asv_mode = generate_asv_mode
+        self.paired_end_mode = paired_end_mode
 
         self.generate_asv()
         self.taxonomic_classification()
@@ -43,7 +43,7 @@ class Qiime2Pipeline(Processor):
 
     def generate_asv(self):
         generate_asv = FactoryGenerateASVCallable(self.settings).main(
-            mode=self.generate_asv_mode)
+            paired_end_mode=self.paired_end_mode)
 
         self.feature_sequence_qza, self.feature_table_qza = generate_asv(
             fq_dir=self.fq_dir,
