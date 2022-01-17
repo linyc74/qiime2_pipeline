@@ -2,34 +2,42 @@
 
 **Custom-built Qiime2 pipeline**
 
-```
+## Usage
+
+```bash
+git clone https://github.com/linyc74/qiime2_pipeline.git
+
 python qiime2_pipeline \
   -f FQ_DIR \
   -1 FQ1_SUFFIX \
   -2 FQ2_SUFFIX \
-  -b NB_CLASSIFIER_QZA \
-  -l READ_LENGTH \
-  -o OUTDIR \
-  -t THREADS
+  -b NB_CLASSIFIER_QZA
+```
 
-required arguments:
-  -f FQ_DIR, --fq-dir FQ_DIR
-                        path to the directory containing all input fastq files
-  -1 FQ1_SUFFIX, --fq1-suffix FQ1_SUFFIX
-                        suffix of read 1 fastq files
-  -2 FQ2_SUFFIX, --fq2-suffix FQ2_SUFFIX
-                        suffix of read 2 fastq files
-  -b NB_CLASSIFIER_QZA, --nb-classifier-qza NB_CLASSIFIER_QZA
-                        pre-trained naive Bayes classifier (.qza file) for feature classification (https://docs.qiime2.org/2021.8/data-resources)
-  -l READ_LENGTH, --read-length READ_LENGTH
-                        read length (bp)
+For more options, see help message by
 
-optional arguments:
-  -o OUTDIR, --outdir OUTDIR
-                        path to the output directory (default: qiime2_pipeline_outdir)
-  -t THREADS, --threads THREADS
-                        number of CPU threads (default: 4)
-  -d, --debug           debug mode
-  -h, --help            show this help message
-  -v, --version         show version
+```bash
+python qiime2_pipeline --help
+```
+
+## Environment
+
+Create a Qiime2 environment:
+
+```bash
+wget https://data.qiime2.org/distro/core/qiime2-2021.11-py38-linux-conda.yml
+conda env create -n qiime2-2021.11 --file qiime2-2021.11-py38-linux-conda.yml
+rm qiime2-2021.11-py38-linux-conda.yml
+```
+
+Install TrimGalore:
+
+```bash
+conda install -c bioconda -n qiime2-2021.11 trim-galore
+```
+
+Activate the environment before usage.
+
+```bash
+conda activate qiime2-2021.11
 ```
