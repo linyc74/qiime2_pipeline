@@ -1,5 +1,5 @@
 from typing import Tuple, Callable
-from .concat import BatchConcat
+from .concat import BatchConcat, BatchPool
 from .trimming import BatchTrimGalore
 from .template import Processor, Settings
 from .denoise import Dada2SingleEnd, Dada2PairedEnd
@@ -104,11 +104,51 @@ class GenerateASVMergePairedEnd(GenerateASV):
             demultiplexed_seq_qza=self.paired_end_seq_qza)
 
 
+class GenerateASVPoolPairedEnd(GenerateASV):
+
+    concat_fq_dir: str
+    fq_suffix: str
+    concat_reads_qza: str
+
+    def main(
+            self,
+            fq_dir: str,
+            fq1_suffix: str,
+            fq2_suffix: str) -> Tuple[str, str]:
+
+        self.fq_dir = fq_dir
+        self.fq1_suffix = fq1_suffix
+        self.fq2_suffix = fq2_suffix
+
+        self.trimming()
+        self.pool()
+        self.importing()
+        self.denoise()
+
+        return self.feature_sequence_qza, self.feature_table_qza
+
+    def pool(self):
+        self.concat_fq_dir, self.fq_suffix = BatchPool(self.settings).main(
+            fq_dir=self.trimmed_fq_dir,
+            fq1_suffix=self.fq1_suffix,
+            fq2_suffix=self.fq2_suffix)
+
+    def importing(self):
+        self.concat_reads_qza = ImportSingleEndFastq(self.settings).main(
+            fq_dir=self.concat_fq_dir,
+            fq_suffix=self.fq_suffix)
+
+    def denoise(self):
+        self.feature_sequence_qza, self.feature_table_qza = Dada2SingleEnd(self.settings).main(
+            demultiplexed_seq_qza=self.concat_reads_qza)
+
+
 class FactoryGenerateASVCallable(Processor):
 
     MODE_TO_CLASS = {
         'concat': GenerateASVConcatPairedEnd,
         'merge': GenerateASVMergePairedEnd,
+        'pool': GenerateASVPoolPairedEnd
     }
 
     def __init__(self, settings: Settings):

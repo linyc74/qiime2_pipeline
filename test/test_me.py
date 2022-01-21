@@ -1,5 +1,5 @@
 from .setup import TestCase
-from qiime2_pipeline.concat import Concat, BatchConcat
+from qiime2_pipeline.concat import Concat, BatchConcat, Pool, BatchPool
 from qiime2_pipeline.trimming import TrimGalore, BatchTrimGalore
 from qiime2_pipeline.denoise import Dada2PairedEnd, Dada2SingleEnd
 from qiime2_pipeline.importing import ImportPairedEndFastq, ImportSingleEndFastq
@@ -46,6 +46,22 @@ class MyTest(TestCase):
             fq1_suffix='_L001_R1_001.fastq.gz',
             fq2_suffix='_L001_R2_001.fastq.gz')
         self.assertFileExists(f'{self.workdir}/concat_fastqs', fq_dir)
+        self.assertEqual('.fq', fq_suffix)
+
+    def __test_pool(self):
+        actual = Pool(self.settings).main(
+            fq1=f'{self.indir}/R1.fastq.gz',
+            fq2=f'{self.indir}/R2.fastq.gz'
+        )
+        expected = f'{self.workdir}/pool.fq'
+        self.assertFileExists(expected, actual)
+
+    def __test_batch_pool(self):
+        fq_dir, fq_suffix = BatchPool(self.settings).main(
+            fq_dir=f'{self.indir}/fq_dir',
+            fq1_suffix='_L001_R1_001.fastq.gz',
+            fq2_suffix='_L001_R2_001.fastq.gz')
+        self.assertFileExists(f'{self.workdir}/pool_fastqs', fq_dir)
         self.assertEqual('.fq', fq_suffix)
 
     def __test_import_single_end_fastq(self):

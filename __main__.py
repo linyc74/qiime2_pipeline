@@ -57,7 +57,7 @@ OPTIONAL = [
             'type': str,
             'required': False,
             'default': 'concat',
-            'help': 'mode to combine paired end reads, "concat" or "merge" (default: %(default)s)',
+            'help': 'mode to combine paired end reads, "concat", "merge", or "pool" (default: %(default)s)',
         }
     },
     {

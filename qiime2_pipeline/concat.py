@@ -1,6 +1,6 @@
 import os
 import gzip
-from typing import IO, List, Tuple
+from typing import IO, List, Tuple, Callable
 from .tools import get_files, rev_comp
 from .template import Processor, Settings
 
@@ -63,19 +63,44 @@ class Concat(Processor):
         self.writer.close()
 
 
-class BatchConcat(Processor):
+class Pool(Processor):
+
+    fq1: str
+    fq2: str
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+
+    def main(
+            self,
+            fq1: str,
+            fq2: str) -> str:
+
+        self.fq1 = fq1
+        self.fq2 = fq2
+
+        f = f'{self.workdir}/pool.fq.gz'
+        self.call(f'cat {self.fq1} {self.fq2} > {f}')
+        self.call(f'gunzip {f}')
+
+        return f[:-len('.gz')]
+
+
+class BatchCombine(Processor):
+
+    OUT_FQ_DIRNAME: str
+    OUT_FQ_SUFFIX: str = '.fq'
 
     fq_dir: str
     fq1_suffix: str
     fq2_suffix: str
 
     sample_names: List[str]
+    combine: Callable
     out_fq_dir: str
-    out_fq_suffix: str = '.fq'
 
     def __init__(self, settings: Settings):
-        super().__init__(settings=settings)
-        self.concat = Concat(self.settings).main
+        super().__init__(settings)
 
     def main(
             self,
@@ -92,7 +117,7 @@ class BatchConcat(Processor):
         for name in self.sample_names:
             self.process_one_pair(name)
 
-        return self.out_fq_dir, self.out_fq_suffix
+        return self.out_fq_dir, self.OUT_FQ_SUFFIX
 
     def set_sample_names(self):
         files = get_files(
@@ -103,15 +128,33 @@ class BatchConcat(Processor):
         self.sample_names = [f[:-n_char] for f in files]
 
     def set_out_fq_dir(self):
-        self.out_fq_dir = f'{self.workdir}/concat_fastqs'
+        self.out_fq_dir = f'{self.workdir}/{self.OUT_FQ_DIRNAME}'
         os.makedirs(self.out_fq_dir, exist_ok=True)
 
     def process_one_pair(self, name: str):
         fq1 = f'{self.fq_dir}/{name}{self.fq1_suffix}'
         fq2 = f'{self.fq_dir}/{name}{self.fq2_suffix}'
 
-        fq = self.concat(fq1, fq2)
+        fq = self.combine(fq1, fq2)
 
         os.rename(
-            fq, f'{self.out_fq_dir}/{name}{self.out_fq_suffix}'
+            fq, f'{self.out_fq_dir}/{name}{self.OUT_FQ_SUFFIX}'
         )
+
+
+class BatchConcat(BatchCombine):
+
+    OUT_FQ_DIRNAME: str = 'concat_fastqs'
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings=settings)
+        self.combine = Concat(self.settings).main
+
+
+class BatchPool(BatchCombine):
+
+    OUT_FQ_DIRNAME: str = 'pool_fastqs'
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings=settings)
+        self.combine = Pool(self.settings).main
