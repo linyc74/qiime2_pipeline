@@ -1,7 +1,8 @@
+from .taxonomy import Taxonomy
 from .beta import BetaDiversity
 from .alpha import AlphaDiversity
 from .phylogeny import MafftFasttree
-from .taxonomy import FeatureClassifier
+from .labeling import FeatureLabeling
 from .template import Processor, Settings
 from .generate_asv import FactoryGenerateASVCallable
 
@@ -16,6 +17,9 @@ class Qiime2Pipeline(Processor):
 
     feature_sequence_qza: str
     feature_table_qza: str
+    taxonomy_qza: str
+    labeled_feature_sequence_qza: str
+    labeled_feature_table_qza: str
     rooted_tree_qza: str
 
     def __init__(self, settings: Settings):
@@ -37,6 +41,7 @@ class Qiime2Pipeline(Processor):
 
         self.generate_asv()
         self.taxonomic_classification()
+        self.feature_labeling()
         self.phylogenetic_tree()
         self.alpha_diversity()
         self.beta_diversity()
@@ -45,26 +50,34 @@ class Qiime2Pipeline(Processor):
         generate_asv = FactoryGenerateASVCallable(self.settings).main(
             paired_end_mode=self.paired_end_mode)
 
-        self.feature_sequence_qza, self.feature_table_qza = generate_asv(
+        self.feature_table_qza, self.feature_sequence_qza = generate_asv(
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix)
 
     def taxonomic_classification(self):
-        FeatureClassifier(self.settings).main(
+        self.taxonomy_qza = Taxonomy(self.settings).main(
             representative_seq_qza=self.feature_sequence_qza,
             nb_classifier_qza=self.nb_classifier_qza)
 
+    def feature_labeling(self):
+        self.labeled_feature_table_qza, self.labeled_feature_sequence_qza \
+            = FeatureLabeling(self.settings).main(
+                taxonomy_qza=self.taxonomy_qza,
+                feature_table_qza=self.feature_table_qza,
+                feature_sequence_qza=self.feature_sequence_qza
+            )
+
     def phylogenetic_tree(self):
         self.rooted_tree_qza = MafftFasttree(self.settings).main(
-            seq_qza=self.feature_sequence_qza)
+            seq_qza=self.labeled_feature_sequence_qza)
 
     def alpha_diversity(self):
         AlphaDiversity(self.settings).main(
-            feature_table_qza=self.feature_table_qza)
+            feature_table_qza=self.labeled_feature_table_qza)
 
     def beta_diversity(self):
         BetaDiversity(self.settings).main(
-            feature_table_qza=self.feature_table_qza,
+            feature_table_qza=self.labeled_feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza)
 

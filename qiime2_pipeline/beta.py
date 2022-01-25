@@ -72,13 +72,13 @@ class RunOneBetaMetric(Processor):
 
     def execute(self):
         self.output_qza = f'{self.workdir}/beta-{self.metric}.qza'
-        lines = [
+        cmd = self.CMD_LINEBREAK.join([
             'qiime diversity beta',
             f'--i-table {self.feature_table_qza}',
             f'--p-metric {self.metric}',
             f'--o-distance-matrix {self.output_qza}'
-        ]
-        self.call(' \\\n  '.join(lines))
+        ])
+        self.call(cmd)
 
     def export(self):
         ExportBetaDiversityQza(self.settings).main(qza=self.output_qza)

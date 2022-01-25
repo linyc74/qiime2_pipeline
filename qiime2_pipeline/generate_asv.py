@@ -1,7 +1,7 @@
 from typing import Tuple, Callable
-from .concat import BatchConcat, BatchPool
 from .trimming import BatchTrimGalore
 from .template import Processor, Settings
+from .concat import BatchConcat, BatchPool
 from .denoise import Dada2SingleEnd, Dada2PairedEnd
 from .importing import ImportSingleEndFastq, ImportPairedEndFastq
 
@@ -25,7 +25,7 @@ class GenerateASV(Processor):
             fq1_suffix: str,
             fq2_suffix: str) -> Tuple[str, str]:
 
-        return self.feature_sequence_qza, self.feature_table_qza
+        return self.feature_table_qza, self.feature_sequence_qza
 
     def trimming(self):
         self.trimmed_fq_dir = BatchTrimGalore(self.settings).main(
@@ -55,7 +55,7 @@ class GenerateASVConcatPairedEnd(GenerateASV):
         self.importing()
         self.denoise()
 
-        return self.feature_sequence_qza, self.feature_table_qza
+        return self.feature_table_qza, self.feature_sequence_qza
 
     def concat(self):
         self.concat_fq_dir, self.fq_suffix = BatchConcat(self.settings).main(
@@ -69,7 +69,7 @@ class GenerateASVConcatPairedEnd(GenerateASV):
             fq_suffix=self.fq_suffix)
 
     def denoise(self):
-        self.feature_sequence_qza, self.feature_table_qza = Dada2SingleEnd(self.settings).main(
+        self.feature_table_qza, self.feature_sequence_qza = Dada2SingleEnd(self.settings).main(
             demultiplexed_seq_qza=self.concat_reads_qza)
 
 
@@ -91,7 +91,7 @@ class GenerateASVMergePairedEnd(GenerateASV):
         self.importing()
         self.denoise()
 
-        return self.feature_sequence_qza, self.feature_table_qza
+        return self.feature_table_qza, self.feature_sequence_qza
 
     def importing(self):
         self.paired_end_seq_qza = ImportPairedEndFastq(self.settings).main(
@@ -100,7 +100,7 @@ class GenerateASVMergePairedEnd(GenerateASV):
             fq2_suffix=self.fq2_suffix)
 
     def denoise(self):
-        self.feature_sequence_qza, self.feature_table_qza = Dada2PairedEnd(self.settings).main(
+        self.feature_table_qza, self.feature_sequence_qza = Dada2PairedEnd(self.settings).main(
             demultiplexed_seq_qza=self.paired_end_seq_qza)
 
 
@@ -125,7 +125,7 @@ class GenerateASVPoolPairedEnd(GenerateASV):
         self.importing()
         self.denoise()
 
-        return self.feature_sequence_qza, self.feature_table_qza
+        return self.feature_table_qza, self.feature_sequence_qza
 
     def pool(self):
         self.concat_fq_dir, self.fq_suffix = BatchPool(self.settings).main(
@@ -139,7 +139,7 @@ class GenerateASVPoolPairedEnd(GenerateASV):
             fq_suffix=self.fq_suffix)
 
     def denoise(self):
-        self.feature_sequence_qza, self.feature_table_qza = Dada2SingleEnd(self.settings).main(
+        self.feature_table_qza, self.feature_sequence_qza = Dada2SingleEnd(self.settings).main(
             demultiplexed_seq_qza=self.concat_reads_qza)
 
 

@@ -68,13 +68,13 @@ class RunOneAlphaMetric(Processor):
         self.output_qza = f'{self.workdir}/alpha-{self.metric}.qza'
 
     def execute(self):
-        lines = [
+        cmd = self.CMD_LINEBREAK.join([
             'qiime diversity alpha',
             f'--i-table {self.feature_table_qza}',
             f'--p-metric {self.metric}',
             f'--o-alpha-diversity {self.output_qza}'
-        ]
-        self.call(' \\\n  '.join(lines))
+        ])
+        self.call(cmd)
 
 
 class ReadAlphaDiversityQza(Processor):
