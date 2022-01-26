@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from typing import List
-from .tools import get_files
+from .tools import get_files, edit_fpath
 from .template import Processor, Settings
 
 
@@ -202,3 +202,86 @@ class WritePairedEndManifestTsv(WriteManifestTsv):
             self.FQ2_COLUMN: self.fq2_paths
         })
         df.to_csv(self.manifest_tsv, index=False, sep='\t')
+
+
+class ImportFeatureTable(Processor):
+
+    feature_table_tsv: str
+    biom: str
+    qza: str
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+
+    def main(self, feature_table_tsv: str) -> str:
+        self.feature_table_tsv = feature_table_tsv
+
+        self.tsv_to_biom()
+        self.biom_to_qza()
+
+        return self.qza
+
+    def tsv_to_biom(self):
+        self.biom = edit_fpath(
+            fpath=self.feature_table_tsv,
+            old_suffix='.tsv',
+            new_suffix='.biom',
+            dstdir=self.workdir)
+
+        cmd = self.CMD_LINEBREAK.join([
+            'biom convert',
+            '--to-hdf5',
+            '--table-type="OTU table"',
+            f'-i {self.feature_table_tsv}',
+            f'-o {self.biom}'
+        ])
+        self.call(cmd)
+
+    def biom_to_qza(self):
+        self.qza = edit_fpath(
+            fpath=self.biom,
+            old_suffix='.biom',
+            new_suffix='.qza',
+            dstdir=self.workdir)
+
+        # https://biom-format.org/documentation/format_versions/biom-2.1.html
+        # HDF5 is Biom file format version 2.1
+        cmd = self.CMD_LINEBREAK.join([
+            'qiime tools import',
+            f'--type \'FeatureTable[Frequency]\'',
+            f'--input-format BIOMV210Format',
+            f'--input-path {self.biom}',
+            f'--output-path {self.qza}',
+        ])
+        self.call(cmd)
+
+
+class ImportFeatureSequence(Processor):
+
+    feature_sequence_fa: str
+    qza: str
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+
+    def main(self, feature_sequence_fa: str) -> str:
+        self.feature_sequence_fa = feature_sequence_fa
+
+        self.fa_to_qza()
+
+        return self.qza
+
+    def fa_to_qza(self):
+        self.qza = edit_fpath(
+            fpath=self.feature_sequence_fa,
+            old_suffix='.fa',
+            new_suffix='.qza',
+            dstdir=self.workdir)
+
+        cmd = self.CMD_LINEBREAK.join([
+            'qiime tools import',
+            f'--type FeatureData[Sequence]',
+            f'--input-path {self.feature_sequence_fa}',
+            f'--output-path {self.qza}',
+        ])
+        self.call(cmd)

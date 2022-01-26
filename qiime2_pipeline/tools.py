@@ -76,3 +76,13 @@ def rev_comp(seq: str) -> str:
         'h': 'd'
     }
     return ''.join([comp[base] for base in seq[::-1]])
+
+
+def edit_fpath(
+        fpath: str,
+        old_suffix: str,
+        new_suffix: str,
+        dstdir: str) -> str:
+
+    fname = os.path.basename(fpath)[:-len(old_suffix)] + new_suffix
+    return f'{dstdir}/{fname}'
