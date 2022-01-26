@@ -1,5 +1,5 @@
-from os.path import basename
 from .template import Processor, Settings
+from .exporting import ExportAlignedSequence, ExportTree
 
 
 class MafftFasttree(Processor):
@@ -13,6 +13,8 @@ class MafftFasttree(Processor):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
+        self.export_aligned_sequence = ExportAlignedSequence(self.settings).main
+        self.export_tree = ExportTree(self.settings).main
 
     def main(self, seq_qza: str) -> str:
         self.seq_qza = seq_qza
@@ -42,74 +44,10 @@ class MafftFasttree(Processor):
         self.call(cmd)
 
     def export(self):
-        for qza in [self.aligned_seq_qza, self.masked_aligned_seq_qza]:
-            ExportAlignedSequence(self.settings).main(
-                aligned_sequence_qza=qza)
+        for aligned_sequence_qza in [self.aligned_seq_qza, self.masked_aligned_seq_qza]:
+            fa = self.export_aligned_sequence(aligned_sequence_qza=aligned_sequence_qza)
+            self.call(f'mv {fa} {self.outdir}/')
 
         for tree_qza in [self.rooted_tree_qza, self.unrooted_tree_qza]:
-            ExportTree(self.settings).main(
-                tree_qza=tree_qza)
-
-
-class ExportAlignedSequence(Processor):
-
-    aligned_sequence_qza: str
-    output_fa: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
-    def main(self, aligned_sequence_qza: str):
-
-        self.aligned_sequence_qza = aligned_sequence_qza
-
-        self.qza_to_fa()
-        self.set_output_fa()
-        self.move_fa()
-
-    def qza_to_fa(self):
-        cmd = self.CMD_LINEBREAK.join([
-            'qiime tools export',
-            f'--input-path {self.aligned_sequence_qza}',
-            f'--output-path {self.workdir}',
-        ])
-        self.call(cmd)
-
-    def set_output_fa(self):
-        fname = basename(self.aligned_sequence_qza)[:-len('.qza')] + '.fa'
-        self.output_fa = f'{self.outdir}/{fname}'
-
-    def move_fa(self):
-        self.call(f'mv {self.workdir}/aligned-dna-sequences.fasta {self.output_fa}')
-
-
-class ExportTree(Processor):
-
-    tree_qza: str
-    output_nwk: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
-    def main(self, tree_qza: str):
-
-        self.tree_qza = tree_qza
-
-        self.qza_to_nwk()
-        self.set_output_nwk(tree_qza)
-        self.move_nwk()
-
-    def qza_to_nwk(self):
-        cmd = self.CMD_LINEBREAK.join([
-            'qiime tools export',
-            f'--input-path {self.tree_qza}',
-            f'--output-path {self.workdir}',
-        ])
-        self.call(cmd)
-
-    def set_output_nwk(self, tree_qza):
-        fname = basename(tree_qza)[:-len('.qza')] + '.nwk'
-        self.output_nwk = f'{self.outdir}/{fname}'
-
-    def move_nwk(self):
-        self.call(f'mv {self.workdir}/tree.nwk {self.output_nwk}')
+            nwk = self.export_tree(tree_qza=tree_qza)
+            self.call(f'mv {nwk} {self.outdir}/')
