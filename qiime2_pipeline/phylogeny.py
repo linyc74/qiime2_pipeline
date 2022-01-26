@@ -30,7 +30,7 @@ class MafftFasttree(Processor):
         self.rooted_tree_qza = f'{self.workdir}/rooted-fasttree.qza'
 
     def execute(self):
-        lines = [
+        cmd = self.CMD_LINEBREAK.join([
             'qiime phylogeny align-to-tree-mafft-fasttree',
             f'--i-sequences {self.seq_qza}',
             f'--p-n-threads {self.threads}',
@@ -38,8 +38,8 @@ class MafftFasttree(Processor):
             f'--o-masked-alignment {self.masked_aligned_seq_qza}',
             f'--o-tree {self.unrooted_tree_qza}',
             f'--o-rooted-tree {self.rooted_tree_qza}'
-        ]
-        self.call(' \\\n  '.join(lines))
+        ])
+        self.call(cmd)
 
     def export(self):
         for qza in [self.aligned_seq_qza, self.masked_aligned_seq_qza]:
@@ -68,12 +68,12 @@ class ExportAlignedSequence(Processor):
         self.move_fa()
 
     def qza_to_fa(self):
-        lines = [
+        cmd = self.CMD_LINEBREAK.join([
             'qiime tools export',
             f'--input-path {self.aligned_sequence_qza}',
             f'--output-path {self.workdir}',
-        ]
-        self.call(' \\\n  '.join(lines))
+        ])
+        self.call(cmd)
 
     def set_output_fa(self):
         fname = basename(self.aligned_sequence_qza)[:-len('.qza')] + '.fa'
@@ -100,12 +100,12 @@ class ExportTree(Processor):
         self.move_nwk()
 
     def qza_to_nwk(self):
-        lines = [
+        cmd = self.CMD_LINEBREAK.join([
             'qiime tools export',
             f'--input-path {self.tree_qza}',
             f'--output-path {self.workdir}',
-        ]
-        self.call(' \\\n  '.join(lines))
+        ])
+        self.call(cmd)
 
     def set_output_nwk(self, tree_qza):
         fname = basename(tree_qza)[:-len('.qza')] + '.nwk'

@@ -110,14 +110,14 @@ class RunOneBetaPhylogeneticMetric(Processor):
 
     def execute(self):
         self.output_qza = f'{self.workdir}/beta-phylogenetic-{self.metric}.qza'
-        lines = [
+        cmd = self.CMD_LINEBREAK.join([
             'qiime diversity beta-phylogenetic',
             f'--i-table {self.feature_table_qza}',
             f'--i-phylogeny {self.rooted_tree_qza}',
             f'--p-metric {self.metric}',
             f'--o-distance-matrix {self.output_qza}'
-        ]
-        self.call(' \\\n  '.join(lines))
+        ])
+        self.call(cmd)
 
     def export(self):
         ExportBetaDiversityQza(self.settings).main(qza=self.output_qza)
@@ -136,12 +136,12 @@ class ExportBetaDiversityQza(Processor):
         self.move_tsv()
 
     def qza_to_tsv(self):
-        lines = [
+        cmd = self.CMD_LINEBREAK.join([
             'qiime tools export',
             f'--input-path {self.qza}',
             f'--output-path {self.workdir}',
-        ]
-        self.call(' \\\n  '.join(lines))
+        ])
+        self.call(cmd)
 
     def move_tsv(self):
         fname = basename(self.qza)[:-len('.qza')] + '.tsv'

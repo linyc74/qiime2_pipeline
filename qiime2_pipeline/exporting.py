@@ -20,12 +20,12 @@ class ExportFeatureTable(Processor):
         return self.tsv
 
     def qza_to_biom(self):
-        lines = [
+        cmd = self.CMD_LINEBREAK.join([
             'qiime tools export',
             f'--input-path {self.feature_table_qza}',
             f'--output-path {self.workdir}',
-        ]
-        self.call(' \\\n  '.join(lines))
+        ])
+        self.call(cmd)
 
     def biom_to_tsv(self):
         self.tsv = edit_fpath(
@@ -34,12 +34,12 @@ class ExportFeatureTable(Processor):
             new_suffix='.tsv',
             dstdir=self.workdir
         )
-        lines = [
+        cmd = self.CMD_LINEBREAK.join([
             'biom convert --to-tsv',
             f'-i {self.workdir}/feature-table.biom',
             f'-o {self.tsv}'
-        ]
-        self.call(' \\\n  '.join(lines))
+        ])
+        self.call(cmd)
 
 
 class ExportFeatureSequence(Processor):
@@ -60,12 +60,12 @@ class ExportFeatureSequence(Processor):
         return self.output_fa
 
     def qza_to_fa(self):
-        lines = [
+        cmd = self.CMD_LINEBREAK.join([
             'qiime tools export',
             f'--input-path {self.feature_sequence_qza}',
             f'--output-path {self.workdir}',
-        ]
-        self.call(' \\\n  '.join(lines))
+        ])
+        self.call(cmd)
 
     def move_fa(self):
         self.output_fa = edit_fpath(
@@ -100,12 +100,12 @@ class ExportTaxonomy(Processor):
             new_suffix='.tsv',
             dstdir=self.workdir
         )
-        lines = [
+        cmd = self.CMD_LINEBREAK.join([
             'qiime tools export',
             f'--input-path {self.taxonomy_qza}',
             f'--output-path {self.workdir}',
-        ]
-        self.call(' \\\n  '.join(lines))
+        ])
+        self.call(cmd)
 
     def move_tsv(self):
         self.call(f'mv {self.workdir}/taxonomy.tsv {self.tsv}')

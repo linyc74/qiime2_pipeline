@@ -95,9 +95,9 @@ class ReadAlphaDiversityQza(Processor):
         )
 
     def qza_to_tsv(self):
-        lines = [
+        cmd = self.CMD_LINEBREAK.join([
             'qiime tools export',
             f'--input-path {self.qza}',
             f'--output-path {self.workdir}',
-        ]
-        self.call(' \\\n  '.join(lines))
+        ])
+        self.call(cmd)

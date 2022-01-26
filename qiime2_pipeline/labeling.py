@@ -17,6 +17,7 @@ class FeatureLabeling(Processor):
     feature_sequence_fa: str
 
     feature_id_to_label: Dict[str, str]
+
     labeled_feature_table_tsv: str
     labeled_feature_sequence_fa: str
 
@@ -40,7 +41,7 @@ class FeatureLabeling(Processor):
         self.set_feature_id_to_label()
         self.label_feature_sequence()
         self.label_feature_table()
-        self.write_taxon_condifence_table()
+        self.write_taxonomy_condifence_table()
         self.compress_output_qza()
 
         return self.labeled_feature_table_qza, self.labeled_feature_sequence_qza
@@ -90,7 +91,7 @@ class FeatureLabeling(Processor):
             index=False
         )
 
-    def write_taxon_condifence_table(self):
+    def write_taxonomy_condifence_table(self):
         pass
 
     def compress_output_qza(self):
