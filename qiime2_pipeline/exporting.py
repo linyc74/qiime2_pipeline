@@ -1,8 +1,19 @@
+from os.path import abspath
 from .tools import edit_fpath
 from .template import Processor, Settings
 
 
-class ExportFeatureTable(Processor):
+class Export(Processor):
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+
+    def mv(self, src: str, dst: str):
+        if abspath(src) != abspath(dst):
+            self.call(f'mv {src} {dst}')
+
+
+class ExportFeatureTable(Export):
 
     feature_table_qza: str
     tsv: str
@@ -41,7 +52,7 @@ class ExportFeatureTable(Processor):
         self.call(cmd)
 
 
-class ExportFeatureSequence(Processor):
+class ExportFeatureSequence(Export):
 
     feature_sequence_qza: str
     output_fa: str
@@ -73,10 +84,10 @@ class ExportFeatureSequence(Processor):
             new_suffix='.fa',
             dstdir=self.workdir
         )
-        self.call(f'mv {self.workdir}/dna-sequences.fasta {self.output_fa}')
+        self.mv(f'{self.workdir}/dna-sequences.fasta', self.output_fa)
 
 
-class ExportTaxonomy(Processor):
+class ExportTaxonomy(Export):
 
     taxonomy_qza: str
     tsv: str
@@ -93,12 +104,6 @@ class ExportTaxonomy(Processor):
         return self.tsv
 
     def qza_to_tsv(self):
-        self.tsv = edit_fpath(
-            fpath=self.taxonomy_qza,
-            old_suffix='.qza',
-            new_suffix='.tsv',
-            dstdir=self.workdir
-        )
         cmd = self.CMD_LINEBREAK.join([
             'qiime tools export',
             f'--input-path {self.taxonomy_qza}',
@@ -107,10 +112,16 @@ class ExportTaxonomy(Processor):
         self.call(cmd)
 
     def move_tsv(self):
-        self.call(f'mv {self.workdir}/taxonomy.tsv {self.tsv}')
+        self.tsv = edit_fpath(
+            fpath=self.taxonomy_qza,
+            old_suffix='.qza',
+            new_suffix='.tsv',
+            dstdir=self.workdir
+        )
+        self.mv(f'{self.workdir}/taxonomy.tsv', self.tsv)
 
 
-class ExportAlignedSequence(Processor):
+class ExportAlignedSequence(Export):
 
     aligned_sequence_qza: str
     output_fa: str
@@ -141,10 +152,10 @@ class ExportAlignedSequence(Processor):
             new_suffix='.fa',
             dstdir=self.workdir
         )
-        self.call(f'mv {self.workdir}/aligned-dna-sequences.fasta {self.output_fa}')
+        self.mv(f'{self.workdir}/aligned-dna-sequences.fasta', self.output_fa)
 
 
-class ExportTree(Processor):
+class ExportTree(Export):
 
     tree_qza: str
     nwk: str
@@ -175,4 +186,4 @@ class ExportTree(Processor):
             new_suffix='.nwk',
             dstdir=self.workdir
         )
-        self.call(f'mv {self.workdir}/tree.nwk {self.nwk}')
+        self.mv(f'{self.workdir}/tree.nwk', self.nwk)
