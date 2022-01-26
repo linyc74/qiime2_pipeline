@@ -65,8 +65,7 @@ class Qiime2Pipeline(Processor):
             = FeatureLabeling(self.settings).main(
                 taxonomy_qza=self.taxonomy_qza,
                 feature_table_qza=self.feature_table_qza,
-                feature_sequence_qza=self.feature_sequence_qza
-            )
+                feature_sequence_qza=self.feature_sequence_qza)
 
     def phylogenetic_tree(self):
         self.rooted_tree_qza = MafftFasttree(self.settings).main(
