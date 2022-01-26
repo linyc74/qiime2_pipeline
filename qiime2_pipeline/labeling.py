@@ -37,16 +37,16 @@ class FeatureLabeling(Processor):
         self.feature_table_qza = feature_table_qza
         self.feature_sequence_qza = feature_sequence_qza
 
-        self.decompress_input_qza()
+        self.decompress()
         self.set_feature_id_to_label()
         self.label_feature_sequence()
         self.label_feature_table()
         self.write_taxonomy_condifence_table()
-        self.compress_output_qza()
+        self.compress()
 
         return self.labeled_feature_table_qza, self.labeled_feature_sequence_qza
 
-    def decompress_input_qza(self):
+    def decompress(self):
         self.taxonomy_tsv = ExportTaxonomy(self.settings).main(
             taxonomy_qza=self.taxonomy_qza)
 
@@ -61,40 +61,21 @@ class FeatureLabeling(Processor):
             taxonomy_tsv=self.taxonomy_tsv)
 
     def label_feature_sequence(self):
-        self.labeled_feature_sequence_fa = f'{self.outdir}/labeled-feature-sequence.fa'
-
-        with FastaParser(self.feature_sequence_fa) as parser:
-            with FastaWriter(self.labeled_feature_sequence_fa) as writer:
-                for id_, seq in parser:
-                    label = self.feature_id_to_label[id_]
-                    writer.write(label, seq)
+        self.labeled_feature_sequence_fa = LabelFeatureSequence(self.settings).main(
+            feature_sequence_fa=self.feature_sequence_fa,
+            feature_id_to_label=self.feature_id_to_label)
 
     def label_feature_table(self):
-        df = pd.read_csv(
-            self.feature_table_tsv,
-            sep='\t',
-            skiprows=1
-        )
-
-        df['#OTU ID'] = [
-            self.feature_id_to_label[id_]
-            for id_ in df['#OTU ID']
-        ]
-
-        self.labeled_feature_table_tsv = f'{self.outdir}/labeled-feature-table.tsv'
-
-        df.rename(
-            columns={'#OTU ID': 'Feature Label'}
-        ).to_csv(
-            self.labeled_feature_table_tsv,
-            sep='\t',
-            index=False
-        )
+        self.labeled_feature_table_tsv = LabelFeatureTable(self.settings).main(
+            feature_table_tsv=self.feature_table_tsv,
+            feature_id_to_label=self.feature_id_to_label)
 
     def write_taxonomy_condifence_table(self):
-        pass
+        WriteTaxonomyCondifenceTable(self.settings).main(
+            taxonomy_tsv=self.taxonomy_tsv,
+            feature_id_to_label=self.feature_id_to_label)
 
-    def compress_output_qza(self):
+    def compress(self):
         self.labeled_feature_table_qza = ImportFeatureTable(self.settings).main(
             feature_table_tsv=self.labeled_feature_table_tsv)
 
@@ -127,3 +108,122 @@ class GetFeatureIDToLabelDict(Processor):
             self.output_dict[id_] = label
 
         return self.output_dict
+
+
+class LabelFeatureSequence(Processor):
+
+    feature_sequence_fa: str
+    feature_id_to_label: Dict[str, str]
+
+    output_fa: str
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+
+    def main(
+            self,
+            feature_sequence_fa: str,
+            feature_id_to_label: Dict[str, str]) -> str:
+
+        self.feature_sequence_fa = feature_sequence_fa
+        self.feature_id_to_label = feature_id_to_label
+
+        self.output_fa = f'{self.outdir}/labeled-feature-sequence.fa'
+
+        with FastaParser(self.feature_sequence_fa) as parser:
+            with FastaWriter(self.output_fa) as writer:
+                for id_, seq in parser:
+                    label = self.feature_id_to_label[id_]
+                    writer.write(label, seq)
+
+        return self.output_fa
+
+
+class LabelFeatureTable(Processor):
+
+    feature_table_tsv: str
+    feature_id_to_label: Dict[str, str]
+
+    df: pd.DataFrame
+    output_tsv: str
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+
+    def main(
+            self,
+            feature_table_tsv: str,
+            feature_id_to_label: Dict[str, str]) -> str:
+
+        self.feature_table_tsv = feature_table_tsv
+        self.feature_id_to_label = feature_id_to_label
+
+        self.read_feature_table_tsv()
+        self.label_column()
+        self.save_output_tsv()
+
+        return self.output_tsv
+
+    def read_feature_table_tsv(self):
+        self.df = pd.read_csv(
+            self.feature_table_tsv,
+            sep='\t',
+            skiprows=1  # exclude 1st line from qza (# Constructed from biom file)
+        )
+
+    def label_column(self):
+        self.df['#OTU ID'] = [
+            self.feature_id_to_label[id_]
+            for id_ in self.df['#OTU ID']
+        ]
+        self.df.rename(
+            columns={'#OTU ID': 'Feature Label'},
+            inplace=True
+        )
+
+    def save_output_tsv(self):
+        self.output_tsv = f'{self.outdir}/labeled-feature-table.tsv'
+        self.df.to_csv(
+            self.output_tsv,
+            sep='\t',
+            index=False)
+
+
+class WriteTaxonomyCondifenceTable(Processor):
+
+    taxonomy_tsv: str
+    feature_id_to_label: Dict[str, str]
+
+    df: pd.DataFrame
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+
+    def main(
+            self,
+            taxonomy_tsv: str,
+            feature_id_to_label: Dict[str, str]):
+
+        self.taxonomy_tsv = taxonomy_tsv
+        self.feature_id_to_label = feature_id_to_label
+
+        self.read_taxonomy_tsv()
+        self.label_and_process()
+        self.save_output_tsv()
+
+    def read_taxonomy_tsv(self):
+        self.df = pd.read_csv(self.taxonomy_tsv, sep='\t')
+
+    def label_and_process(self):
+        self.df['Feature ID'] = [
+            self.feature_id_to_label[id_]
+            for id_ in self.df['Feature ID']
+        ]
+        self.df = self.df.rename(
+            columns={'Feature ID': 'Feature Label'}
+        )
+        self.df = self.df[['Feature Label', 'Confidence']]
+
+    def save_output_tsv(self):
+        output_tsv = f'{self.outdir}/taxonomy-condifence.tsv'
+        self.df.to_csv(output_tsv, sep='\t', index=False)
