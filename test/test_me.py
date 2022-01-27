@@ -1,10 +1,10 @@
 from .setup import TestCase
 from qiime2_pipeline.taxonomy import Taxonomy
+from qiime2_pipeline.beta import BetaDiversity
 from qiime2_pipeline.trimming import TrimGalore, BatchTrimGalore
 from qiime2_pipeline.denoise import Dada2PairedEnd, Dada2SingleEnd
 from qiime2_pipeline.concat import Concat, BatchConcat, Pool, BatchPool
 from qiime2_pipeline.importing import ImportPairedEndFastq, ImportSingleEndFastq
-from qiime2_pipeline.beta import BetaDiversity
 
 
 class MyTest(TestCase):
@@ -12,8 +12,8 @@ class MyTest(TestCase):
     def setUp(self):
         self.set_up(py_path=__file__)
 
-    # def tearDown(self):
-    #     self.tear_down()
+    def tearDown(self):
+        self.tear_down()
 
     def __test_trim_galore(self):
         trimmed_fq1, trimmed_fq2 = TrimGalore(self.settings).main(
@@ -99,7 +99,7 @@ class MyTest(TestCase):
         expected = f'{self.workdir}/taxonomy.qza'
         self.assertFileExists(expected, actual)
 
-    def test_beta_diversity(self):
+    def __test_beta_diversity(self):
         actual = BetaDiversity(self.settings).main(
             feature_table_qza=f'{self.indir}/feature-table.qza',
             rooted_tree_qza=f'{self.indir}/rooted-tree.qza'

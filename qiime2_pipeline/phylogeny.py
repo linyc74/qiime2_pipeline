@@ -28,8 +28,8 @@ class MafftFasttree(Processor):
     def set_output_paths(self):
         self.aligned_seq_qza = f'{self.workdir}/mafft-aligned-sequences.qza'
         self.masked_aligned_seq_qza = f'{self.workdir}/mafft-aligned-sequences-masked.qza'
-        self.unrooted_tree_qza = f'{self.workdir}/unrooted-fasttree.qza'
-        self.rooted_tree_qza = f'{self.workdir}/rooted-fasttree.qza'
+        self.rooted_tree_qza = f'{self.workdir}/fasttree-rooted.qza'
+        self.unrooted_tree_qza = f'{self.workdir}/fasttree-unrooted.qza'
 
     def execute(self):
         cmd = self.CMD_LINEBREAK.join([

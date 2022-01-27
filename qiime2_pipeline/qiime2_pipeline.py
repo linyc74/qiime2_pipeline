@@ -1,9 +1,11 @@
+from typing import List
 from .taxonomy import Taxonomy
 from .beta import BetaDiversity
 from .alpha import AlphaDiversity
 from .phylogeny import MafftFasttree
 from .labeling import FeatureLabeling
 from .template import Processor, Settings
+from .pcoa_nmds import BatchPCoA, BatchNMDS
 from .generate_asv import FactoryGenerateASVCallable
 
 
@@ -21,6 +23,7 @@ class Qiime2Pipeline(Processor):
     labeled_feature_sequence_qza: str
     labeled_feature_table_qza: str
     rooted_tree_qza: str
+    distance_matrix_tsvs: List[str]
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
@@ -45,6 +48,7 @@ class Qiime2Pipeline(Processor):
         self.phylogenetic_tree()
         self.alpha_diversity()
         self.beta_diversity()
+        self.pcoa_nmds()
 
     def generate_asv(self):
         generate_asv = FactoryGenerateASVCallable(self.settings).main(
@@ -76,7 +80,10 @@ class Qiime2Pipeline(Processor):
             feature_table_qza=self.labeled_feature_table_qza)
 
     def beta_diversity(self):
-        BetaDiversity(self.settings).main(
+        self.distance_matrix_tsvs = BetaDiversity(self.settings).main(
             feature_table_qza=self.labeled_feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza)
 
+    def pcoa_nmds(self):
+        BatchPCoA(self.settings).main(self.distance_matrix_tsvs)
+        BatchNMDS(self.settings).main(self.distance_matrix_tsvs)

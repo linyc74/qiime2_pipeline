@@ -2,11 +2,11 @@ import argparse
 import qiime2_pipeline
 
 
-__version__ = '1.3.1-beta'
+__VERSION__ = '1.4.0-beta'
 
 
 PROG = 'python qiime2_pipeline'
-DESCRIPTION = f'Custom-built Qiime2 pipeline (version {__version__}) by Yu-Cheng Lin (ylin@nycu.edu.tw)'
+DESCRIPTION = f'Custom-built Qiime2 pipeline (version {__VERSION__}) by Yu-Cheng Lin (ylin@nycu.edu.tw)'
 REQUIRED = [
     {
         'keys': ['-f', '--fq-dir'],
@@ -87,7 +87,7 @@ OPTIONAL = [
         'keys': ['-v', '--version'],
         'properties': {
             'action': 'version',
-            'version': __version__,
+            'version': __VERSION__,
             'help': 'show version',
         }
     },
@@ -123,6 +123,7 @@ class EntryPoint:
 
     def run(self):
         args = self.parser.parse_args()
+        print(f'Start running Qiime2 Pipeline version {__VERSION__}\n', flush=True)
         qiime2_pipeline.Main().main(
             fq_dir=args.fq_dir,
             fq1_suffix=args.fq1_suffix,
