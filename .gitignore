@@ -11,7 +11,7 @@ __pycache__/
 # Test / data
 .pytest_cache/
 test/test_*/
-test/outdir/
-test/workdir/
+test/*outdir*/
+test/*workdir*/
 
 todo

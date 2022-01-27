@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Optional
 
 
 def get_files(
@@ -80,9 +80,16 @@ def rev_comp(seq: str) -> str:
 
 def edit_fpath(
         fpath: str,
-        old_suffix: str,
-        new_suffix: str,
-        dstdir: str) -> str:
+        old_suffix: str = '',
+        new_suffix: str = '',
+        dstdir: Optional[str] = None) -> str:
 
-    fname = os.path.basename(fpath)[:-len(old_suffix)] + new_suffix
-    return f'{dstdir}/{fname}'
+    f = os.path.basename(fpath)
+    if old_suffix != '':
+        f = f[:-len(old_suffix)]  # strip old suffix
+    f += new_suffix
+
+    if dstdir is None:
+        dstdir = os.path.dirname(fpath)
+
+    return f'{dstdir}/{f}'

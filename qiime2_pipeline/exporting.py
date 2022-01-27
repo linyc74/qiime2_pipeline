@@ -187,3 +187,35 @@ class ExportTree(Export):
             dstdir=self.workdir
         )
         self.mv(f'{self.workdir}/tree.nwk', self.nwk)
+
+
+class ExportBetaDiversity(Export):
+
+    distance_matrix_qza: str
+    tsv: str
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+
+    def main(self, distance_matrix_qza: str) -> str:
+        self.distance_matrix_qza = distance_matrix_qza
+        self.qza_to_tsv()
+        self.move_tsv()
+        return self.tsv
+
+    def qza_to_tsv(self):
+        cmd = self.CMD_LINEBREAK.join([
+            'qiime tools export',
+            f'--input-path {self.distance_matrix_qza}',
+            f'--output-path {self.workdir}',
+        ])
+        self.call(cmd)
+
+    def move_tsv(self):
+        self.tsv = edit_fpath(
+            fpath=self.distance_matrix_qza,
+            old_suffix='.qza',
+            new_suffix='.tsv',
+            dstdir=self.workdir
+        )
+        self.mv(f'{self.workdir}/distance-matrix.tsv', self.tsv)

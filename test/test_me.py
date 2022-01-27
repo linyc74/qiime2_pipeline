@@ -4,6 +4,7 @@ from qiime2_pipeline.trimming import TrimGalore, BatchTrimGalore
 from qiime2_pipeline.denoise import Dada2PairedEnd, Dada2SingleEnd
 from qiime2_pipeline.concat import Concat, BatchConcat, Pool, BatchPool
 from qiime2_pipeline.importing import ImportPairedEndFastq, ImportSingleEndFastq
+from qiime2_pipeline.beta import BetaDiversity
 
 
 class MyTest(TestCase):
@@ -11,8 +12,8 @@ class MyTest(TestCase):
     def setUp(self):
         self.set_up(py_path=__file__)
 
-    def tearDown(self):
-        self.tear_down()
+    # def tearDown(self):
+    #     self.tear_down()
 
     def __test_trim_galore(self):
         trimmed_fq1, trimmed_fq2 = TrimGalore(self.settings).main(
@@ -97,3 +98,20 @@ class MyTest(TestCase):
         )
         expected = f'{self.workdir}/taxonomy.qza'
         self.assertFileExists(expected, actual)
+
+    def test_beta_diversity(self):
+        actual = BetaDiversity(self.settings).main(
+            feature_table_qza=f'{self.indir}/feature-table.qza',
+            rooted_tree_qza=f'{self.indir}/rooted-tree.qza'
+        )
+        expected = [
+            f'{self.outdir}/beta-diversity/jaccard.tsv',
+            f'{self.outdir}/beta-diversity/euclidean.tsv',
+            f'{self.outdir}/beta-diversity/cosine.tsv',
+            f'{self.outdir}/beta-diversity/weighted_normalized_unifrac.tsv',
+            f'{self.outdir}/beta-diversity/weighted_unifrac.tsv',
+            f'{self.outdir}/beta-diversity/generalized_unifrac.tsv',
+            f'{self.outdir}/beta-diversity/unweighted_unifrac.tsv',
+        ]
+        for e, a in zip(expected, actual):
+            self.assertFileExists(e, a)

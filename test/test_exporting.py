@@ -1,6 +1,6 @@
 from .setup import TestCase
 from qiime2_pipeline.exporting import ExportFeatureTable, ExportFeatureSequence, \
-    ExportTaxonomy, ExportAlignedSequence, ExportTree
+    ExportTaxonomy, ExportAlignedSequence, ExportTree, ExportBetaDiversity
 
 
 class TestExportFeatureTable(TestCase):
@@ -80,4 +80,20 @@ class TestExportTree(TestCase):
             tree_qza=f'{self.indir}/tree.qza'
         )
         expected = f'{self.workdir}/tree.nwk'
+        self.assertFileExists(expected, actual)
+
+
+class TestExportBetaDiversity(TestCase):
+
+    def setUp(self):
+        self.set_up(py_path=__file__)
+
+    def tearDown(self):
+        self.tear_down()
+
+    def test_main(self):
+        actual = ExportBetaDiversity(self.settings).main(
+            distance_matrix_qza=f'{self.indir}/distance-matrix.qza'
+        )
+        expected = f'{self.workdir}/distance-matrix.tsv'
         self.assertFileExists(expected, actual)
