@@ -8,6 +8,8 @@ RUN conda install -c bioconda -n qiime2-2021.11 trim-galore=0.6.6
 
 ENV PATH /opt/conda/envs/qiime2-2021.11/bin:$PATH
 
+RUN conda install -c anaconda -n qiime2-2021.11 scikit-bio
+
 COPY ./qiime2_pipeline/* /qiime2_pipeline/qiime2_pipeline/
 COPY ./__main__.py /qiime2_pipeline/
 WORKDIR /
