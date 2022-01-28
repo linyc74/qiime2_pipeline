@@ -5,8 +5,8 @@ from .alpha import AlphaDiversity
 from .phylogeny import MafftFasttree
 from .labeling import FeatureLabeling
 from .template import Processor, Settings
-from .pcoa_nmds import BatchPCoA, BatchNMDS
 from .generate_asv import FactoryGenerateASVCallable
+from .dim_reduction import BatchPCoA, BatchNMDS, BatchTSNE
 
 
 class Qiime2Pipeline(Processor):
@@ -48,7 +48,7 @@ class Qiime2Pipeline(Processor):
         self.phylogenetic_tree()
         self.alpha_diversity()
         self.beta_diversity()
-        self.pcoa_nmds()
+        self.dimensionality_reduction()
 
     def generate_asv(self):
         generate_asv = FactoryGenerateASVCallable(self.settings).main(
@@ -84,6 +84,6 @@ class Qiime2Pipeline(Processor):
             feature_table_qza=self.labeled_feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza)
 
-    def pcoa_nmds(self):
-        BatchPCoA(self.settings).main(self.distance_matrix_tsvs)
-        BatchNMDS(self.settings).main(self.distance_matrix_tsvs)
+    def dimensionality_reduction(self):
+        for BatchDimReduction in [BatchPCoA, BatchNMDS, BatchTSNE]:
+            BatchDimReduction(self.settings).main(self.distance_matrix_tsvs)
