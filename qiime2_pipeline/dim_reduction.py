@@ -1,21 +1,69 @@
 import os
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from sklearn import manifold
-from typing import List, Callable
+from typing import List, Callable, Tuple
+from skbio import DistanceMatrix
 from skbio.stats.ordination import pcoa
-from skbio import DistanceMatrix, OrdinationResults
 from .tools import edit_fpath
 from .template import Processor, Settings
 
 
-class PCoA(Processor):
+class Ordination(Processor):
+
+    NAME: str
+    XY_COLUMNS: Tuple[str, str]
 
     distance_matrix_tsv: str
+    distance_matrix: pd.DataFrame
+    sample_coordinate_df: pd.DataFrame
+    dstdir: str
 
-    distance_matrix: DistanceMatrix
-    result: OrdinationResults
-    pcoa_outdir: str
-    sample_coordinate_tsv: str
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+        self.scatterplot = ScatterPlot(self.settings).main
+
+    def load_distance_matrix(self):
+        self.distance_matrix = pd.read_csv(
+            self.distance_matrix_tsv,
+            sep='\t',
+            index_col=0)
+
+    def make_dstdir(self):
+        self.dstdir = f'{self.outdir}/{self.NAME}'
+        os.makedirs(self.dstdir, exist_ok=True)
+
+    def write_sample_coordinate(self):
+        tsv = self.__get_sample_coordinate_fpath(ext='tsv')
+        self.sample_coordinate_df.to_csv(tsv, sep='\t')
+
+    def plot_sample_coordinate(self):
+        png = self.__get_sample_coordinate_fpath(ext='png')
+        self.scatterplot(
+            sample_coordinate_df=self.sample_coordinate_df,
+            x_column=self.XY_COLUMNS[0],
+            y_column=self.XY_COLUMNS[1],
+            output_png=png
+        )
+
+    def __get_sample_coordinate_fpath(self, ext: str) -> str:
+        name = self.NAME.lower().replace('-', '')
+        return edit_fpath(
+            fpath=self.distance_matrix_tsv,
+            old_suffix='.tsv',
+            new_suffix=f'-{name}-sample-coordinate.{ext}',
+            dstdir=self.dstdir
+        )
+
+
+class PCoA(Ordination):
+
+    NAME = 'PCoA'
+    XY_COLUMNS = ('PC1', 'PC2')
+
+    proportion_explained_serise: pd.Series
     proportion_explained_tsv: str
 
     def __init__(self, settings: Settings):
@@ -26,44 +74,26 @@ class PCoA(Processor):
 
         self.load_distance_matrix()
         self.run_pcoa()
-        self.make_pcoa_outdir()
+        self.make_dstdir()
         self.write_sample_coordinate()
         self.write_proportion_explained()
-
-    def load_distance_matrix(self):
-        df = pd.read_csv(
-            self.distance_matrix_tsv,
-            sep='\t',
-            index_col=0
-        )
-        self.distance_matrix = DistanceMatrix(
-            df, list(df.columns)
-        )
+        self.plot_sample_coordinate()
 
     def run_pcoa(self):
-        self.result = pcoa(distance_matrix=self.distance_matrix)
-
-    def make_pcoa_outdir(self):
-        self.pcoa_outdir = f'{self.outdir}/PCoA'
-        os.makedirs(self.pcoa_outdir, exist_ok=True)
-
-    def write_sample_coordinate(self):
-        self.sample_coordinate_tsv = edit_fpath(
-            fpath=self.distance_matrix_tsv,
-            old_suffix='.tsv',
-            new_suffix='-pcoa-sample-coordinate.tsv',
-            dstdir=self.pcoa_outdir
-        )
-        self.result.samples.to_csv(self.sample_coordinate_tsv, sep='\t')
+        df = self.distance_matrix
+        dist_mat = DistanceMatrix(df, list(df.columns))
+        result = pcoa(distance_matrix=dist_mat)
+        self.sample_coordinate_df = result.samples
+        self.proportion_explained_serise = result.proportion_explained
 
     def write_proportion_explained(self):
         self.proportion_explained_tsv = edit_fpath(
             fpath=self.distance_matrix_tsv,
             old_suffix='.tsv',
-            new_suffix='-pcoa-proportion-explained.tsv',
-            dstdir=self.pcoa_outdir
+            new_suffix=f'-{self.NAME.lower()}-proportion-explained.tsv',
+            dstdir=self.dstdir
         )
-        self.result.proportion_explained.to_csv(
+        self.proportion_explained_serise.to_csv(
             self.proportion_explained_tsv,
             sep='\t',
             header=['Proportion Explained']
@@ -87,23 +117,17 @@ class BatchPCoA(Processor):
             self.pcoa(tsv)
 
 
-class NMDS(Processor):
+class NMDS(Ordination):
 
+    NAME = 'NMDS'
+    XY_COLUMNS = ('NMDS 1', 'NMDS 2')
     N_COMPONENTS = 2
     METRIC = False  # i.e. non-metric MDS
     N_INIT = 10  # number of independent fitting
     RANDOM_STATE = 1  # to ensure reproducible result
     DISSIMILARITY = 'precomputed'  # distance matrix is precomputed
-    NMDS_COLUMNS = ['NMDS 1', 'NMDS 2']
 
-    distance_matrix_tsv: str
-
-    distance_matrix: pd.DataFrame
     embedding: manifold.MDS
-    sample_coordinate_df: pd.DataFrame
-    nmds_outdir: str
-    sample_coordinate_tsv: str
-    stress_txt: str
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
@@ -113,15 +137,10 @@ class NMDS(Processor):
 
         self.load_distance_matrix()
         self.run_nmds()
-        self.make_nmds_outdir()
+        self.make_dstdir()
         self.write_sample_coordinate()
         self.write_stress()
-
-    def load_distance_matrix(self):
-        self.distance_matrix = pd.read_csv(
-            self.distance_matrix_tsv,
-            sep='\t',
-            index_col=0)
+        self.plot_sample_coordinate()
 
     def run_nmds(self):
         self.embedding = manifold.MDS(
@@ -142,30 +161,17 @@ class NMDS(Processor):
         sample_names = list(self.distance_matrix.columns)
         self.sample_coordinate_df = pd.DataFrame(
             data=transformed,
-            columns=self.NMDS_COLUMNS,
+            columns=self.XY_COLUMNS,
             index=sample_names)
 
-    def make_nmds_outdir(self):
-        self.nmds_outdir = f'{self.outdir}/NMDS'
-        os.makedirs(self.nmds_outdir, exist_ok=True)
-
-    def write_sample_coordinate(self):
-        self.sample_coordinate_tsv = edit_fpath(
-            fpath=self.distance_matrix_tsv,
-            old_suffix='.tsv',
-            new_suffix='-nmds-sample-coordinate.tsv',
-            dstdir=self.nmds_outdir
-        )
-        self.sample_coordinate_df.to_csv(self.sample_coordinate_tsv, sep='\t')
-
     def write_stress(self):
-        self.stress_txt = edit_fpath(
+        txt = edit_fpath(
             fpath=self.distance_matrix_tsv,
             old_suffix='.tsv',
             new_suffix='-nmds-stress.txt',
-            dstdir=self.nmds_outdir
+            dstdir=self.dstdir
         )
-        with open(self.stress_txt, 'w') as fh:
+        with open(txt, 'w') as fh:
             fh.write(str(self.embedding.stress_))
 
 
@@ -186,21 +192,16 @@ class BatchNMDS(Processor):
             self.nmds(tsv)
 
 
-class TSNE(Processor):
+class TSNE(Ordination):
 
+    NAME = 't-SNE'
+    XY_COLUMNS = ('t-SNE 1', 't-SNE 2')
     N_COMPONENTS = 2
     DISTANCE_METRIC = 'precomputed'  # distance matrix is precomputed
     RANDOM_STATE = 1  # to ensure reproducible result
     TSNE_INIT = 'random'  # cannot use PCA becuase distance matrix is precomputed
-    TSNE_COLUMNS = ['t-SNE 1', 't-SNE 2']
 
-    distance_matrix_tsv: str
-
-    distance_matrix: pd.DataFrame
     embedding: manifold.TSNE
-    sample_coordinate_df: pd.DataFrame
-    tsne_outdir: str
-    sample_coordinate_tsv: str
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
@@ -210,14 +211,9 @@ class TSNE(Processor):
 
         self.load_distance_matrix()
         self.run_tsne()
-        self.make_tsne_outdir()
+        self.make_dstdir()
         self.write_sample_coordinate()
-
-    def load_distance_matrix(self):
-        self.distance_matrix = pd.read_csv(
-            self.distance_matrix_tsv,
-            sep='\t',
-            index_col=0)
+        self.plot_sample_coordinate()
 
     def run_tsne(self):
         self.embedding = manifold.TSNE(
@@ -245,21 +241,8 @@ class TSNE(Processor):
         sample_names = list(self.distance_matrix.columns)
         self.sample_coordinate_df = pd.DataFrame(
             data=transformed,
-            columns=self.TSNE_COLUMNS,
+            columns=self.XY_COLUMNS,
             index=sample_names)
-
-    def make_tsne_outdir(self):
-        self.tsne_outdir = f'{self.outdir}/t-SNE'
-        os.makedirs(self.tsne_outdir, exist_ok=True)
-
-    def write_sample_coordinate(self):
-        self.sample_coordinate_tsv = edit_fpath(
-            fpath=self.distance_matrix_tsv,
-            old_suffix='.tsv',
-            new_suffix='-tsne-sample-coordinate.tsv',
-            dstdir=self.tsne_outdir
-        )
-        self.sample_coordinate_df.to_csv(self.sample_coordinate_tsv, sep='\t')
 
 
 class BatchTSNE(Processor):
@@ -270,10 +253,66 @@ class BatchTSNE(Processor):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
-        self.tsne = NMDS(self.settings).main
+        self.tsne = TSNE(self.settings).main
 
     def main(self, distance_matrix_tsvs: List[str]):
         self.distance_matrix_tsvs = distance_matrix_tsvs
         for tsv in self.distance_matrix_tsvs:
-            self.logger.debug(f'NMDS for {tsv}')
+            self.logger.debug(f't-SNE for {tsv}')
             self.tsne(tsv)
+
+
+class ScatterPlot(Processor):
+
+    FIGSIZE = (8, 8)
+    DPI = 300
+
+    sample_coordinate_df: pd.DataFrame
+    x_column: str
+    y_column: str
+    output_png: str
+
+    ax: Axes
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+
+    def main(
+            self,
+            sample_coordinate_df: pd.DataFrame,
+            x_column: str,
+            y_column: str,
+            output_png: str):
+
+        self.sample_coordinate_df = sample_coordinate_df
+        self.x_column = x_column
+        self.y_column = y_column
+        self.output_png = output_png
+
+        self.init_figure()
+        self.scatterplot()
+        self.label_points()
+        self.save_figure()
+
+    def init_figure(self):
+        plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
+
+    def scatterplot(self):
+        self.ax = sns.scatterplot(
+            data=self.sample_coordinate_df,
+            x=self.x_column,
+            y=self.y_column
+        )
+
+    def label_points(self):
+        df = self.sample_coordinate_df
+        for sample_name in df.index:
+            self.ax.text(
+                x=df.loc[sample_name, self.x_column],
+                y=df.loc[sample_name, self.y_column],
+                s=sample_name
+            )
+
+    def save_figure(self):
+        plt.savefig(self.output_png)
+        plt.close()
