@@ -16,6 +16,7 @@ class Qiime2Pipeline(Processor):
     fq2_suffix: str
     nb_classifier_qza: str
     paired_end_mode: str
+    group_keywords: List[str]
 
     feature_sequence_qza: str
     feature_table_qza: str
@@ -34,13 +35,15 @@ class Qiime2Pipeline(Processor):
             fq1_suffix: str,
             fq2_suffix: str,
             nb_classifier_qza: str,
-            paired_end_mode: str):
+            paired_end_mode: str,
+            group_keywords: List[str]):
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
         self.nb_classifier_qza = nb_classifier_qza
         self.paired_end_mode = paired_end_mode
+        self.group_keywords = group_keywords
 
         self.generate_asv()
         self.taxonomic_classification()
@@ -85,5 +88,5 @@ class Qiime2Pipeline(Processor):
             rooted_tree_qza=self.rooted_tree_qza)
 
     def dimensionality_reduction(self):
-        for BatchDimReduction in [BatchPCoA, BatchNMDS, BatchTSNE]:
-            BatchDimReduction(self.settings).main(self.distance_matrix_tsvs)
+        for Batch in [BatchPCoA, BatchNMDS, BatchTSNE]:
+            Batch(self.settings).main(self.distance_matrix_tsvs)

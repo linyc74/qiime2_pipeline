@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '1.4.1-beta'
+__VERSION__ = '1.5.0-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -58,6 +58,15 @@ OPTIONAL = [
             'required': False,
             'default': 'concat',
             'help': 'mode to combine paired end reads, "concat", "merge", or "pool" (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['-k', '--group-keywords'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'None',
+            'help': 'comma-separated group keywords, e.g. "control,treatment" (default: %(default)s)',
         }
     },
     {
@@ -123,13 +132,14 @@ class EntryPoint:
 
     def run(self):
         args = self.parser.parse_args()
-        print(f'Start running Qiime2 Pipeline version {__VERSION__}\n', flush=True)
+        print(f'Start running Qiime2 pipeline version {__VERSION__}\n', flush=True)
         qiime2_pipeline.Main().main(
             fq_dir=args.fq_dir,
             fq1_suffix=args.fq1_suffix,
             fq2_suffix=args.fq2_suffix,
             nb_classifier_qza=args.nb_classifier_qza,
             paired_end_mode=args.paired_end_mode,
+            group_keywords=args.group_keywords,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)

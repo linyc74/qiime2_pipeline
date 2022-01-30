@@ -1,4 +1,5 @@
 import os
+from typing import List
 from .template import Settings
 from .qiime2_pipeline import Qiime2Pipeline
 
@@ -10,6 +11,7 @@ class Main:
     fq2_suffix: str
     nb_classifier_qza: str
     paired_end_mode: str
+    group_keywords: List[str]
 
     settings: Settings
 
@@ -20,6 +22,7 @@ class Main:
             fq2_suffix: str,
             nb_classifier_qza: str,
             paired_end_mode: str,
+            group_keywords: str,
             outdir: str,
             threads: str,
             debug: bool):
@@ -29,6 +32,8 @@ class Main:
         self.fq2_suffix = fq2_suffix
         self.nb_classifier_qza = nb_classifier_qza
         self.paired_end_mode = paired_end_mode
+        self.group_keywords = [] if group_keywords == 'None' \
+            else group_keywords.split(',')
 
         self.settings = Settings(
             workdir='./qiime2_pipeline_workdir',
@@ -45,4 +50,5 @@ class Main:
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix,
             nb_classifier_qza=self.nb_classifier_qza,
-            paired_end_mode=self.paired_end_mode)
+            paired_end_mode=self.paired_end_mode,
+            group_keywords=self.group_keywords)
