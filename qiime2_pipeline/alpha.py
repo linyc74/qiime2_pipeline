@@ -1,17 +1,24 @@
+import os
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from typing import List
+from .grouping import Grouping
 from .template import Processor, Settings
-
-
-ALPHA_METRICS = [
-    'chao1', 'osd', 'singles', 'shannon', 'gini_index', 'mcintosh_e',
-    'michaelis_menten_fit', 'chao1_ci', 'pielou_e', 'simpson',
-    'observed_features', 'fisher_alpha',
-]
 
 
 class AlphaDiversity(Processor):
 
+    ALPHA_METRICS = [
+        'chao1', 'singles', 'shannon', 'gini_index', 'mcintosh_e',
+        'michaelis_menten_fit', 'pielou_e', 'simpson',
+        'observed_features', 'fisher_alpha',
+    ]
+    ALPHA_DIVERSITY_DIRNAME = 'alpha-diversity'
+
     feature_table_qza: str
+    group_keywords: List[str]
+
     df: pd.DataFrame
 
     def __init__(self, settings: Settings):
@@ -19,19 +26,23 @@ class AlphaDiversity(Processor):
 
     def main(
             self,
-            feature_table_qza: str):
+            feature_table_qza: str,
+            group_keywords: List[str]):
 
         self.feature_table_qza = feature_table_qza
+        self.group_keywords = group_keywords
+
         self.df = pd.DataFrame()
-
-        for metric in ALPHA_METRICS:
-            self.run_one(metric)
-
-        self.df.to_csv(f'{self.outdir}/alpha-diversity.csv', index=True)
+        for metric in self.ALPHA_METRICS:
+            self.run_one(metric=metric)
+        self.add_group_column()
+        self.save_csv()
+        self.plot()
 
     def run_one(self, metric: str):
         qza = RunOneAlphaMetric(self.settings).main(
-            feature_table_qza=self.feature_table_qza, metric=metric)
+            feature_table_qza=self.feature_table_qza,
+            metric=metric)
 
         df = ReadAlphaDiversityQza(self.settings).main(qza=qza)
 
@@ -40,6 +51,22 @@ class AlphaDiversity(Processor):
             how='outer',
             left_index=True,
             right_index=True)
+
+    def add_group_column(self):
+        self.df = Grouping(self.settings).main(
+            indf=self.df,
+            group_keywords=self.group_keywords)
+
+    def save_csv(self):
+        dstdir = f'{self.outdir}/{self.ALPHA_DIVERSITY_DIRNAME}'
+        os.makedirs(dstdir, exist_ok=True)
+        self.df.to_csv(f'{dstdir}/alpha-diversity.csv', index=True)
+
+    def plot(self):
+        PlotAlphaDiversity(self.settings).main(
+            df=self.df,
+            dstdir=f'{self.outdir}/{self.ALPHA_DIVERSITY_DIRNAME}'
+        )
 
 
 class RunOneAlphaMetric(Processor):
@@ -101,3 +128,43 @@ class ReadAlphaDiversityQza(Processor):
             f'--output-path {self.workdir}',
         ])
         self.call(cmd)
+
+
+class PlotAlphaDiversity(Processor):
+
+    GROUP = 'Group'
+    FIGSIZE = (6, 6)
+    DPI = 300
+    BOX_WIDTH = 0.5
+
+    df: pd.DataFrame
+    dstdir: str
+
+    alpha_metrics: List[str]
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+
+    def main(self, df: pd.DataFrame, dstdir: str):
+        self.df = df
+        self.dstdir = dstdir
+
+        self.set_alpha_metrics()
+        for metric in self.alpha_metrics:
+            self.plot_one(metric=metric)
+
+    def set_alpha_metrics(self):
+        self.alpha_metrics = [
+            c for c in self.df.columns if c != self.GROUP
+        ]
+
+    def plot_one(self, metric: str):
+        plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
+        sns.boxplot(
+            data=self.df,
+            x=self.GROUP,
+            y=metric,
+            width=self.BOX_WIDTH
+        )
+        plt.savefig(f'{self.dstdir}/{metric}.png')
+        plt.close()
