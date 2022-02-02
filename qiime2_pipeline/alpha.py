@@ -54,7 +54,7 @@ class AlphaDiversity(Processor):
 
     def add_group_column(self):
         self.df = Grouping(self.settings).main(
-            df=self.df,
+            indf=self.df,
             group_keywords=self.group_keywords)
 
     def save_csv(self):
