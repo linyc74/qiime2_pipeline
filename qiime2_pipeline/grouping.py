@@ -5,8 +5,8 @@ from .template import Processor, Settings
 
 class Grouping(Processor):
 
-    GROUP = 'Group'
-    NA_VALUE = 'None'  # Don't use 'NA', which would make dtype = float
+    GROUP_COLUMN: str = 'Group'
+    NA_VALUE: str = 'None'  # Don't use 'NA', which would make dtype = `float` but not `str`, tricky for testing
 
     indf: pd.DataFrame
     group_keywords: List[str]
@@ -18,10 +18,10 @@ class Grouping(Processor):
 
     def main(
             self,
-            indf: pd.DataFrame,
+            df: pd.DataFrame,
             group_keywords: List[str]) -> pd.DataFrame:
 
-        self.indf = indf
+        self.indf = df
         self.group_keywords = group_keywords
 
         self.outdf = self.indf.copy()
@@ -32,7 +32,7 @@ class Grouping(Processor):
 
     def add_group_column(self):
         for idx in self.outdf.index:
-            self.outdf.loc[idx, self.GROUP] = self.__idx_to_group(idx=idx)
+            self.outdf.loc[idx, self.GROUP_COLUMN] = self.__idx_to_group(idx=idx)
 
     def __idx_to_group(self, idx: str) -> str:
         for k in self.group_keywords:

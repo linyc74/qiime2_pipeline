@@ -11,7 +11,7 @@ class TestAlphaDiversity(TestCase):
     def tearDown(self):
         self.tear_down()
 
-    def test_main(self):
+    def __test_main(self):
         AlphaDiversity(self.settings).main(
             feature_table_qza=f'{self.indir}/feature-table.qza',
             group_keywords=['H']

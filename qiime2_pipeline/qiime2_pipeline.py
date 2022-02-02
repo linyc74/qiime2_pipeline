@@ -90,4 +90,6 @@ class Qiime2Pipeline(Processor):
 
     def dimensionality_reduction(self):
         for Batch in [BatchPCoA, BatchNMDS, BatchTSNE]:
-            Batch(self.settings).main(self.distance_matrix_tsvs)
+            Batch(self.settings).main(
+                distance_matrix_tsvs=self.distance_matrix_tsvs,
+                group_keywords=self.group_keywords)

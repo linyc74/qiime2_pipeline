@@ -12,11 +12,9 @@ class TestGrouping(TestCase):
         self.tear_down()
 
     def test_main(self):
-        outdf = Grouping(self.settings).main(
-            indf=pd.read_csv(f'{self.indir}/indf.csv', index_col=0),
+        actual = Grouping(self.settings).main(
+            df=pd.read_csv(f'{self.indir}/indf.csv', index_col=0),
             group_keywords=['H', 'O']
         )
-        self.assertDataFrameEqual(
-            first=pd.read_csv(f'{self.indir}/outdf.csv', index_col=0),
-            second=outdf
-        )
+        expected = pd.read_csv(f'{self.indir}/outdf.csv', index_col=0)
+        self.assertDataFrameEqual(expected, actual)
