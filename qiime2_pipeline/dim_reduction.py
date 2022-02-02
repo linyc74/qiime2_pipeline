@@ -8,6 +8,7 @@ from typing import List, Callable, Tuple
 from skbio import DistanceMatrix
 from skbio.stats.ordination import pcoa
 from .tools import edit_fpath
+from .grouping import Grouping
 from .template import Processor, Settings
 
 
@@ -15,8 +16,11 @@ class Ordination(Processor):
 
     NAME: str
     XY_COLUMNS: Tuple[str, str]
+    GROUP_COLUMN: str = Grouping.GROUP
 
     distance_matrix_tsv: str
+    group_keywords: List[str]
+
     distance_matrix: pd.DataFrame
     sample_coordinate_df: pd.DataFrame
     dstdir: str
@@ -25,15 +29,37 @@ class Ordination(Processor):
         super().__init__(settings)
         self.scatterplot = ScatterPlot(self.settings).main
 
+    def main(
+            self,
+            distance_matrix_tsv: str,
+            group_keywords: List[str]):
+        pass
+
+    def run_main_workflow(self):
+        self.load_distance_matrix()
+        self.run_dim_reduction()
+        self.add_group_column()
+        self.make_dstdir()
+        self.write_sample_coordinate()
+        self.plot_sample_coordinate()
+
     def load_distance_matrix(self):
         self.distance_matrix = pd.read_csv(
             self.distance_matrix_tsv,
             sep='\t',
             index_col=0)
 
+    def run_dim_reduction(self):
+        pass
+
     def make_dstdir(self):
         self.dstdir = f'{self.outdir}/{self.NAME}'
         os.makedirs(self.dstdir, exist_ok=True)
+
+    def add_group_column(self):
+        self.sample_coordinate_df = Grouping(self.settings).main(
+            indf=self.sample_coordinate_df,
+            group_keywords=self.group_keywords)
 
     def write_sample_coordinate(self):
         tsv = self.__get_sample_coordinate_fpath(ext='tsv')
@@ -45,8 +71,8 @@ class Ordination(Processor):
             sample_coordinate_df=self.sample_coordinate_df,
             x_column=self.XY_COLUMNS[0],
             y_column=self.XY_COLUMNS[1],
-            output_png=png
-        )
+            hue_column=self.GROUP_COLUMN,
+            output_png=png)
 
     def __get_sample_coordinate_fpath(self, ext: str) -> str:
         name = self.NAME.lower().replace('-', '')
@@ -69,17 +95,18 @@ class PCoA(Ordination):
     def __init__(self, settings: Settings):
         super().__init__(settings)
 
-    def main(self, distance_matrix_tsv: str):
+    def main(
+            self,
+            distance_matrix_tsv: str,
+            group_keywords: List[str]):
+
         self.distance_matrix_tsv = distance_matrix_tsv
+        self.group_keywords = group_keywords
 
-        self.load_distance_matrix()
-        self.run_pcoa()
-        self.make_dstdir()
-        self.write_sample_coordinate()
+        self.run_main_workflow()
         self.write_proportion_explained()
-        self.plot_sample_coordinate()
 
-    def run_pcoa(self):
+    def run_dim_reduction(self):
         df = self.distance_matrix
         dist_mat = DistanceMatrix(df, list(df.columns))
         result = pcoa(distance_matrix=dist_mat)
@@ -100,23 +127,6 @@ class PCoA(Ordination):
         )
 
 
-class BatchPCoA(Processor):
-
-    distance_matrix_tsvs: List[str]
-
-    pcoa: Callable
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-        self.pcoa = PCoA(self.settings).main
-
-    def main(self, distance_matrix_tsvs: List[str]):
-        self.distance_matrix_tsvs = distance_matrix_tsvs
-        for tsv in self.distance_matrix_tsvs:
-            self.logger.debug(f'PCoA for {tsv}')
-            self.pcoa(tsv)
-
-
 class NMDS(Ordination):
 
     NAME = 'NMDS'
@@ -132,17 +142,18 @@ class NMDS(Ordination):
     def __init__(self, settings: Settings):
         super().__init__(settings)
 
-    def main(self, distance_matrix_tsv: str):
+    def main(
+            self,
+            distance_matrix_tsv: str,
+            group_keywords: List[str]):
+
         self.distance_matrix_tsv = distance_matrix_tsv
+        self.group_keywords = group_keywords
 
-        self.load_distance_matrix()
-        self.run_nmds()
-        self.make_dstdir()
-        self.write_sample_coordinate()
+        self.run_main_workflow()
         self.write_stress()
-        self.plot_sample_coordinate()
 
-    def run_nmds(self):
+    def run_dim_reduction(self):
         self.embedding = manifold.MDS(
             n_components=self.N_COMPONENTS,
             metric=self.METRIC,
@@ -175,23 +186,6 @@ class NMDS(Ordination):
             fh.write(str(self.embedding.stress_))
 
 
-class BatchNMDS(Processor):
-
-    distance_matrix_tsvs: List[str]
-
-    nmds: Callable
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-        self.nmds = NMDS(self.settings).main
-
-    def main(self, distance_matrix_tsvs: List[str]):
-        self.distance_matrix_tsvs = distance_matrix_tsvs
-        for tsv in self.distance_matrix_tsvs:
-            self.logger.debug(f'NMDS for {tsv}')
-            self.nmds(tsv)
-
-
 class TSNE(Ordination):
 
     NAME = 't-SNE'
@@ -206,16 +200,17 @@ class TSNE(Ordination):
     def __init__(self, settings: Settings):
         super().__init__(settings)
 
-    def main(self, distance_matrix_tsv: str):
+    def main(
+            self,
+            distance_matrix_tsv: str,
+            group_keywords: List[str]):
+
         self.distance_matrix_tsv = distance_matrix_tsv
+        self.group_keywords = group_keywords
 
-        self.load_distance_matrix()
-        self.run_tsne()
-        self.make_dstdir()
-        self.write_sample_coordinate()
-        self.plot_sample_coordinate()
+        self.run_main_workflow()
 
-    def run_tsne(self):
+    def run_dim_reduction(self):
         self.embedding = manifold.TSNE(
             n_components=self.N_COMPONENTS,
             perplexity=30.0,
@@ -245,21 +240,50 @@ class TSNE(Ordination):
             index=sample_names)
 
 
-class BatchTSNE(Processor):
+class BatchOrdination(Processor):
 
     distance_matrix_tsvs: List[str]
+    group_keywords: List[str]
 
-    tsne: Callable
+    ordination: Ordination
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
-        self.tsne = TSNE(self.settings).main
 
-    def main(self, distance_matrix_tsvs: List[str]):
+    def main(
+            self,
+            distance_matrix_tsvs: List[str],
+            group_keywords: List[str]):
+
         self.distance_matrix_tsvs = distance_matrix_tsvs
+        self.group_keywords = group_keywords
+
         for tsv in self.distance_matrix_tsvs:
-            self.logger.debug(f't-SNE for {tsv}')
-            self.tsne(tsv)
+            self.logger.debug(f'{self.ordination.NAME} for {tsv}')
+            self.ordination.main(
+                distance_matrix_tsv=tsv,
+                group_keywords=self.group_keywords)
+
+
+class BatchPCoA(BatchOrdination):
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+        self.ordination = PCoA(self.settings)
+
+
+class BatchNMDS(BatchOrdination):
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+        self.ordination = NMDS(self.settings)
+
+
+class BatchTSNE(BatchOrdination):
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+        self.ordination = TSNE(self.settings)
 
 
 class ScatterPlot(Processor):
@@ -270,6 +294,7 @@ class ScatterPlot(Processor):
     sample_coordinate_df: pd.DataFrame
     x_column: str
     y_column: str
+    group_column: str
     output_png: str
 
     ax: Axes
@@ -282,11 +307,13 @@ class ScatterPlot(Processor):
             sample_coordinate_df: pd.DataFrame,
             x_column: str,
             y_column: str,
+            hue_column: str,
             output_png: str):
 
         self.sample_coordinate_df = sample_coordinate_df
         self.x_column = x_column
         self.y_column = y_column
+        self.group_column = hue_column
         self.output_png = output_png
 
         self.init_figure()
@@ -301,8 +328,8 @@ class ScatterPlot(Processor):
         self.ax = sns.scatterplot(
             data=self.sample_coordinate_df,
             x=self.x_column,
-            y=self.y_column
-        )
+            y=self.y_column,
+            hue=self.group_column)
 
     def label_points(self):
         df = self.sample_coordinate_df

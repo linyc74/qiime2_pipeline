@@ -80,7 +80,8 @@ class Qiime2Pipeline(Processor):
 
     def alpha_diversity(self):
         AlphaDiversity(self.settings).main(
-            feature_table_qza=self.labeled_feature_table_qza)
+            feature_table_qza=self.labeled_feature_table_qza,
+            group_keywords=self.group_keywords)
 
     def beta_diversity(self):
         self.distance_matrix_tsvs = BetaDiversity(self.settings).main(
