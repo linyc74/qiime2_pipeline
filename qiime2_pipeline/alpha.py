@@ -10,9 +10,15 @@ from .template import Processor, Settings
 class AlphaDiversity(Processor):
 
     ALPHA_METRICS = [
-        'chao1', 'singles', 'shannon', 'gini_index', 'mcintosh_e',
-        'michaelis_menten_fit', 'pielou_e', 'simpson',
-        'observed_features', 'fisher_alpha',
+        'chao1',
+        'singles',
+        'shannon',
+        'gini_index',
+        'mcintosh_e',
+        'pielou_e',
+        'simpson',
+        'observed_features',
+        'fisher_alpha',
     ]
     ALPHA_DIVERSITY_DIRNAME = 'alpha-diversity'
 
