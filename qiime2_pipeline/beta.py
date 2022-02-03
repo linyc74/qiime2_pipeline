@@ -6,11 +6,17 @@ from .exporting import ExportBetaDiversity
 
 
 BETA_METRICS = [
-    'jaccard', 'euclidean', 'cosine',
+    'jaccard',
+    'euclidean',
+    'braycurtis',
+    'cosine',
+    'correlation',
 ]
 BETA_PHYLOGENETIC_METRICS = [
-    'weighted_normalized_unifrac', 'weighted_unifrac',
-    'generalized_unifrac', 'unweighted_unifrac'
+    'weighted_unifrac',
+    'weighted_normalized_unifrac',
+    'generalized_unifrac',
+    'unweighted_unifrac'
 ]
 
 

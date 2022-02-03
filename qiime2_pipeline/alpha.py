@@ -11,7 +11,6 @@ class AlphaDiversity(Processor):
 
     ALPHA_METRICS = [
         'chao1',
-        'singles',
         'shannon',
         'gini_index',
         'mcintosh_e',
