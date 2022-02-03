@@ -2,6 +2,7 @@ from typing import List
 from .taxonomy import Taxonomy
 from .beta import BetaDiversity
 from .alpha import AlphaDiversity
+from .otu_clustering import Vsearch
 from .phylogeny import MafftFasttree
 from .labeling import FeatureLabeling
 from .template import Processor, Settings
@@ -17,9 +18,12 @@ class Qiime2Pipeline(Processor):
     nb_classifier_qza: str
     paired_end_mode: str
     group_keywords: List[str]
+    otu_identity: float
 
-    feature_sequence_qza: str
-    feature_table_qza: str
+    asv_feature_table_qza: str
+    asv_feature_sequence_qza: str
+    otu_feature_table_qza: str
+    otu_feature_sequence_qza: str
     taxonomy_qza: str
     labeled_feature_sequence_qza: str
     labeled_feature_table_qza: str
@@ -36,7 +40,8 @@ class Qiime2Pipeline(Processor):
             fq2_suffix: str,
             nb_classifier_qza: str,
             paired_end_mode: str,
-            group_keywords: List[str]):
+            group_keywords: List[str],
+            otu_identity: float):
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
@@ -44,8 +49,10 @@ class Qiime2Pipeline(Processor):
         self.nb_classifier_qza = nb_classifier_qza
         self.paired_end_mode = paired_end_mode
         self.group_keywords = group_keywords
+        self.otu_identity = otu_identity
 
         self.generate_asv()
+        self.otu_clustering()
         self.taxonomic_classification()
         self.feature_labeling()
         self.phylogenetic_tree()
@@ -57,22 +64,28 @@ class Qiime2Pipeline(Processor):
         generate_asv = FactoryGenerateASVCallable(self.settings).main(
             paired_end_mode=self.paired_end_mode)
 
-        self.feature_table_qza, self.feature_sequence_qza = generate_asv(
+        self.asv_feature_table_qza, self.asv_feature_sequence_qza = generate_asv(
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix)
 
+    def otu_clustering(self):
+        self.otu_feature_table_qza, self.otu_feature_sequence_qza = Vsearch(self.settings).main(
+            feature_table_qza=self.asv_feature_table_qza,
+            feature_sequence_qza=self.asv_feature_sequence_qza,
+            identity=self.otu_identity)
+
     def taxonomic_classification(self):
         self.taxonomy_qza = Taxonomy(self.settings).main(
-            representative_seq_qza=self.feature_sequence_qza,
+            representative_seq_qza=self.otu_feature_sequence_qza,
             nb_classifier_qza=self.nb_classifier_qza)
 
     def feature_labeling(self):
         self.labeled_feature_table_qza, self.labeled_feature_sequence_qza \
             = FeatureLabeling(self.settings).main(
                 taxonomy_qza=self.taxonomy_qza,
-                feature_table_qza=self.feature_table_qza,
-                feature_sequence_qza=self.feature_sequence_qza)
+                feature_table_qza=self.otu_feature_table_qza,
+                feature_sequence_qza=self.otu_feature_sequence_qza)
 
     def phylogenetic_tree(self):
         self.rooted_tree_qza = MafftFasttree(self.settings).main(

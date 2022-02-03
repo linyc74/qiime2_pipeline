@@ -12,6 +12,7 @@ class Main:
     nb_classifier_qza: str
     paired_end_mode: str
     group_keywords: List[str]
+    otu_identity: float
 
     settings: Settings
 
@@ -23,6 +24,7 @@ class Main:
             nb_classifier_qza: str,
             paired_end_mode: str,
             group_keywords: str,
+            otu_identity: str,
             outdir: str,
             threads: str,
             debug: bool):
@@ -34,6 +36,7 @@ class Main:
         self.paired_end_mode = paired_end_mode
         self.group_keywords = [] if group_keywords == 'None' \
             else group_keywords.split(',')
+        self.otu_identity = float(otu_identity)
 
         self.settings = Settings(
             workdir='./qiime2_pipeline_workdir',
@@ -51,4 +54,5 @@ class Main:
             fq2_suffix=self.fq2_suffix,
             nb_classifier_qza=self.nb_classifier_qza,
             paired_end_mode=self.paired_end_mode,
-            group_keywords=self.group_keywords)
+            group_keywords=self.group_keywords,
+            otu_identity=self.otu_identity)

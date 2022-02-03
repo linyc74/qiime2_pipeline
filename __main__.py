@@ -70,6 +70,15 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['-i', '--otu-identity'],
+        'properties': {
+            'type': float,
+            'required': False,
+            'default': 97.5,
+            'help': 'sequence identity (range 0, 1) for de novo OTU clustering (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['-t', '--threads'],
         'properties': {
             'type': int,
@@ -140,6 +149,7 @@ class EntryPoint:
             nb_classifier_qza=args.nb_classifier_qza,
             paired_end_mode=args.paired_end_mode,
             group_keywords=args.group_keywords,
+            otu_identity=args.otu_identity,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)
