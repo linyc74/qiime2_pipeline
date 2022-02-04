@@ -10,7 +10,7 @@ class TestTaxonomy(TestCase):
     def tearDown(self):
         self.tear_down()
 
-    def __test_main(self):
+    def test_main(self):
         actual = Taxonomy(self.settings).main(
             representative_seq_qza=f'{self.indir}/dada2-feature-sequence.qza',
             nb_classifier_qza=f'{self.indir}/gg-13-8-99-515-806-nb-classifier.qza'

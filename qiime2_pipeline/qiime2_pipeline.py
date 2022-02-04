@@ -24,8 +24,8 @@ class Qiime2Pipeline(Processor):
     feature_table_qza: str
     feature_sequence_qza: str
     taxonomy_qza: str
-    labeled_feature_sequence_qza: str
     labeled_feature_table_qza: str
+    labeled_feature_sequence_qza: str
     rooted_tree_qza: str
     distance_matrix_tsvs: List[str]
 
