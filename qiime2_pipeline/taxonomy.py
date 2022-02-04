@@ -68,13 +68,16 @@ class Classify(Processor):
             representative_seq_qza: str,
             nb_classifier_qza: str,
             read_orientation: str) -> str:
-
         self.representative_seq_qza = representative_seq_qza
         self.nb_classifier_qza = nb_classifier_qza
         self.read_orientation = read_orientation
 
-        self.taxonomy_qza = f'{self.workdir}/taxonomy-{self.read_orientation}.qza'
+        self.classify()
 
+        return self.taxonomy_qza
+
+    def classify(self):
+        self.taxonomy_qza = f'{self.workdir}/taxonomy-{self.read_orientation}.qza'
         cmd = self.CMD_LINEBREAK.join([
             'qiime feature-classifier classify-sklearn',
             f'--i-classifier {self.nb_classifier_qza}',
@@ -85,8 +88,6 @@ class Classify(Processor):
             f'--o-classification {self.taxonomy_qza}',
         ])
         self.call(cmd)
-
-        return self.taxonomy_qza
 
 
 class MergeForwardReverseTaxonomy(Processor):
