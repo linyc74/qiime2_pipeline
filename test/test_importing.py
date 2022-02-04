@@ -1,5 +1,5 @@
 from .setup import TestCase
-from qiime2_pipeline.importing import ImportFeatureTable, ImportFeatureSequence
+from qiime2_pipeline.importing import ImportFeatureTable, ImportFeatureSequence, ImportTaxonomy
 from qiime2_pipeline.exporting import ExportFeatureTable, ExportFeatureSequence
 
 
@@ -45,3 +45,18 @@ class TestImportFeatureSequence(TestCase):
         qza = ImportFeatureSequence(self.settings).main(feature_sequence_fa=input_fa)
         output_fa = ExportFeatureSequence(self.settings).main(feature_sequence_qza=qza)
         self.assertFileEqual(input_fa, output_fa)
+
+
+class TestImportTaxonomy(TestCase):
+
+    def setUp(self):
+        self.set_up(py_path=__file__)
+
+    def tearDown(self):
+        self.tear_down()
+
+    def test_main(self):
+        actual = ImportTaxonomy(self.settings).main(
+            taxonomy_tsv=f'{self.indir}/taxonomy.tsv')
+        expected = f'{self.workdir}/taxonomy.qza'
+        self.assertFileExists(expected, actual)

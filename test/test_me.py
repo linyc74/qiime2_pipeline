@@ -1,5 +1,4 @@
 from .setup import TestCase
-from qiime2_pipeline.taxonomy import Taxonomy
 from qiime2_pipeline.beta import BetaDiversity
 from qiime2_pipeline.trimming import TrimGalore, BatchTrimGalore
 from qiime2_pipeline.denoise import Dada2PairedEnd, Dada2SingleEnd
@@ -90,14 +89,6 @@ class MyTest(TestCase):
         Dada2PairedEnd(self.settings).main(
             demultiplexed_seq_qza=f'{self.indir}/paired-end-demultiplexed.qza'
         )
-
-    def __test_taxonomony(self):
-        actual = Taxonomy(self.settings).main(
-            representative_seq_qza=f'{self.indir}/dada2-feature-sequence.qza',
-            nb_classifier_qza=f'{self.indir}/gg-13-8-99-515-806-nb-classifier.qza'
-        )
-        expected = f'{self.workdir}/taxonomy.qza'
-        self.assertFileExists(expected, actual)
 
     def __test_beta_diversity(self):
         actual = BetaDiversity(self.settings).main(

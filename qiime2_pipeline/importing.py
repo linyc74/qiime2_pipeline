@@ -215,10 +215,8 @@ class ImportFeatureTable(Processor):
 
     def main(self, feature_table_tsv: str) -> str:
         self.feature_table_tsv = feature_table_tsv
-
         self.tsv_to_biom()
         self.biom_to_qza()
-
         return self.qza
 
     def tsv_to_biom(self):
@@ -266,9 +264,7 @@ class ImportFeatureSequence(Processor):
 
     def main(self, feature_sequence_fa: str) -> str:
         self.feature_sequence_fa = feature_sequence_fa
-
         self.fa_to_qza()
-
         return self.qza
 
     def fa_to_qza(self):
@@ -282,6 +278,35 @@ class ImportFeatureSequence(Processor):
             'qiime tools import',
             f'--type FeatureData[Sequence]',
             f'--input-path {self.feature_sequence_fa}',
+            f'--output-path {self.qza}',
+        ])
+        self.call(cmd)
+
+
+class ImportTaxonomy(Processor):
+
+    taxonomy_tsv: str
+
+    qza: str
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+
+    def main(self, taxonomy_tsv: str) -> str:
+        self.taxonomy_tsv = taxonomy_tsv
+        self.tsv_to_qza()
+        return self.qza
+
+    def tsv_to_qza(self):
+        self.qza = edit_fpath(
+            fpath=self.taxonomy_tsv,
+            old_suffix='.tsv',
+            new_suffix='.qza',
+            dstdir=self.workdir)
+        cmd = self.CMD_LINEBREAK.join([
+            'qiime tools import',
+            f'--type FeatureData[Taxonomy]',
+            f'--input-path {self.taxonomy_tsv}',
             f'--output-path {self.qza}',
         ])
         self.call(cmd)
