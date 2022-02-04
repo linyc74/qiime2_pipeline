@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -134,10 +135,12 @@ class NMDS(Ordination):
     N_COMPONENTS = 2
     METRIC = False  # i.e. non-metric MDS
     N_INIT = 10  # number of independent fitting
+    EPS = 1e-3  # stress tolerance for convergence
     RANDOM_STATE = 1  # to ensure reproducible result
     DISSIMILARITY = 'precomputed'  # distance matrix is precomputed
 
     embedding: manifold.MDS
+    stress: float
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
@@ -151,6 +154,7 @@ class NMDS(Ordination):
         self.group_keywords = group_keywords
 
         self.run_main_workflow()
+        self.normalize_stress()
         self.write_stress()
 
     def run_dim_reduction(self):
@@ -160,7 +164,7 @@ class NMDS(Ordination):
             n_init=self.N_INIT,
             max_iter=300,
             verbose=0,
-            eps=0.001,
+            eps=self.EPS,
             n_jobs=self.threads,
             random_state=self.RANDOM_STATE,
             dissimilarity=self.DISSIMILARITY)
@@ -175,15 +179,24 @@ class NMDS(Ordination):
             columns=self.XY_COLUMNS,
             index=sample_names)
 
+    def normalize_stress(self):
+        """
+        Normalize with sum of squared distances
+        i.e. Kruskal Stress, or Stress_1
+        https://stackoverflow.com/questions/36428205/stress-attribute-sklearn-manifold-mds-python
+        """
+        distances = self.distance_matrix.to_numpy()
+        squared_sum = np.sum(distances ** 2) / 2  # diagonal symmetry, thus divide by 2
+        self.stress = np.sqrt(self.embedding.stress_ / squared_sum)
+
     def write_stress(self):
         txt = edit_fpath(
             fpath=self.distance_matrix_tsv,
             old_suffix='.tsv',
             new_suffix='-nmds-stress.txt',
-            dstdir=self.dstdir
-        )
+            dstdir=self.dstdir)
         with open(txt, 'w') as fh:
-            fh.write(str(self.embedding.stress_))
+            fh.write(str(self.stress))
 
 
 class TSNE(Ordination):
