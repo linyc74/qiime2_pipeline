@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '1.6.0'
+__VERSION__ = '1.6.1-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -79,12 +79,12 @@ OPTIONAL = [
         }
     },
     {
-        'keys': ['-t', '--threads'],
+        'keys': ['--classifier-reads-per-batch'],
         'properties': {
-            'type': int,
+            'type': float,
             'required': False,
-            'default': 4,
-            'help': 'number of CPU threads (default: %(default)s)',
+            'default': 'auto',
+            'help': 'number of reads per batch for feature classifier (default: %(default)s)',
         }
     },
     {
@@ -92,6 +92,15 @@ OPTIONAL = [
         'properties': {
             'action': 'store_true',
             'help': 'use ASV without OTU clustering',
+        }
+    },
+    {
+        'keys': ['-t', '--threads'],
+        'properties': {
+            'type': int,
+            'required': False,
+            'default': 4,
+            'help': 'number of CPU threads (default: %(default)s)',
         }
     },
     {
@@ -158,6 +167,7 @@ class EntryPoint:
             group_keywords=args.group_keywords,
             otu_identity=args.otu_identity,
             skip_otu=args.skip_otu,
+            classifier_reads_per_batch=args.classifier_reads_per_batch,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)

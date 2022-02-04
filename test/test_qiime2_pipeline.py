@@ -19,4 +19,6 @@ class TestQiime2Pipeline(TestCase):
             paired_end_mode='pool',
             group_keywords=['H', 'O'],
             otu_identity=0.97,
-            skip_otu=False)
+            skip_otu=False,
+            classifier_reads_per_batch='auto'
+        )

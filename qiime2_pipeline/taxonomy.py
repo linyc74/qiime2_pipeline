@@ -1,4 +1,5 @@
 import pandas as pd
+from typing import Union
 from .exporting import ExportTaxonomy
 from .importing import ImportTaxonomy
 from .template import Processor, Settings
@@ -10,6 +11,7 @@ class Taxonomy(Processor):
 
     representative_seq_qza: str
     nb_classifier_qza: str
+    classifier_reads_per_batch: Union[int, str]
 
     forward_taxonomy_qza: str
     reverse_taxonomy_qza: str
@@ -21,10 +23,12 @@ class Taxonomy(Processor):
     def main(
             self,
             representative_seq_qza: str,
-            nb_classifier_qza: str) -> str:
+            nb_classifier_qza: str,
+            classifier_reads_per_batch: Union[int, str]) -> str:
 
         self.representative_seq_qza = representative_seq_qza
         self.nb_classifier_qza = nb_classifier_qza
+        self.classifier_reads_per_batch = classifier_reads_per_batch
 
         self.forward_classify()
         self.reverse_classify()
@@ -36,13 +40,15 @@ class Taxonomy(Processor):
         self.forward_taxonomy_qza = Classify(self.settings).main(
             representative_seq_qza=self.representative_seq_qza,
             nb_classifier_qza=self.nb_classifier_qza,
-            read_orientation='same')
+            read_orientation='same',
+            classifier_reads_per_batch=self.classifier_reads_per_batch)
 
     def reverse_classify(self):
         self.reverse_taxonomy_qza = Classify(self.settings).main(
             representative_seq_qza=self.representative_seq_qza,
             nb_classifier_qza=self.nb_classifier_qza,
-            read_orientation='reverse-complement')
+            read_orientation='reverse-complement',
+            classifier_reads_per_batch=self.classifier_reads_per_batch)
 
     def merge_foward_reverse(self):
         self.merged_taxonomy_qza = MergeForwardReverseTaxonomy(self.settings).main(
@@ -57,6 +63,7 @@ class Classify(Processor):
     representative_seq_qza: str
     nb_classifier_qza: str
     read_orientation: str
+    classifier_reads_per_batch: Union[int, str]
 
     taxonomy_qza: str
 
@@ -67,10 +74,13 @@ class Classify(Processor):
             self,
             representative_seq_qza: str,
             nb_classifier_qza: str,
-            read_orientation: str) -> str:
+            read_orientation: str,
+            classifier_reads_per_batch: Union[int, str]) -> str:
+
         self.representative_seq_qza = representative_seq_qza
         self.nb_classifier_qza = nb_classifier_qza
         self.read_orientation = read_orientation
+        self.classifier_reads_per_batch = classifier_reads_per_batch
 
         self.classify()
 
@@ -85,6 +95,7 @@ class Classify(Processor):
             f'--p-read-orientation {self.read_orientation}',
             f'--p-confidence {self.CONFIDENCE_CUTOFF}',
             f'--p-n-jobs {self.threads}',
+            f'--p-reads-per-batch {self.classifier_reads_per_batch}',
             f'--o-classification {self.taxonomy_qza}',
         ])
         self.call(cmd)

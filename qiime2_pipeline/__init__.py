@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Union
 from .template import Settings
 from .qiime2_pipeline import Qiime2Pipeline
 
@@ -14,6 +14,7 @@ class Main:
     group_keywords: List[str]
     otu_identity: float
     skip_otu: bool
+    classifier_reads_per_batch: Union[int, str]
 
     settings: Settings
 
@@ -27,6 +28,7 @@ class Main:
             group_keywords: str,
             otu_identity: str,
             skip_otu: bool,
+            classifier_reads_per_batch: str,
             outdir: str,
             threads: str,
             debug: bool):
@@ -40,6 +42,8 @@ class Main:
             else group_keywords.split(',')
         self.otu_identity = float(otu_identity)
         self.skip_otu = skip_otu
+        self.classifier_reads_per_batch = 'auto' if classifier_reads_per_batch == 'auto' \
+            else int(classifier_reads_per_batch)
 
         self.settings = Settings(
             workdir='./qiime2_pipeline_workdir',
@@ -59,4 +63,5 @@ class Main:
             paired_end_mode=self.paired_end_mode,
             group_keywords=self.group_keywords,
             otu_identity=self.otu_identity,
-            skip_otu=self.skip_otu)
+            skip_otu=self.skip_otu,
+            classifier_reads_per_batch=self.classifier_reads_per_batch)

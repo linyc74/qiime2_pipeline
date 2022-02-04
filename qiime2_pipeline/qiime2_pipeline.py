@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 from .taxonomy import Taxonomy
 from .beta import BetaDiversity
 from .alpha import AlphaDiversity
@@ -20,6 +20,7 @@ class Qiime2Pipeline(Processor):
     group_keywords: List[str]
     otu_identity: float
     skip_otu: bool
+    classifier_reads_per_batch: Union[int, str]
 
     feature_table_qza: str
     feature_sequence_qza: str
@@ -41,7 +42,8 @@ class Qiime2Pipeline(Processor):
             paired_end_mode: str,
             group_keywords: List[str],
             otu_identity: float,
-            skip_otu: bool):
+            skip_otu: bool,
+            classifier_reads_per_batch: Union[int, str]):
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
@@ -51,6 +53,7 @@ class Qiime2Pipeline(Processor):
         self.group_keywords = group_keywords
         self.otu_identity = otu_identity
         self.skip_otu = skip_otu
+        self.classifier_reads_per_batch = classifier_reads_per_batch
 
         self.generate_asv()
         self.otu_clustering()
@@ -81,7 +84,8 @@ class Qiime2Pipeline(Processor):
     def taxonomic_classification(self):
         self.taxonomy_qza = Taxonomy(self.settings).main(
             representative_seq_qza=self.feature_sequence_qza,
-            nb_classifier_qza=self.nb_classifier_qza)
+            nb_classifier_qza=self.nb_classifier_qza,
+            classifier_reads_per_batch=self.classifier_reads_per_batch)
 
     def feature_labeling(self):
         self.labeled_feature_table_qza, self.labeled_feature_sequence_qza \
