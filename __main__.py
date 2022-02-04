@@ -74,7 +74,7 @@ OPTIONAL = [
         'properties': {
             'type': float,
             'required': False,
-            'default': 97.5,
+            'default': 0.97,
             'help': 'sequence identity (range 0, 1) for de novo OTU clustering (default: %(default)s)',
         }
     },
