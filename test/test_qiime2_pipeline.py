@@ -7,8 +7,8 @@ class TestQiime2Pipeline(TestCase):
     def setUp(self):
         self.set_up(py_path=__file__)
 
-    # def tearDown(self):
-    #     self.tear_down()
+    def tearDown(self):
+        self.tear_down()
 
     def test_main(self):
         Qiime2Pipeline(self.settings).main(
@@ -18,5 +18,5 @@ class TestQiime2Pipeline(TestCase):
             nb_classifier_qza=f'{self.indir}/gg-13-8-99-515-806-nb-classifier.qza',
             paired_end_mode='pool',
             group_keywords=['H', 'O'],
-            otu_identity=0.975
-        )
+            otu_identity=0.975,
+            skip_otu=False)

@@ -13,6 +13,7 @@ class Main:
     paired_end_mode: str
     group_keywords: List[str]
     otu_identity: float
+    skip_otu: bool
 
     settings: Settings
 
@@ -25,6 +26,7 @@ class Main:
             paired_end_mode: str,
             group_keywords: str,
             otu_identity: str,
+            skip_otu: bool,
             outdir: str,
             threads: str,
             debug: bool):
@@ -37,6 +39,7 @@ class Main:
         self.group_keywords = [] if group_keywords == 'None' \
             else group_keywords.split(',')
         self.otu_identity = float(otu_identity)
+        self.skip_otu = skip_otu
 
         self.settings = Settings(
             workdir='./qiime2_pipeline_workdir',
@@ -55,4 +58,5 @@ class Main:
             nb_classifier_qza=self.nb_classifier_qza,
             paired_end_mode=self.paired_end_mode,
             group_keywords=self.group_keywords,
-            otu_identity=self.otu_identity)
+            otu_identity=self.otu_identity,
+            skip_otu=self.skip_otu)

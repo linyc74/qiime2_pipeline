@@ -88,6 +88,13 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--skip-otu'],
+        'properties': {
+            'action': 'store_true',
+            'help': 'use ASV without OTU clustering',
+        }
+    },
+    {
         'keys': ['-d', '--debug'],
         'properties': {
             'action': 'store_true',
@@ -150,6 +157,7 @@ class EntryPoint:
             paired_end_mode=args.paired_end_mode,
             group_keywords=args.group_keywords,
             otu_identity=args.otu_identity,
+            skip_otu=args.skip_otu,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)

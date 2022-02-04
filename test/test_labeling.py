@@ -14,8 +14,9 @@ class TestFeatureLabeling(TestCase):
         table_qza, sequence_qza = FeatureLabeling(self.settings).main(
             taxonomy_qza=f'{self.indir}/taxonomy.qza',
             feature_table_qza=f'{self.indir}/dada2-feature-table.qza',
-            feature_sequence_qza=f'{self.indir}/dada2-feature-sequence.qza'
-        )
+            feature_sequence_qza=f'{self.indir}/dada2-feature-sequence.qza',
+            skip_otu=True)
+
         for expected, actual in [
             (f'{self.workdir}/labeled-feature-sequence.qza', sequence_qza),
             (f'{self.workdir}/labeled-feature-table.qza', table_qza)

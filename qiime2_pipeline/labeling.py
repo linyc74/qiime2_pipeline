@@ -8,9 +8,13 @@ from .exporting import ExportFeatureTable, ExportFeatureSequence, ExportTaxonomy
 
 class FeatureLabeling(Processor):
 
+    ASV_PREFIX = 'ASV_'
+    OTU_PREFIX = 'OTU_'
+
     taxonomy_qza: str
     feature_table_qza: str
     feature_sequence_qza: str
+    skip_otu: bool
 
     taxonomy_tsv: str
     feature_table_tsv: str
@@ -31,11 +35,13 @@ class FeatureLabeling(Processor):
             self,
             taxonomy_qza: str,
             feature_table_qza: str,
-            feature_sequence_qza: str) -> Tuple[str, str]:
+            feature_sequence_qza: str,
+            skip_otu: bool) -> Tuple[str, str]:
 
         self.taxonomy_qza = taxonomy_qza
         self.feature_table_qza = feature_table_qza
         self.feature_sequence_qza = feature_sequence_qza
+        self.skip_otu = skip_otu
 
         self.decompress()
         self.set_feature_id_to_label()
@@ -57,8 +63,10 @@ class FeatureLabeling(Processor):
             feature_sequence_qza=self.feature_sequence_qza)
 
     def set_feature_id_to_label(self):
+        label_prefix = self.ASV_PREFIX if self.skip_otu else self.OTU_PREFIX
         self.feature_id_to_label = GetFeatureIDToLabelDict(self.settings).main(
-            taxonomy_tsv=self.taxonomy_tsv)
+            taxonomy_tsv=self.taxonomy_tsv,
+            label_prefix=label_prefix)
 
     def label_feature_sequence(self):
         self.labeled_feature_sequence_fa = LabelFeatureSequence(self.settings).main(
@@ -85,9 +93,8 @@ class FeatureLabeling(Processor):
 
 class GetFeatureIDToLabelDict(Processor):
 
-    LABEL_PREFIX = 'ASV_'
-
     taxonomy_tsv: str
+    label_prefix: str
 
     df: pd.DataFrame
     output_dict: Dict[str, str]
@@ -95,8 +102,13 @@ class GetFeatureIDToLabelDict(Processor):
     def __init__(self, settings: Settings):
         super().__init__(settings)
 
-    def main(self, taxonomy_tsv: str) -> Dict[str, str]:
+    def main(
+            self,
+            taxonomy_tsv: str,
+            label_prefix: str) -> Dict[str, str]:
+
         self.taxonomy_tsv = taxonomy_tsv
+        self.label_prefix = label_prefix
 
         self.df = pd.read_csv(self.taxonomy_tsv, sep='\t')
 
@@ -104,7 +116,7 @@ class GetFeatureIDToLabelDict(Processor):
         for i, row in self.df.iterrows():
             id_ = row['Feature ID']
             taxon = row['Taxon']
-            label = f'{self.LABEL_PREFIX}{i+1:04d}; {taxon}'
+            label = f'{self.label_prefix}{i + 1:04d}; {taxon}'
             self.output_dict[id_] = label
 
         return self.output_dict
