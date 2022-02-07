@@ -1,4 +1,5 @@
 import os
+import shutil
 from typing import List, Union
 from .template import Settings
 from .qiime2_pipeline import Qiime2Pipeline
@@ -14,7 +15,7 @@ class Main:
     group_keywords: List[str]
     otu_identity: float
     skip_otu: bool
-    classifier_reads_per_batch: Union[int, str]
+    classifier_reads_per_batch: int
 
     settings: Settings
 
@@ -51,9 +52,15 @@ class Main:
             debug=debug,
             mock=False)
 
+        self.makedirs()
+        self.run_pipeline()
+        self.clean_up()
+
+    def makedirs(self):
         for d in [self.settings.workdir, self.settings.outdir]:
             os.makedirs(d, exist_ok=True)
 
+    def run_pipeline(self):
         Qiime2Pipeline(self.settings).main(
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
@@ -64,3 +71,7 @@ class Main:
             otu_identity=self.otu_identity,
             skip_otu=self.skip_otu,
             classifier_reads_per_batch=self.classifier_reads_per_batch)
+
+    def clean_up(self):
+        if not self.settings.debug:
+            shutil.rmtree(self.settings.workdir)
