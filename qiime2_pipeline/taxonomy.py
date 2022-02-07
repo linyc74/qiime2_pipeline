@@ -11,7 +11,7 @@ class Taxonomy(Processor):
 
     representative_seq_qza: str
     nb_classifier_qza: str
-    classifier_reads_per_batch: Union[int, str]
+    classifier_reads_per_batch: int
 
     forward_taxonomy_qza: str
     reverse_taxonomy_qza: str
@@ -24,7 +24,7 @@ class Taxonomy(Processor):
             self,
             representative_seq_qza: str,
             nb_classifier_qza: str,
-            classifier_reads_per_batch: Union[int, str]) -> str:
+            classifier_reads_per_batch: int) -> str:
 
         self.representative_seq_qza = representative_seq_qza
         self.nb_classifier_qza = nb_classifier_qza
@@ -75,12 +75,13 @@ class Classify(Processor):
             representative_seq_qza: str,
             nb_classifier_qza: str,
             read_orientation: str,
-            classifier_reads_per_batch: Union[int, str]) -> str:
+            classifier_reads_per_batch: int) -> str:
 
         self.representative_seq_qza = representative_seq_qza
         self.nb_classifier_qza = nb_classifier_qza
         self.read_orientation = read_orientation
-        self.classifier_reads_per_batch = classifier_reads_per_batch
+        self.classifier_reads_per_batch = 'auto' if classifier_reads_per_batch == 0 \
+            else classifier_reads_per_batch
 
         self.classify()
 

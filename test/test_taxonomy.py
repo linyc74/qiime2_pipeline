@@ -14,7 +14,7 @@ class TestTaxonomy(TestCase):
         actual = Taxonomy(self.settings).main(
             representative_seq_qza=f'{self.indir}/dada2-feature-sequence.qza',
             nb_classifier_qza=f'{self.indir}/gg-13-8-99-515-806-nb-classifier.qza',
-            classifier_reads_per_batch='auto',
+            classifier_reads_per_batch=0,
         )
         expected = f'{self.workdir}/taxonomy-merged.qza'
         self.assertFileExists(expected, actual)
@@ -33,7 +33,7 @@ class TestClassify(TestCase):
             representative_seq_qza=f'{self.indir}/dada2-feature-sequence.qza',
             nb_classifier_qza=f'{self.indir}/gg-13-8-99-515-806-nb-classifier.qza',
             read_orientation='same',
-            classifier_reads_per_batch='auto',
+            classifier_reads_per_batch=0,
         )
         expected = f'{self.workdir}/taxonomy-same.qza'
         self.assertFileExists(expected, actual)

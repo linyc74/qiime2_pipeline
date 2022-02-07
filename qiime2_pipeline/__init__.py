@@ -26,11 +26,11 @@ class Main:
             nb_classifier_qza: str,
             paired_end_mode: str,
             group_keywords: str,
-            otu_identity: str,
+            otu_identity: float,
             skip_otu: bool,
-            classifier_reads_per_batch: str,
+            classifier_reads_per_batch: int,
             outdir: str,
-            threads: str,
+            threads: int,
             debug: bool):
 
         self.fq_dir = fq_dir
@@ -42,8 +42,7 @@ class Main:
             else group_keywords.split(',')
         self.otu_identity = float(otu_identity)
         self.skip_otu = skip_otu
-        self.classifier_reads_per_batch = 'auto' if classifier_reads_per_batch == 'auto' \
-            else int(classifier_reads_per_batch)
+        self.classifier_reads_per_batch = classifier_reads_per_batch
 
         self.settings = Settings(
             workdir='./qiime2_pipeline_workdir',

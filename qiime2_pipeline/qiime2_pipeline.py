@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 from .taxonomy import Taxonomy
 from .beta import BetaDiversity
 from .alpha import AlphaDiversity
@@ -20,7 +20,7 @@ class Qiime2Pipeline(Processor):
     group_keywords: List[str]
     otu_identity: float
     skip_otu: bool
-    classifier_reads_per_batch: Union[int, str]
+    classifier_reads_per_batch: int
 
     feature_table_qza: str
     feature_sequence_qza: str
@@ -43,7 +43,7 @@ class Qiime2Pipeline(Processor):
             group_keywords: List[str],
             otu_identity: float,
             skip_otu: bool,
-            classifier_reads_per_batch: Union[int, str]):
+            classifier_reads_per_batch: int):
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix

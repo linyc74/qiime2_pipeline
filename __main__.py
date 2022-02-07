@@ -81,10 +81,10 @@ OPTIONAL = [
     {
         'keys': ['--classifier-reads-per-batch'],
         'properties': {
-            'type': float,
+            'type': int,
             'required': False,
-            'default': 'auto',
-            'help': 'number of reads per batch for feature classifier (default: %(default)s)',
+            'default': 0,
+            'help': 'number of reads per batch for feature classifier, default indicates \'auto\' (default: %(default)s)',
         }
     },
     {
