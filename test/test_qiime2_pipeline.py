@@ -20,5 +20,6 @@ class TestQiime2Pipeline(TestCase):
             group_keywords=['H', 'O'],
             otu_identity=0.97,
             skip_otu=False,
-            classifier_reads_per_batch=0
+            classifier_reads_per_batch=0,
+            alpha_metrics=['shannon', 'observed_features']
         )

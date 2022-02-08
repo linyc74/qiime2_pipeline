@@ -10,7 +10,7 @@ class TestVsearch(TestCase):
     def tearDown(self):
         self.tear_down()
 
-    def __test_main(self):
+    def test_main(self):
         clustered_table_qza, clustered_sequence_qza = Vsearch(self.settings).main(
             feature_table_qza=f'{self.indir}/dada2-feature-table.qza',
             feature_sequence_qza=f'{self.indir}/dada2-feature-sequence.qza',

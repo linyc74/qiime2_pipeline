@@ -88,6 +88,16 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--alpha-metrics'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'all',
+            'help': 'comma-separated alpha-diversity metrics, default for all: '
+                    '"chao1,shannon,gini_index,mcintosh_e,pielou_e,simpson,observed_features,fisher_alpha" (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['--skip-otu'],
         'properties': {
             'action': 'store_true',
@@ -168,6 +178,7 @@ class EntryPoint:
             otu_identity=args.otu_identity,
             skip_otu=args.skip_otu,
             classifier_reads_per_batch=args.classifier_reads_per_batch,
+            alpha_metrics=args.alpha_metrics,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)

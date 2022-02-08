@@ -21,6 +21,7 @@ class Qiime2Pipeline(Processor):
     otu_identity: float
     skip_otu: bool
     classifier_reads_per_batch: int
+    alpha_metrics: List[str]
 
     feature_table_qza: str
     feature_sequence_qza: str
@@ -43,7 +44,8 @@ class Qiime2Pipeline(Processor):
             group_keywords: List[str],
             otu_identity: float,
             skip_otu: bool,
-            classifier_reads_per_batch: int):
+            classifier_reads_per_batch: int,
+            alpha_metrics: List[str]):
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
@@ -54,6 +56,7 @@ class Qiime2Pipeline(Processor):
         self.otu_identity = otu_identity
         self.skip_otu = skip_otu
         self.classifier_reads_per_batch = classifier_reads_per_batch
+        self.alpha_metrics = alpha_metrics
 
         self.generate_asv()
         self.otu_clustering()
@@ -102,7 +105,8 @@ class Qiime2Pipeline(Processor):
     def alpha_diversity(self):
         AlphaDiversity(self.settings).main(
             feature_table_qza=self.labeled_feature_table_qza,
-            group_keywords=self.group_keywords)
+            group_keywords=self.group_keywords,
+            alpha_metrics=self.alpha_metrics)
 
     def beta_diversity(self):
         self.distance_matrix_tsvs = BetaDiversity(self.settings).main(

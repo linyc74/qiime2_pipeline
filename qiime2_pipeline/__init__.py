@@ -16,6 +16,7 @@ class Main:
     otu_identity: float
     skip_otu: bool
     classifier_reads_per_batch: int
+    alpha_metrics: List[str]
 
     settings: Settings
 
@@ -30,6 +31,7 @@ class Main:
             otu_identity: float,
             skip_otu: bool,
             classifier_reads_per_batch: int,
+            alpha_metrics: str,
             outdir: str,
             threads: int,
             debug: bool):
@@ -39,11 +41,11 @@ class Main:
         self.fq2_suffix = fq2_suffix
         self.nb_classifier_qza = nb_classifier_qza
         self.paired_end_mode = paired_end_mode
-        self.group_keywords = [] if group_keywords == 'None' \
-            else group_keywords.split(',')
+        self.group_keywords = [] if group_keywords == 'None' else group_keywords.split(',')
         self.otu_identity = float(otu_identity)
         self.skip_otu = skip_otu
         self.classifier_reads_per_batch = classifier_reads_per_batch
+        self.alpha_metrics = [] if alpha_metrics == 'all' else alpha_metrics.split(',')
 
         self.settings = Settings(
             workdir='./qiime2_pipeline_workdir',
@@ -70,7 +72,8 @@ class Main:
             group_keywords=self.group_keywords,
             otu_identity=self.otu_identity,
             skip_otu=self.skip_otu,
-            classifier_reads_per_batch=self.classifier_reads_per_batch)
+            classifier_reads_per_batch=self.classifier_reads_per_batch,
+            alpha_metrics=self.alpha_metrics)
 
     def clean_up(self):
         if not self.settings.debug:

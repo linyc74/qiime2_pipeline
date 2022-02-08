@@ -23,6 +23,7 @@ class AlphaDiversity(Processor):
 
     feature_table_qza: str
     group_keywords: List[str]
+    alpha_metrics: List[str]
 
     df: pd.DataFrame
 
@@ -32,13 +33,15 @@ class AlphaDiversity(Processor):
     def main(
             self,
             feature_table_qza: str,
-            group_keywords: List[str]):
+            group_keywords: List[str],
+            alpha_metrics: List[str]):
 
         self.feature_table_qza = feature_table_qza
         self.group_keywords = group_keywords
+        self.alpha_metrics = self.ALPHA_METRICS if alpha_metrics == [] else alpha_metrics
 
         self.df = pd.DataFrame()
-        for metric in self.ALPHA_METRICS:
+        for metric in self.alpha_metrics:
             self.run_one(metric=metric)
         self.add_group_column()
         self.save_csv()
