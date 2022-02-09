@@ -6,7 +6,7 @@ from .otu_clustering import Vsearch
 from .phylogeny import MafftFasttree
 from .labeling import FeatureLabeling
 from .template import Processor, Settings
-from .generate_asv import FactoryGenerateASVCallable
+from .generate_asv import FactoryGenerateASVPairedEnd
 from .dim_reduction import BatchPCoA, BatchNMDS, BatchTSNE
 
 
@@ -68,7 +68,7 @@ class Qiime2Pipeline(Processor):
         self.dimensionality_reduction()
 
     def generate_asv(self):
-        generate_asv = FactoryGenerateASVCallable(self.settings).main(
+        generate_asv = FactoryGenerateASVPairedEnd(self.settings).main(
             paired_end_mode=self.paired_end_mode)
 
         self.feature_table_qza, self.feature_sequence_qza = generate_asv(

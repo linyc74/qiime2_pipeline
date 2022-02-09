@@ -1,6 +1,5 @@
 from .setup import TestCase
 from qiime2_pipeline.beta import BetaDiversity
-from qiime2_pipeline.trimming import TrimGalore, BatchTrimGalore
 from qiime2_pipeline.denoise import Dada2PairedEnd, Dada2SingleEnd
 from qiime2_pipeline.concat import Concat, BatchConcat, Pool, BatchPool
 from qiime2_pipeline.importing import ImportPairedEndFastq, ImportSingleEndFastq
@@ -13,25 +12,6 @@ class MyTest(TestCase):
 
     def tearDown(self):
         self.tear_down()
-
-    def __test_trim_galore(self):
-        trimmed_fq1, trimmed_fq2 = TrimGalore(self.settings).main(
-            fq1=f'{self.indir}/R1.fastq.gz',
-            fq2=f'{self.indir}/R2.fastq.gz',
-        )
-        for expected, actual in [
-            (f'{self.workdir}/R1_val_1.fq.gz', trimmed_fq1),
-            (f'{self.workdir}/R2_val_2.fq.gz', trimmed_fq2),
-        ]:
-            self.assertFileExists(expected, actual)
-
-    def __test_batch_trim_galore(self):
-        actual = BatchTrimGalore(self.settings).main(
-            fq_dir=f'{self.indir}/fq_dir',
-            fq1_suffix='_L001_R1_001.fastq.gz',
-            fq2_suffix='_L001_R2_001.fastq.gz')
-        expected = f'{self.workdir}/trimmed_fastqs'
-        self.assertFileExists(expected, actual)
 
     def __test_concat(self):
         actual = Concat(self.settings).main(
