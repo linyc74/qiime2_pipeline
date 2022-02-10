@@ -25,14 +25,6 @@ REQUIRED = [
         }
     },
     {
-        'keys': ['-2', '--fq2-suffix'],
-        'properties': {
-            'type': str,
-            'required': True,
-            'help': 'suffix of read 2 fastq files',
-        }
-    },
-    {
         'keys': ['-b', '--nb-classifier-qza'],
         'properties': {
             'type': str,
@@ -42,6 +34,15 @@ REQUIRED = [
     },
 ]
 OPTIONAL = [
+    {
+        'keys': ['-2', '--fq2-suffix'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'None',
+            'help': 'suffix of read 2 fastq files, "None" for single end reads (default: %(default)s)',
+        }
+    },
     {
         'keys': ['-o', '--outdir'],
         'properties': {

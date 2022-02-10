@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from .taxonomy import Taxonomy
 from .beta import BetaDiversity
 from .alpha import AlphaDiversity
@@ -6,15 +6,15 @@ from .otu_clustering import Vsearch
 from .phylogeny import MafftFasttree
 from .labeling import FeatureLabeling
 from .template import Processor, Settings
-from .generate_asv import FactoryGenerateASVPairedEnd
 from .dim_reduction import BatchPCoA, BatchNMDS, BatchTSNE
+from .generate_asv import FactoryGenerateASVPairedEnd, GenerateASVSingleEnd
 
 
 class Qiime2Pipeline(Processor):
 
     fq_dir: str
     fq1_suffix: str
-    fq2_suffix: str
+    fq2_suffix: Optional[str]
     nb_classifier_qza: str
     paired_end_mode: str
     group_keywords: List[str]
@@ -38,7 +38,7 @@ class Qiime2Pipeline(Processor):
             self,
             fq_dir: str,
             fq1_suffix: str,
-            fq2_suffix: str,
+            fq2_suffix: Optional[str],
             nb_classifier_qza: str,
             paired_end_mode: str,
             group_keywords: List[str],
@@ -68,13 +68,17 @@ class Qiime2Pipeline(Processor):
         self.dimensionality_reduction()
 
     def generate_asv(self):
-        generate_asv = FactoryGenerateASVPairedEnd(self.settings).main(
-            paired_end_mode=self.paired_end_mode)
-
-        self.feature_table_qza, self.feature_sequence_qza = generate_asv(
-            fq_dir=self.fq_dir,
-            fq1_suffix=self.fq1_suffix,
-            fq2_suffix=self.fq2_suffix)
+        if self.fq2_suffix is None:
+            self.feature_table_qza, self.feature_sequence_qza = GenerateASVSingleEnd(self.settings).main(
+                fq_dir=self.fq_dir,
+                fq_suffix=self.fq1_suffix)
+        else:
+            generate_asv = FactoryGenerateASVPairedEnd(self.settings).main(
+                paired_end_mode=self.paired_end_mode)
+            self.feature_table_qza, self.feature_sequence_qza = generate_asv(
+                fq_dir=self.fq_dir,
+                fq1_suffix=self.fq1_suffix,
+                fq2_suffix=self.fq2_suffix)
 
     def otu_clustering(self):
         if self.skip_otu:

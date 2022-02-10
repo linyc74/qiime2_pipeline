@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import List, Union
+from typing import List, Optional
 from .template import Settings
 from .qiime2_pipeline import Qiime2Pipeline
 
@@ -9,7 +9,7 @@ class Main:
 
     fq_dir: str
     fq1_suffix: str
-    fq2_suffix: str
+    fq2_suffix: Optional[str]
     nb_classifier_qza: str
     paired_end_mode: str
     group_keywords: List[str]
@@ -38,7 +38,7 @@ class Main:
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
-        self.fq2_suffix = fq2_suffix
+        self.fq2_suffix = None if fq2_suffix == 'None' else fq2_suffix
         self.nb_classifier_qza = nb_classifier_qza
         self.paired_end_mode = paired_end_mode
         self.group_keywords = [] if group_keywords == 'None' else group_keywords.split(',')

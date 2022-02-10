@@ -38,7 +38,7 @@ class GenerateASVConcatPairedEnd(GenerateASVPairedEnd):
 
     concat_fq_dir: str
     fq_suffix: str
-    concat_reads_qza: str
+    single_end_seq_qza: str
 
     def main(
             self,
@@ -64,13 +64,13 @@ class GenerateASVConcatPairedEnd(GenerateASVPairedEnd):
             fq2_suffix=self.fq2_suffix)
 
     def importing(self):
-        self.concat_reads_qza = ImportSingleEndFastq(self.settings).main(
+        self.single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
             fq_dir=self.concat_fq_dir,
             fq_suffix=self.fq_suffix)
 
     def denoise(self):
         self.feature_table_qza, self.feature_sequence_qza = Dada2SingleEnd(self.settings).main(
-            demultiplexed_seq_qza=self.concat_reads_qza)
+            demultiplexed_seq_qza=self.single_end_seq_qza)
 
 
 class GenerateASVMergePairedEnd(GenerateASVPairedEnd):
@@ -108,7 +108,7 @@ class GenerateASVPoolPairedEnd(GenerateASVPairedEnd):
 
     pooled_fq_dir: str
     fq_suffix: str
-    pooled_reads_qza: str
+    single_end_seq_qza: str
 
     def main(
             self,
@@ -134,13 +134,13 @@ class GenerateASVPoolPairedEnd(GenerateASVPairedEnd):
             fq2_suffix=self.fq2_suffix)
 
     def importing(self):
-        self.pooled_reads_qza = ImportSingleEndFastq(self.settings).main(
+        self.single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
             fq_dir=self.pooled_fq_dir,
             fq_suffix=self.fq_suffix)
 
     def denoise(self):
         self.feature_table_qza, self.feature_sequence_qza = Dada2SingleEnd(self.settings).main(
-            demultiplexed_seq_qza=self.pooled_reads_qza)
+            demultiplexed_seq_qza=self.single_end_seq_qza)
 
 
 class FactoryGenerateASVPairedEnd(Processor):
@@ -168,7 +168,7 @@ class GenerateASVSingleEnd(Processor):
     fq_suffix: str
 
     trimmed_fq_dir: str
-    paired_end_seq_qza: str
+    single_end_seq_qza: str
     feature_sequence_qza: str
     feature_table_qza: str
 
@@ -195,10 +195,10 @@ class GenerateASVSingleEnd(Processor):
             fq_suffix=self.fq_suffix)
 
     def importing(self):
-        self.paired_end_seq_qza = ImportSingleEndFastq(self.settings).main(
+        self.single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
             fq_dir=self.trimmed_fq_dir,
             fq_suffix=self.fq_suffix)
 
     def denoise(self):
         self.feature_table_qza, self.feature_sequence_qza = Dada2SingleEnd(self.settings).main(
-            demultiplexed_seq_qza=self.paired_end_seq_qza)
+            demultiplexed_seq_qza=self.single_end_seq_qza)
