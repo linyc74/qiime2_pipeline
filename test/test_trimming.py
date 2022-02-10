@@ -15,6 +15,8 @@ class TestTrimGalorePairedEnd(TestCase):
         trimmed_fq1, trimmed_fq2 = TrimGalorePairedEnd(self.settings).main(
             fq1=f'{self.indir}/R1.fastq.gz',
             fq2=f'{self.indir}/R2.fastq.gz',
+            clip_r1_5_prime=17,
+            clip_r2_5_prime=0,
         )
         for expected, actual in [
             (f'{self.workdir}/R1_val_1.fq.gz', trimmed_fq1),
@@ -35,7 +37,10 @@ class TestBatchTrimGalorePairedEnd(TestCase):
         actual = BatchTrimGalorePairedEnd(self.settings).main(
             fq_dir=f'{self.indir}/fq_dir',
             fq1_suffix='_L001_R1_001.fastq.gz',
-            fq2_suffix='_L001_R2_001.fastq.gz')
+            fq2_suffix='_L001_R2_001.fastq.gz',
+            clip_r1_5_prime=17,
+            clip_r2_5_prime=0,
+        )
         expected = f'{self.workdir}/trimmed_fastqs'
         self.assertFileExists(expected, actual)
 
@@ -51,6 +56,7 @@ class TestTrimGaloreSingleEnd(TestCase):
     def test_main(self):
         trimmed_fq = TrimGaloreSingleEnd(self.settings).main(
             fq=f'{self.indir}/R1.fastq.gz',
+            clip_5_prime=17
         )
         self.assertFileExists(f'{self.workdir}/R1_trimmed.fq.gz', trimmed_fq)
 
@@ -66,6 +72,7 @@ class TestBatchTrimGaloreSingleEnd(TestCase):
     def test_main(self):
         actual = BatchTrimGaloreSingleEnd(self.settings).main(
             fq_dir=f'{self.indir}/fq_dir',
-            fq_suffix='_L001_R2_001.fastq.gz')
+            fq_suffix='_L001_R2_001.fastq.gz',
+            clip_5_prime=17)
         expected = f'{self.workdir}/trimmed_fastqs'
         self.assertFileExists(expected, actual)

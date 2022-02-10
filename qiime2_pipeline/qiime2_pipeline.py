@@ -22,6 +22,8 @@ class Qiime2Pipeline(Processor):
     skip_otu: bool
     classifier_reads_per_batch: int
     alpha_metrics: List[str]
+    clip_r1_5_prime: int
+    clip_r2_5_prime: int
 
     feature_table_qza: str
     feature_sequence_qza: str
@@ -45,7 +47,9 @@ class Qiime2Pipeline(Processor):
             otu_identity: float,
             skip_otu: bool,
             classifier_reads_per_batch: int,
-            alpha_metrics: List[str]):
+            alpha_metrics: List[str],
+            clip_r1_5_prime: int,
+            clip_r2_5_prime: int):
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
@@ -57,6 +61,8 @@ class Qiime2Pipeline(Processor):
         self.skip_otu = skip_otu
         self.classifier_reads_per_batch = classifier_reads_per_batch
         self.alpha_metrics = alpha_metrics
+        self.clip_r1_5_prime = clip_r1_5_prime
+        self.clip_r2_5_prime = clip_r2_5_prime
 
         self.generate_asv()
         self.otu_clustering()
@@ -71,14 +77,17 @@ class Qiime2Pipeline(Processor):
         if self.fq2_suffix is None:
             self.feature_table_qza, self.feature_sequence_qza = GenerateASVSingleEnd(self.settings).main(
                 fq_dir=self.fq_dir,
-                fq_suffix=self.fq1_suffix)
+                fq_suffix=self.fq1_suffix,
+                clip_5_prime=self.clip_r1_5_prime)
         else:
             generate_asv = FactoryGenerateASVPairedEnd(self.settings).main(
                 paired_end_mode=self.paired_end_mode)
             self.feature_table_qza, self.feature_sequence_qza = generate_asv(
                 fq_dir=self.fq_dir,
                 fq1_suffix=self.fq1_suffix,
-                fq2_suffix=self.fq2_suffix)
+                fq2_suffix=self.fq2_suffix,
+                clip_r1_5_prime=self.clip_r1_5_prime,
+                clip_r2_5_prime=self.clip_r2_5_prime)
 
     def otu_clustering(self):
         if self.skip_otu:

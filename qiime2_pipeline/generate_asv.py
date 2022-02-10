@@ -11,6 +11,8 @@ class GenerateASVPairedEnd(Processor):
     fq_dir: str
     fq1_suffix: str
     fq2_suffix: str
+    clip_r1_5_prime: int
+    clip_r2_5_prime: int
 
     trimmed_fq_dir: str
     feature_sequence_qza: str
@@ -23,7 +25,9 @@ class GenerateASVPairedEnd(Processor):
             self,
             fq_dir: str,
             fq1_suffix: str,
-            fq2_suffix: str) -> Tuple[str, str]:
+            fq2_suffix: str,
+            clip_r1_5_prime: int,
+            clip_r2_5_prime: int) -> Tuple[str, str]:
 
         return self.feature_table_qza, self.feature_sequence_qza
 
@@ -31,7 +35,9 @@ class GenerateASVPairedEnd(Processor):
         self.trimmed_fq_dir = BatchTrimGalorePairedEnd(self.settings).main(
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
-            fq2_suffix=self.fq2_suffix)
+            fq2_suffix=self.fq2_suffix,
+            clip_r1_5_prime=self.clip_r1_5_prime,
+            clip_r2_5_prime=self.clip_r2_5_prime)
 
 
 class GenerateASVConcatPairedEnd(GenerateASVPairedEnd):
@@ -44,11 +50,15 @@ class GenerateASVConcatPairedEnd(GenerateASVPairedEnd):
             self,
             fq_dir: str,
             fq1_suffix: str,
-            fq2_suffix: str) -> Tuple[str, str]:
+            fq2_suffix: str,
+            clip_r1_5_prime: int,
+            clip_r2_5_prime: int) -> Tuple[str, str]:
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
+        self.clip_r1_5_prime = clip_r1_5_prime
+        self.clip_r2_5_prime = clip_r2_5_prime
 
         self.trimming()
         self.concat()
@@ -81,11 +91,15 @@ class GenerateASVMergePairedEnd(GenerateASVPairedEnd):
             self,
             fq_dir: str,
             fq1_suffix: str,
-            fq2_suffix: str) -> Tuple[str, str]:
+            fq2_suffix: str,
+            clip_r1_5_prime: int,
+            clip_r2_5_prime: int) -> Tuple[str, str]:
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
+        self.clip_r1_5_prime = clip_r1_5_prime
+        self.clip_r2_5_prime = clip_r2_5_prime
 
         self.trimming()
         self.importing()
@@ -114,11 +128,15 @@ class GenerateASVPoolPairedEnd(GenerateASVPairedEnd):
             self,
             fq_dir: str,
             fq1_suffix: str,
-            fq2_suffix: str) -> Tuple[str, str]:
+            fq2_suffix: str,
+            clip_r1_5_prime: int,
+            clip_r2_5_prime: int) -> Tuple[str, str]:
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
+        self.clip_r1_5_prime = clip_r1_5_prime
+        self.clip_r2_5_prime = clip_r2_5_prime
 
         self.trimming()
         self.pool()
@@ -166,6 +184,7 @@ class GenerateASVSingleEnd(Processor):
 
     fq_dir: str
     fq_suffix: str
+    clip_5_prime: int
 
     trimmed_fq_dir: str
     single_end_seq_qza: str
@@ -178,10 +197,12 @@ class GenerateASVSingleEnd(Processor):
     def main(
             self,
             fq_dir: str,
-            fq_suffix: str) -> Tuple[str, str]:
+            fq_suffix: str,
+            clip_5_prime: int) -> Tuple[str, str]:
 
         self.fq_dir = fq_dir
         self.fq_suffix = fq_suffix
+        self.clip_5_prime = clip_5_prime
 
         self.trimming()
         self.importing()
@@ -192,7 +213,8 @@ class GenerateASVSingleEnd(Processor):
     def trimming(self):
         self.trimmed_fq_dir = BatchTrimGaloreSingleEnd(self.settings).main(
             fq_dir=self.fq_dir,
-            fq_suffix=self.fq_suffix)
+            fq_suffix=self.fq_suffix,
+            clip_5_prime=self.clip_5_prime)
 
     def importing(self):
         self.single_end_seq_qza = ImportSingleEndFastq(self.settings).main(

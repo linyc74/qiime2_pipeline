@@ -21,7 +21,9 @@ class TestQiime2Pipeline(TestCase):
             otu_identity=0.97,
             skip_otu=False,
             classifier_reads_per_batch=0,
-            alpha_metrics=['shannon', 'observed_features']
+            alpha_metrics=['shannon', 'observed_features'],
+            clip_r1_5_prime=17,
+            clip_r2_5_prime=0
         )
 
     def test_single_end(self):
@@ -35,5 +37,7 @@ class TestQiime2Pipeline(TestCase):
             otu_identity=0.97,
             skip_otu=False,
             classifier_reads_per_batch=0,
-            alpha_metrics=['shannon', 'observed_features']
+            alpha_metrics=['shannon', 'observed_features'],
+            clip_r1_5_prime=17,
+            clip_r2_5_prime=0
         )

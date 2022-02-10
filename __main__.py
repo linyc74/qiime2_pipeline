@@ -99,6 +99,24 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--clip-r1-5-prime'],
+        'properties': {
+            'type': int,
+            'required': False,
+            'default': 0,
+            'help': 'hard clip <int> bp from 5\' end of read 1 (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--clip-r2-5-prime'],
+        'properties': {
+            'type': int,
+            'required': False,
+            'default': 0,
+            'help': 'hard clip <int> bp from 5\' end of read 2 (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['--skip-otu'],
         'properties': {
             'action': 'store_true',
@@ -180,6 +198,8 @@ class EntryPoint:
             skip_otu=args.skip_otu,
             classifier_reads_per_batch=args.classifier_reads_per_batch,
             alpha_metrics=args.alpha_metrics,
+            clip_r1_5_prime=args.clip_r1_5_prime,
+            clip_r2_5_prime=args.clip_r2_5_prime,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)

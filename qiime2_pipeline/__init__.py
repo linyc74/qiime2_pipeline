@@ -17,6 +17,8 @@ class Main:
     skip_otu: bool
     classifier_reads_per_batch: int
     alpha_metrics: List[str]
+    clip_r1_5_prime: int
+    clip_r2_5_prime: int
 
     settings: Settings
 
@@ -32,6 +34,8 @@ class Main:
             skip_otu: bool,
             classifier_reads_per_batch: int,
             alpha_metrics: str,
+            clip_r1_5_prime: int,
+            clip_r2_5_prime: int,
             outdir: str,
             threads: int,
             debug: bool):
@@ -46,6 +50,8 @@ class Main:
         self.skip_otu = skip_otu
         self.classifier_reads_per_batch = classifier_reads_per_batch
         self.alpha_metrics = [] if alpha_metrics == 'all' else alpha_metrics.split(',')
+        self.clip_r1_5_prime = clip_r1_5_prime
+        self.clip_r2_5_prime = clip_r2_5_prime
 
         self.settings = Settings(
             workdir='./qiime2_pipeline_workdir',
@@ -73,7 +79,9 @@ class Main:
             otu_identity=self.otu_identity,
             skip_otu=self.skip_otu,
             classifier_reads_per_batch=self.classifier_reads_per_batch,
-            alpha_metrics=self.alpha_metrics)
+            alpha_metrics=self.alpha_metrics,
+            clip_r1_5_prime=self.clip_r1_5_prime,
+            clip_r2_5_prime=self.clip_r2_5_prime)
 
     def clean_up(self):
         if not self.settings.debug:
