@@ -10,6 +10,8 @@ RUN conda install -c anaconda -n qiime2-2021.11 scikit-bio
 
 ENV PATH /opt/conda/envs/qiime2-2021.11/bin:$PATH
 
+RUN pip install lefse==1.1.2
+
 COPY ./qiime2_pipeline/* /qiime2_pipeline/qiime2_pipeline/
 COPY ./__main__.py /qiime2_pipeline/
 WORKDIR /
