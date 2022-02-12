@@ -1,9 +1,9 @@
 import pandas as pd
 from .setup import TestCase
-from qiime2_pipeline.grouping import Grouping
+from qiime2_pipeline.grouping import AddGroupColumn
 
 
-class TestGrouping(TestCase):
+class TestAddGroupColumn(TestCase):
 
     def setUp(self):
         self.set_up(py_path=__file__)
@@ -12,7 +12,7 @@ class TestGrouping(TestCase):
         self.tear_down()
 
     def test_main(self):
-        actual = Grouping(self.settings).main(
+        actual = AddGroupColumn(self.settings).main(
             df=pd.read_csv(f'{self.indir}/indf.csv', index_col=0),
             group_keywords=['H', 'O']
         )

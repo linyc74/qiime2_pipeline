@@ -9,7 +9,7 @@ from typing import List, Tuple
 from skbio import DistanceMatrix
 from skbio.stats.ordination import pcoa
 from .tools import edit_fpath
-from .grouping import Grouping
+from .grouping import AddGroupColumn
 from .template import Processor, Settings
 
 
@@ -17,7 +17,7 @@ class Ordination(Processor):
 
     NAME: str
     XY_COLUMNS: Tuple[str, str]
-    GROUP_COLUMN: str = Grouping.GROUP_COLUMN
+    GROUP_COLUMN: str = AddGroupColumn.GROUP_COLUMN
 
     distance_matrix_tsv: str
     group_keywords: List[str]
@@ -58,7 +58,7 @@ class Ordination(Processor):
         os.makedirs(self.dstdir, exist_ok=True)
 
     def add_group_column(self):
-        self.sample_coordinate_df = Grouping(self.settings).main(
+        self.sample_coordinate_df = AddGroupColumn(self.settings).main(
             df=self.sample_coordinate_df,
             group_keywords=self.group_keywords)
 

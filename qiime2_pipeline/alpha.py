@@ -3,7 +3,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import List
-from .grouping import Grouping
+from .grouping import AddGroupColumn
 from .template import Processor, Settings
 
 
@@ -61,7 +61,7 @@ class AlphaDiversity(Processor):
             right_index=True)
 
     def add_group_column(self):
-        self.df = Grouping(self.settings).main(
+        self.df = AddGroupColumn(self.settings).main(
             df=self.df,
             group_keywords=self.group_keywords)
 
