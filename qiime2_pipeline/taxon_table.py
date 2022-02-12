@@ -4,9 +4,9 @@ from typing import Dict
 from .template import Processor, Settings
 
 
-class TaxonLevel(Processor):
+class TaxonTable(Processor):
 
-    OUTPUT_DIRNAME = 'taxon-level'
+    OUTPUT_DIRNAME = 'taxon-table'
     TAXON_LEVELS = [
         'phylum',
         'class',
@@ -48,10 +48,10 @@ class TaxonLevel(Processor):
         os.makedirs(dstdir, exist_ok=True)
 
         self.tsv_dict = {}
-        for key, df in self.collapsed_dfs.items():
-            tsv = f'{dstdir}/{key}.tsv'
+        for level, df in self.collapsed_dfs.items():
+            tsv = f'{dstdir}/{level}-table.tsv'
             df.to_csv(tsv, sep='\t', index=True)
-            self.tsv_dict[key] = tsv
+            self.tsv_dict[level] = tsv
 
 
 class CollapseTaxon(Processor):

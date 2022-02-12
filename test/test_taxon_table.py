@@ -1,10 +1,10 @@
 import pandas as pd
 from os.path import exists
-from qiime2_pipeline.taxon_level import TaxonLevel, CollapseTaxon, feature_label_to_taxon, trim_taxon
+from qiime2_pipeline.taxon_table import TaxonTable, CollapseTaxon, feature_label_to_taxon, trim_taxon
 from .setup import TestCase
 
 
-class TestTaxonLevel(TestCase):
+class TestTaxonTable(TestCase):
 
     def setUp(self):
         self.set_up(py_path=__file__)
@@ -13,16 +13,16 @@ class TestTaxonLevel(TestCase):
         self.tear_down()
 
     def test_main(self):
-        actual = TaxonLevel(self.settings).main(
+        actual = TaxonTable(self.settings).main(
             labeled_feature_table_tsv=f'{self.indir}/labeled-feature-table.tsv'
         )
         expected = {
-            'phylum': f'{self.outdir}/taxon-level/phylum.tsv',
-            'class': f'{self.outdir}/taxon-level/class.tsv',
-            'order': f'{self.outdir}/taxon-level/order.tsv',
-            'family': f'{self.outdir}/taxon-level/family.tsv',
-            'genus': f'{self.outdir}/taxon-level/genus.tsv',
-            'species': f'{self.outdir}/taxon-level/species.tsv',
+            'phylum': f'{self.outdir}/taxon-table/phylum-table.tsv',
+            'class': f'{self.outdir}/taxon-table/class-table.tsv',
+            'order': f'{self.outdir}/taxon-table/order-table.tsv',
+            'family': f'{self.outdir}/taxon-table/family-table.tsv',
+            'genus': f'{self.outdir}/taxon-table/genus-table.tsv',
+            'species': f'{self.outdir}/taxon-table/species-table.tsv',
         }
         self.assertDictEqual(expected, actual)
         for path in expected.values():
