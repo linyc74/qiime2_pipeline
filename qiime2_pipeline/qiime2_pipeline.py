@@ -1,8 +1,10 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
+from .lefse import LefSe
 from .taxonomy import Taxonomy
 from .beta import BetaDiversity
 from .alpha import AlphaDiversity
 from .otu_clustering import Vsearch
+from .taxon_table import TaxonTable
 from .phylogeny import MafftFasttree
 from .labeling import FeatureLabeling
 from .template import Processor, Settings
@@ -28,10 +30,12 @@ class Qiime2Pipeline(Processor):
     feature_table_qza: str
     feature_sequence_qza: str
     taxonomy_qza: str
+    labeled_feature_table_tsv: str
     labeled_feature_table_qza: str
     labeled_feature_sequence_qza: str
     rooted_tree_qza: str
     distance_matrix_tsvs: List[str]
+    taxon_table_tsv_dict: Dict[str, str]
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
@@ -72,6 +76,8 @@ class Qiime2Pipeline(Processor):
         self.alpha_diversity()
         self.beta_diversity()
         self.dimensionality_reduction()
+        self.taxon_table()
+        self.lefse()
 
     def generate_asv(self):
         if self.fq2_suffix is None:
@@ -104,8 +110,9 @@ class Qiime2Pipeline(Processor):
             classifier_reads_per_batch=self.classifier_reads_per_batch)
 
     def feature_labeling(self):
-        self.labeled_feature_table_qza, self.labeled_feature_sequence_qza \
-            = FeatureLabeling(self.settings).main(
+        self.labeled_feature_table_tsv, \
+            self.labeled_feature_table_qza, \
+            self.labeled_feature_sequence_qza = FeatureLabeling(self.settings).main(
                 taxonomy_qza=self.taxonomy_qza,
                 feature_table_qza=self.feature_table_qza,
                 feature_sequence_qza=self.feature_sequence_qza,
@@ -131,3 +138,12 @@ class Qiime2Pipeline(Processor):
             Batch(self.settings).main(
                 distance_matrix_tsvs=self.distance_matrix_tsvs,
                 group_keywords=self.group_keywords)
+
+    def taxon_table(self):
+        self.taxon_table_tsv_dict = TaxonTable(self.settings).main(
+            labeled_feature_table_tsv=self.labeled_feature_table_tsv)
+
+    def lefse(self):
+        LefSe(self.settings).main(
+            taxon_table_tsv_dict=self.taxon_table_tsv_dict,
+            group_keywords=self.group_keywords)

@@ -36,7 +36,7 @@ class FeatureLabeling(Processor):
             taxonomy_qza: str,
             feature_table_qza: str,
             feature_sequence_qza: str,
-            skip_otu: bool) -> Tuple[str, str]:
+            skip_otu: bool) -> Tuple[str, str, str]:
 
         self.taxonomy_qza = taxonomy_qza
         self.feature_table_qza = feature_table_qza
@@ -50,7 +50,9 @@ class FeatureLabeling(Processor):
         self.write_taxonomy_condifence_table()
         self.compress()
 
-        return self.labeled_feature_table_qza, self.labeled_feature_sequence_qza
+        return self.labeled_feature_table_tsv, \
+            self.labeled_feature_table_qza, \
+            self.labeled_feature_sequence_qza
 
     def decompress(self):
         self.taxonomy_tsv = ExportTaxonomy(self.settings).main(
@@ -171,7 +173,7 @@ class LabelFeatureTable(Processor):
         self.feature_id_to_label = feature_id_to_label
 
         self.read_feature_table_tsv()
-        self.label_column()
+        self.convert_feature_id_to_label()
         self.save_output_tsv()
 
         return self.output_tsv
@@ -183,13 +185,13 @@ class LabelFeatureTable(Processor):
             skiprows=1  # exclude 1st line from qza (# Constructed from biom file)
         )
 
-    def label_column(self):
+    def convert_feature_id_to_label(self):
         self.df['#OTU ID'] = [
             self.feature_id_to_label[id_]
             for id_ in self.df['#OTU ID']
         ]
         self.df.rename(
-            columns={'#OTU ID': 'Feature Label'},
+            columns={'#OTU ID': ''},
             inplace=True
         )
 
