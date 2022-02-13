@@ -31,6 +31,8 @@ class LefSe(Processor):
 class LefSeOneTaxonLevel(Processor):
 
     DSTDIR_NAME = 'lefse'
+    DPI = 600
+    FIGURE_WIDTH = 8
 
     taxon_table_tsv: str
     taxon_level: str
@@ -99,6 +101,8 @@ class LefSeOneTaxonLevel(Processor):
         self.feature_png = f'{self.dstdir}/lefse-{self.taxon_level}-features.png'
         cmd = self.CMD_LINEBREAK.join([
             'lefse_plot_res.py',
+            f'--dpi {self.DPI}',
+            f'--width {self.FIGURE_WIDTH}',
             self.lefse_result,
             self.feature_png,
             f'1> {self.lefse_log} 2> {self.lefse_log}'
@@ -109,9 +113,10 @@ class LefSeOneTaxonLevel(Processor):
         self.cladogram_png = f'{self.dstdir}/lefse-{self.taxon_level}-cladogram.png'
         cmd = self.CMD_LINEBREAK.join([
             'lefse_plot_cladogram.py',
+            f'--dpi {self.DPI}',
+            '--format png',
             self.lefse_result,
             self.cladogram_png,
-            '--format png'
         ])
         self.call(cmd)
 
