@@ -10,7 +10,16 @@ RUN conda install -c anaconda -n qiime2-2021.11 scikit-bio
 
 ENV PATH /opt/conda/envs/qiime2-2021.11/bin:$PATH
 
-RUN pip install lefse==1.1.2
+RUN /opt/conda/envs/qiime2-2021.11/bin/pip install lefse==1.1.2
+
+RUN apt update \
+ && apt install -y r-base-core \
+ && apt clean
+
+RUN Rscript -e 'install.packages("survival", version="2.44", repos="https://cran.csie.ntu.edu.tw/")' \
+ && Rscript -e 'install.packages("mvtnorm", version="1.1", repos="https://cran.csie.ntu.edu.tw/")' \
+ && Rscript -e 'install.packages("modeltools", version="0.2", repos="https://cran.csie.ntu.edu.tw/")' \
+ && Rscript -e 'install.packages("coin", version="1.4", repos="https://cran.csie.ntu.edu.tw/")'
 
 COPY ./qiime2_pipeline/* /qiime2_pipeline/qiime2_pipeline/
 COPY ./__main__.py /qiime2_pipeline/
