@@ -129,7 +129,7 @@ OPTIONAL = [
             'type': float,
             'required': False,
             'default': 0.95,
-            'help': 'fraction of total reads to be plotted in the heatmap (default: %(default)s)',
+            'help': 'fraction of total reads to be included in the heatmap (default: %(default)s)',
         }
     },
     {

@@ -113,25 +113,22 @@ class FilterByCumulativeReads(Processor):
 
 class Clustermap(Processor):
 
-    DSTDIR_NAME = 'heatmap'
     CLUSTER_COLUMNS = True
     COLORMAP = 'PuBu'
     Y_LABEL_CHAR_WIDTH = 0.08
-    VERTICAL_PADDING = 2
+    X_LABEL_CHAR_WIDTH = 0.08
     CELL_WIDTH = 0.3
     CELL_HEIGHT = 0.3
-    ROW_TREE_WIDTH = 1
-    COL_TREE_HEIGHT = 1
+    DENDROGRAM_RATIO = (0.1, 0.1)
     COLORBAR_WIDTH = 0.01
-    COLORBAR_HEIGHT = 0.1
     COLORBAR_HORIZONTAL_POSITION = 1.
 
     data: pd.DataFrame
     output_prefix: str
 
-    horizontal_paddng: float
+    x_label_padding: float
+    y_label_padding: float
     figsize: Tuple[float, float]
-    dendrogram_ratio: Tuple[float, float]
     grid: sns.matrix.ClusterGrid
 
     def main(self, data: pd.DataFrame, output_prefix: str):
@@ -139,28 +136,23 @@ class Clustermap(Processor):
         self.output_prefix = output_prefix
 
         self.set_figsize()
-        self.set_dendrogram_ratio()
         self.clustermap()
         self.config_clustermap()
         self.save_pdf()
         self.save_csv()
 
     def set_figsize(self):
-        self.__set_horizontal_padding()
-        w = (len(self.data.columns) * self.CELL_WIDTH) + self.horizontal_paddng
-        h = (len(self.data.index) * self.CELL_HEIGHT) + self.VERTICAL_PADDING
+        self.__set_x_y_label_padding()
+        w = (len(self.data.columns) * self.CELL_WIDTH) + self.y_label_padding
+        h = (len(self.data.index) * self.CELL_HEIGHT) + self.x_label_padding
         self.figsize = (w, h)
 
-    def __set_horizontal_padding(self):
-        max_y_label_length = pd.Series(self.data.index).apply(len).max()
-        self.horizontal_paddng = max_y_label_length * self.Y_LABEL_CHAR_WIDTH
+    def __set_x_y_label_padding(self):
+        max_x_label_length = pd.Series(self.data.columns).apply(len).max()
+        self.x_label_padding = max_x_label_length * self.X_LABEL_CHAR_WIDTH
 
-    def set_dendrogram_ratio(self):
-        heatmap_width = len(self.data.columns) * self.CELL_WIDTH
-        heatmap_height = len(self.data.index) * self.CELL_HEIGHT
-        row_tree_ratio = self.ROW_TREE_WIDTH / heatmap_width
-        col_tree_ratio = self.COL_TREE_HEIGHT / heatmap_height
-        self.dendrogram_ratio = (row_tree_ratio, col_tree_ratio)
+        max_y_label_length = pd.Series(self.data.index).apply(len).max()
+        self.y_label_padding = max_y_label_length * self.Y_LABEL_CHAR_WIDTH
 
     def clustermap(self):
         self.grid = sns.clustermap(
@@ -170,7 +162,7 @@ class Clustermap(Processor):
             xticklabels=True,  # include every x label
             yticklabels=True,  # include every y label
             col_cluster=self.CLUSTER_COLUMNS,
-            dendrogram_ratio=self.dendrogram_ratio,
+            dendrogram_ratio=self.DENDROGRAM_RATIO,
             linewidth=0.5)
         self.__set_plotted_data()
 
