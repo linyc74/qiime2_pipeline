@@ -19,6 +19,7 @@ class Main:
     alpha_metrics: List[str]
     clip_r1_5_prime: int
     clip_r2_5_prime: int
+    heatmap_read_fraction: float
 
     settings: Settings
 
@@ -36,6 +37,7 @@ class Main:
             alpha_metrics: str,
             clip_r1_5_prime: int,
             clip_r2_5_prime: int,
+            heatmap_read_fraction: float,
             outdir: str,
             threads: int,
             debug: bool):
@@ -52,6 +54,7 @@ class Main:
         self.alpha_metrics = [] if alpha_metrics == 'all' else alpha_metrics.split(',')
         self.clip_r1_5_prime = clip_r1_5_prime
         self.clip_r2_5_prime = clip_r2_5_prime
+        self.heatmap_read_fraction = heatmap_read_fraction
 
         self.settings = Settings(
             workdir='./qiime2_pipeline_workdir',
@@ -81,7 +84,8 @@ class Main:
             classifier_reads_per_batch=self.classifier_reads_per_batch,
             alpha_metrics=self.alpha_metrics,
             clip_r1_5_prime=self.clip_r1_5_prime,
-            clip_r2_5_prime=self.clip_r2_5_prime)
+            clip_r2_5_prime=self.clip_r2_5_prime,
+            heatmap_read_fraction=self.heatmap_read_fraction)
 
     def clean_up(self):
         if not self.settings.debug:

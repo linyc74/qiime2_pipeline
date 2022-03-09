@@ -6,7 +6,7 @@ from .template import Processor, Settings
 
 class TaxonTable(Processor):
 
-    OUTPUT_DIRNAME = 'taxon-table'
+    DSTDIR_NAME = 'taxon-table'
     TAXON_LEVELS = [
         'phylum',
         'class',
@@ -20,9 +20,6 @@ class TaxonTable(Processor):
 
     collapsed_dfs: Dict[str, pd.DataFrame]
     tsv_dict: Dict[str, str]
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(self, labeled_feature_table_tsv: str) -> Dict[str, str]:
         self.df = pd.read_csv(labeled_feature_table_tsv, sep='\t', index_col=0)
@@ -44,7 +41,7 @@ class TaxonTable(Processor):
                 level=level)
 
     def save_output_tsvs(self):
-        dstdir = f'{self.outdir}/{self.OUTPUT_DIRNAME}'
+        dstdir = f'{self.outdir}/{self.DSTDIR_NAME}'
         os.makedirs(dstdir, exist_ok=True)
 
         self.tsv_dict = {}

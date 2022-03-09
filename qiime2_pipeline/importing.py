@@ -1,8 +1,8 @@
 import os
 import pandas as pd
 from typing import List
+from .template import Processor
 from .tools import get_files, edit_fpath
-from .template import Processor, Settings
 
 
 class ImportFastq(Processor):
@@ -10,9 +10,6 @@ class ImportFastq(Processor):
     fq_dir: str
     manifest_tsv: str
     output_qza: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
 
 class ImportSingleEndFastq(ImportFastq):
@@ -99,9 +96,6 @@ class WriteManifestTsv(Processor):
     fq_dir: str
     manifest_tsv: str
     sample_names: List[str]
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def set_sample_names(self, fq_suffix: str):
         files = get_files(
@@ -210,9 +204,6 @@ class ImportFeatureTable(Processor):
     biom: str
     qza: str
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(self, feature_table_tsv: str) -> str:
         self.feature_table_tsv = feature_table_tsv
         self.tsv_to_biom()
@@ -259,9 +250,6 @@ class ImportFeatureSequence(Processor):
     feature_sequence_fa: str
     qza: str
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(self, feature_sequence_fa: str) -> str:
         self.feature_sequence_fa = feature_sequence_fa
         self.fa_to_qza()
@@ -288,9 +276,6 @@ class ImportTaxonomy(Processor):
     taxonomy_tsv: str
 
     qza: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(self, taxonomy_tsv: str) -> str:
         self.taxonomy_tsv = taxonomy_tsv

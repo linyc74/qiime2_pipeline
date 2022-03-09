@@ -117,6 +117,7 @@ class LefSeOneTaxonLevel(Processor):
             '--format png',
             self.lefse_result,
             self.cladogram_png,
+            f'1> {self.lefse_log} 2> {self.lefse_log}'
         ])
         self.call(cmd)
 

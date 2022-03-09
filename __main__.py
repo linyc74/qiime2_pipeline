@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '1.7.0'
+__VERSION__ = '1.7.1-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -124,6 +124,15 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--heatmap-read-fraction'],
+        'properties': {
+            'type': float,
+            'required': False,
+            'default': 0.95,
+            'help': 'fraction of total reads to be plotted in the heatmap (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['-t', '--threads'],
         'properties': {
             'type': int,
@@ -200,6 +209,7 @@ class EntryPoint:
             alpha_metrics=args.alpha_metrics,
             clip_r1_5_prime=args.clip_r1_5_prime,
             clip_r2_5_prime=args.clip_r2_5_prime,
+            heatmap_read_fraction=args.heatmap_read_fraction,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)

@@ -1,13 +1,14 @@
 from typing import List, Optional, Dict
 from .lefse import LefSe
 from .taxonomy import Taxonomy
+from .template import Processor
 from .beta import BetaDiversity
+from .heatmap import PlotHeatmaps
 from .alpha import AlphaDiversity
 from .otu_clustering import Vsearch
 from .taxon_table import TaxonTable
 from .phylogeny import MafftFasttree
 from .labeling import FeatureLabeling
-from .template import Processor, Settings
 from .dim_reduction import BatchPCoA, BatchNMDS, BatchTSNE
 from .generate_asv import FactoryGenerateASVPairedEnd, GenerateASVSingleEnd
 
@@ -26,6 +27,7 @@ class Qiime2Pipeline(Processor):
     alpha_metrics: List[str]
     clip_r1_5_prime: int
     clip_r2_5_prime: int
+    heatmap_read_fraction: float
 
     feature_table_qza: str
     feature_sequence_qza: str
@@ -36,9 +38,6 @@ class Qiime2Pipeline(Processor):
     rooted_tree_qza: str
     distance_matrix_tsvs: List[str]
     taxon_table_tsv_dict: Dict[str, str]
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,
@@ -53,7 +52,8 @@ class Qiime2Pipeline(Processor):
             classifier_reads_per_batch: int,
             alpha_metrics: List[str],
             clip_r1_5_prime: int,
-            clip_r2_5_prime: int):
+            clip_r2_5_prime: int,
+            heatmap_read_fraction: float):
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
@@ -67,6 +67,7 @@ class Qiime2Pipeline(Processor):
         self.alpha_metrics = alpha_metrics
         self.clip_r1_5_prime = clip_r1_5_prime
         self.clip_r2_5_prime = clip_r2_5_prime
+        self.heatmap_read_fraction = heatmap_read_fraction
 
         self.generate_asv()
         self.otu_clustering()
@@ -78,6 +79,7 @@ class Qiime2Pipeline(Processor):
         self.dimensionality_reduction()
         self.taxon_table()
         self.lefse()
+        self.plot_heatmaps()
 
     def generate_asv(self):
         if self.fq2_suffix is None:
@@ -147,3 +149,8 @@ class Qiime2Pipeline(Processor):
         LefSe(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             group_keywords=self.group_keywords)
+
+    def plot_heatmaps(self):
+        PlotHeatmaps(self.settings).main(
+            tsvs=list(self.taxon_table_tsv_dict.values()),
+            heatmap_read_fraction=self.heatmap_read_fraction)
