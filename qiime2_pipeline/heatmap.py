@@ -9,6 +9,7 @@ from .template import Processor
 
 
 class PlotHeatmaps(Processor):
+
     DSTDIR_NAME = 'heatmap'
 
     tsvs: List[str]
@@ -33,9 +34,9 @@ class PlotHeatmaps(Processor):
         os.makedirs(self.dstdir, exist_ok=True)
 
     def plot_one(self, tsv: str):
-        df = pd.read_csv(tsv, sep='\t', index_col=0)
+        data = pd.read_csv(tsv, sep='\t', index_col=0)
         data = FilterByCumulativeReads(self.settings).main(
-            df=df,
+            df=data,
             heatmap_read_fraction=self.heatmap_read_fraction
         )
         output_prefix = edit_fpath(
@@ -115,11 +116,12 @@ class Clustermap(Processor):
     DSTDIR_NAME = 'heatmap'
     CLUSTER_COLUMNS = True
     COLORMAP = 'PuBu'
-    Y_LABEL_CHAR_WIDTH = 0.1
+    Y_LABEL_CHAR_WIDTH = 0.08
     VERTICAL_PADDING = 2
-    CELL_WIDTH = 0.4
+    CELL_WIDTH = 0.3
     CELL_HEIGHT = 0.3
-    DENDROGRAM_RATIO = (0.1, 0.1)
+    ROW_TREE_WIDTH = 1
+    COL_TREE_HEIGHT = 1
     COLORBAR_WIDTH = 0.01
     COLORBAR_HEIGHT = 0.1
     COLORBAR_HORIZONTAL_POSITION = 1.
@@ -129,6 +131,7 @@ class Clustermap(Processor):
 
     horizontal_paddng: float
     figsize: Tuple[float, float]
+    dendrogram_ratio: Tuple[float, float]
     grid: sns.matrix.ClusterGrid
 
     def main(self, data: pd.DataFrame, output_prefix: str):
@@ -136,6 +139,7 @@ class Clustermap(Processor):
         self.output_prefix = output_prefix
 
         self.set_figsize()
+        self.set_dendrogram_ratio()
         self.clustermap()
         self.config_clustermap()
         self.save_pdf()
@@ -143,7 +147,6 @@ class Clustermap(Processor):
 
     def set_figsize(self):
         self.__set_horizontal_padding()
-
         w = (len(self.data.columns) * self.CELL_WIDTH) + self.horizontal_paddng
         h = (len(self.data.index) * self.CELL_HEIGHT) + self.VERTICAL_PADDING
         self.figsize = (w, h)
@@ -151,6 +154,13 @@ class Clustermap(Processor):
     def __set_horizontal_padding(self):
         max_y_label_length = pd.Series(self.data.index).apply(len).max()
         self.horizontal_paddng = max_y_label_length * self.Y_LABEL_CHAR_WIDTH
+
+    def set_dendrogram_ratio(self):
+        heatmap_width = len(self.data.columns) * self.CELL_WIDTH
+        heatmap_height = len(self.data.index) * self.CELL_HEIGHT
+        row_tree_ratio = self.ROW_TREE_WIDTH / heatmap_width
+        col_tree_ratio = self.COL_TREE_HEIGHT / heatmap_height
+        self.dendrogram_ratio = (row_tree_ratio, col_tree_ratio)
 
     def clustermap(self):
         self.grid = sns.clustermap(
@@ -160,7 +170,7 @@ class Clustermap(Processor):
             xticklabels=True,  # include every x label
             yticklabels=True,  # include every y label
             col_cluster=self.CLUSTER_COLUMNS,
-            dendrogram_ratio=self.DENDROGRAM_RATIO,
+            dendrogram_ratio=self.dendrogram_ratio,
             linewidth=0.5)
         self.__set_plotted_data()
 
@@ -205,6 +215,8 @@ class Clustermap(Processor):
         ])
 
     def save_pdf(self):
+        # must use grid.savefig(), but not plt.savefig()
+        # plt.savefig() crops out the colorbar
         self.grid.savefig(f'{self.output_prefix}.pdf')
         plt.close()
 
