@@ -33,7 +33,7 @@ class FeatureLabeling(Processor):
             taxonomy_qza: str,
             feature_table_qza: str,
             feature_sequence_qza: str,
-            skip_otu: bool) -> Tuple[str, str, str]:
+            skip_otu: bool) -> Tuple[str, str]:
 
         self.taxonomy_qza = taxonomy_qza
         self.feature_table_qza = feature_table_qza
@@ -47,9 +47,7 @@ class FeatureLabeling(Processor):
         self.write_taxonomy_condifence_table()
         self.compress()
 
-        return self.labeled_feature_table_tsv, \
-            self.labeled_feature_table_qza, \
-            self.labeled_feature_sequence_qza
+        return self.labeled_feature_table_qza, self.labeled_feature_sequence_qza
 
     def decompress(self):
         self.taxonomy_tsv = ExportTaxonomy(self.settings).main(

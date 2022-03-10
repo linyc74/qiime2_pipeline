@@ -11,14 +11,13 @@ class TestFeatureLabeling(TestCase):
         self.tear_down()
 
     def test_main(self):
-        table_tsv, table_qza, sequence_qza = FeatureLabeling(self.settings).main(
+        table_qza, sequence_qza = FeatureLabeling(self.settings).main(
             taxonomy_qza=f'{self.indir}/taxonomy.qza',
             feature_table_qza=f'{self.indir}/dada2-feature-table.qza',
             feature_sequence_qza=f'{self.indir}/dada2-feature-sequence.qza',
             skip_otu=True)
 
         for expected, actual in [
-            (f'{self.outdir}/labeled-feature-table.tsv', table_tsv),
             (f'{self.workdir}/labeled-feature-table.qza', table_qza),
             (f'{self.workdir}/labeled-feature-sequence.qza', sequence_qza),
         ]:

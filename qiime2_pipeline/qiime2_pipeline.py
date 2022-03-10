@@ -37,8 +37,8 @@ class Qiime2Pipeline(Processor):
     labeled_feature_table_tsv: str
     labeled_feature_table_qza: str
     labeled_feature_sequence_qza: str
-    normalized_feature_table_tsv: str
-    normalized_feature_table_qza: str
+    normalized_labeled_feature_table_tsv: str
+    normalized_labeled_feature_table_qza: str
     rooted_tree_qza: str
     distance_matrix_tsvs: List[str]
     taxon_table_tsv_dict: Dict[str, str]
@@ -119,8 +119,7 @@ class Qiime2Pipeline(Processor):
             classifier_reads_per_batch=self.classifier_reads_per_batch)
 
     def feature_labeling(self):
-        self.labeled_feature_table_tsv, \
-            self.labeled_feature_table_qza, \
+        self.labeled_feature_table_qza, \
             self.labeled_feature_sequence_qza = FeatureLabeling(self.settings).main(
                 taxonomy_qza=self.taxonomy_qza,
                 feature_table_qza=self.feature_table_qza,
@@ -128,8 +127,8 @@ class Qiime2Pipeline(Processor):
                 skip_otu=self.skip_otu)
 
     def feature_normalization(self):
-        self.normalized_feature_table_tsv, \
-            self.normalized_feature_table_qza = FeatureNormalization(self.settings).main(
+        self.normalized_labeled_feature_table_tsv, \
+            self.normalized_labeled_feature_table_qza = FeatureNormalization(self.settings).main(
                 feature_table_qza=self.labeled_feature_table_qza,
                 log_pseudocount=self.log_pseudocount)
 
@@ -139,13 +138,13 @@ class Qiime2Pipeline(Processor):
 
     def alpha_diversity(self):
         AlphaDiversity(self.settings).main(
-            feature_table_qza=self.normalized_feature_table_qza,
+            feature_table_qza=self.normalized_labeled_feature_table_qza,
             group_keywords=self.group_keywords,
             alpha_metrics=self.alpha_metrics)
 
     def beta_diversity(self):
         self.distance_matrix_tsvs = BetaDiversity(self.settings).main(
-            feature_table_qza=self.normalized_feature_table_qza,
+            feature_table_qza=self.normalized_labeled_feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza)
 
     def dimensionality_reduction(self):
@@ -156,7 +155,7 @@ class Qiime2Pipeline(Processor):
 
     def taxon_table(self):
         self.taxon_table_tsv_dict = TaxonTable(self.settings).main(
-            labeled_feature_table_tsv=self.normalized_feature_table_tsv)
+            labeled_feature_table_tsv=self.normalized_labeled_feature_table_tsv)
 
     def lefse(self):
         LefSe(self.settings).main(
