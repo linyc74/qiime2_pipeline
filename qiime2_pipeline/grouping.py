@@ -1,6 +1,6 @@
 import pandas as pd
 from typing import List
-from .template import Processor, Settings
+from .template import Processor
 
 
 class AddGroupColumn(Processor):
@@ -10,9 +10,6 @@ class AddGroupColumn(Processor):
 
     df: pd.DataFrame
     group_keywords: List[str]
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,

@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from typing import Dict
-from .template import Processor, Settings
+from .template import Processor
 
 
 class TaxonTable(Processor):
@@ -64,9 +64,6 @@ class CollapseTaxon(Processor):
 
     df: pd.DataFrame
     level: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(self, df: pd.DataFrame, level: str) -> pd.DataFrame:
         self.df = df.copy(deep=True)

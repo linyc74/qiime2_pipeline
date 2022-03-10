@@ -17,9 +17,6 @@ class Taxonomy(Processor):
     reverse_taxonomy_qza: str
     merged_taxonomy_qza: str
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(
             self,
             representative_seq_qza: str,

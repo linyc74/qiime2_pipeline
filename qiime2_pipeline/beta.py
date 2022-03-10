@@ -1,7 +1,7 @@
 import os
 from typing import List
 from .tools import edit_fpath
-from .template import Processor, Settings
+from .template import Processor
 from .exporting import ExportBetaDiversity
 
 
@@ -26,9 +26,6 @@ class BetaDiversity(Processor):
     rooted_tree_qza: str
 
     distance_matrix_tsvs: List[str]
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,
@@ -91,9 +88,6 @@ class RunOneBetaMetric(Processor):
     distance_matrix_qza: str
     distance_matrix_tsv: str
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(self, feature_table_qza: str, metric: str) -> str:
         self.feature_table_qza = feature_table_qza
         self.metric = metric
@@ -124,9 +118,6 @@ class RunOneBetaPhylogeneticMetric(Processor):
 
     distance_matrix_qza: str
     distance_matrix_tsv: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,

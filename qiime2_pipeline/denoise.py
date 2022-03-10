@@ -1,5 +1,5 @@
 from typing import Tuple
-from .template import Processor, Settings
+from .template import Processor
 
 
 class Dada2(Processor):
@@ -12,9 +12,6 @@ class Dada2(Processor):
     feature_sequence_qza: str
     feature_table_qza: str
     denoising_stats_qza: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def set_output_paths(self):
         self.feature_sequence_qza = f'{self.workdir}/dada2-feature-sequence.qza'

@@ -3,8 +3,8 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import List
+from .template import Processor
 from .grouping import AddGroupColumn
-from .template import Processor, Settings
 
 
 class AlphaDiversity(Processor):
@@ -26,9 +26,6 @@ class AlphaDiversity(Processor):
     alpha_metrics: List[str]
 
     df: pd.DataFrame
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,
@@ -83,9 +80,6 @@ class RunOneAlphaMetric(Processor):
     metric: str
     output_qza: str
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(
             self,
             feature_table_qza: str,
@@ -115,9 +109,6 @@ class RunOneAlphaMetric(Processor):
 class ReadAlphaDiversityQza(Processor):
 
     qza: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(self, qza: str) -> pd.DataFrame:
 
@@ -149,9 +140,6 @@ class PlotAlphaDiversity(Processor):
     dstdir: str
 
     alpha_metrics: List[str]
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(self, df: pd.DataFrame, dstdir: str):
         self.df = df

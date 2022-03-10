@@ -93,9 +93,6 @@ class PCoA(Ordination):
     proportion_explained_serise: pd.Series
     proportion_explained_tsv: str
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(
             self,
             distance_matrix_tsv: str,
@@ -141,9 +138,6 @@ class NMDS(Ordination):
 
     embedding: manifold.MDS
     stress: float
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,
@@ -210,9 +204,6 @@ class TSNE(Ordination):
 
     embedding: manifold.TSNE
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(
             self,
             distance_matrix_tsv: str,
@@ -259,9 +250,6 @@ class BatchOrdination(Processor):
     group_keywords: List[str]
 
     ordination: Ordination
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,
@@ -311,9 +299,6 @@ class ScatterPlot(Processor):
     output_png: str
 
     ax: Axes
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,

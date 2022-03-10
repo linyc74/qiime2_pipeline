@@ -1,12 +1,9 @@
 from os.path import abspath
 from .tools import edit_fpath
-from .template import Processor, Settings
+from .template import Processor
 
 
 class Export(Processor):
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def mv(self, src: str, dst: str):
         if abspath(src) != abspath(dst):
@@ -17,9 +14,6 @@ class ExportFeatureTable(Export):
 
     feature_table_qza: str
     tsv: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(self, feature_table_qza: str) -> str:
         self.feature_table_qza = feature_table_qza
@@ -57,9 +51,6 @@ class ExportFeatureSequence(Export):
     feature_sequence_qza: str
     output_fa: str
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(self, feature_sequence_qza: str) -> str:
 
         self.feature_sequence_qza = feature_sequence_qza
@@ -92,9 +83,6 @@ class ExportTaxonomy(Export):
     taxonomy_qza: str
     tsv: str
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(self, taxonomy_qza: str) -> str:
         self.taxonomy_qza = taxonomy_qza
 
@@ -125,9 +113,6 @@ class ExportAlignedSequence(Export):
 
     aligned_sequence_qza: str
     output_fa: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(self, aligned_sequence_qza: str) -> str:
         self.aligned_sequence_qza = aligned_sequence_qza
@@ -160,9 +145,6 @@ class ExportTree(Export):
     tree_qza: str
     nwk: str
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(self, tree_qza: str) -> str:
         self.tree_qza = tree_qza
 
@@ -193,9 +175,6 @@ class ExportBetaDiversity(Export):
 
     distance_matrix_qza: str
     tsv: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(self, distance_matrix_qza: str) -> str:
         self.distance_matrix_qza = distance_matrix_qza

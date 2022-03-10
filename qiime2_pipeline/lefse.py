@@ -2,16 +2,13 @@ import os
 import pandas as pd
 from typing import List, Dict
 from .tools import edit_fpath
-from .template import Processor, Settings
+from .template import Processor
 
 
 class LefSe(Processor):
 
     taxon_table_tsv_dict: Dict[str, str]
     group_keywords: List[str]
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,
@@ -44,9 +41,6 @@ class LefSeOneTaxonLevel(Processor):
     lefse_log: str
     feature_png: str
     cladogram_png: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,
@@ -132,9 +126,6 @@ class InsertGroupRow(Processor):
 
     df: pd.DataFrame
     output_tsv: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,

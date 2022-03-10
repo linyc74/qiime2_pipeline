@@ -15,9 +15,6 @@ class Concat(Processor):
     writer: IO
     fq_out: str
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(
             self,
             fq1: str,
@@ -98,9 +95,6 @@ class BatchCombine(Processor):
     sample_names: List[str]
     combine: Callable
     out_fq_dir: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,

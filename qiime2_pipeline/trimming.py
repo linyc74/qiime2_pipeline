@@ -21,9 +21,6 @@ class TrimGalorePairedEnd(Processor):
     out_fq1: str
     out_fq2: str
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings=settings)
-
     def main(
             self,
             fq1: str,
@@ -185,9 +182,6 @@ class TrimGaloreSingleEnd(Processor):
     clip_5_prime: int
 
     out_fq: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings=settings)
 
     def main(self, fq: str, clip_5_prime: int) -> str:
         self.fq = fq

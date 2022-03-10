@@ -1,5 +1,5 @@
 from typing import Tuple
-from .template import Processor, Settings
+from .template import Processor
 
 
 class Vsearch(Processor):
@@ -10,9 +10,6 @@ class Vsearch(Processor):
 
     clustered_table_qza: str
     clustered_sequence_qza: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,

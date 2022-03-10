@@ -1,5 +1,5 @@
 from typing import Tuple, Callable
-from .template import Processor, Settings
+from .template import Processor
 from .concat import BatchConcat, BatchPool
 from .denoise import Dada2SingleEnd, Dada2PairedEnd
 from .importing import ImportSingleEndFastq, ImportPairedEndFastq
@@ -17,9 +17,6 @@ class GenerateASVPairedEnd(Processor):
     trimmed_fq_dir: str
     feature_sequence_qza: str
     feature_table_qza: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,
@@ -169,9 +166,6 @@ class FactoryGenerateASVPairedEnd(Processor):
         'pool': GenerateASVPoolPairedEnd
     }
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(self, paired_end_mode: str) -> Callable:
         assert paired_end_mode in self.MODE_TO_CLASS.keys(), \
             f'"{paired_end_mode}" is not a valid mode for GenerateASV'
@@ -190,9 +184,6 @@ class GenerateASVSingleEnd(Processor):
     single_end_seq_qza: str
     feature_sequence_qza: str
     feature_table_qza: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,
