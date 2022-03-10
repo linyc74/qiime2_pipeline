@@ -198,6 +198,7 @@ class TSNE(Ordination):
     NAME = 't-SNE'
     XY_COLUMNS = ('t-SNE 1', 't-SNE 2')
     N_COMPONENTS = 2
+    PERPLEXITY = 3.0
     DISTANCE_METRIC = 'precomputed'  # distance matrix is precomputed
     RANDOM_STATE = 1  # to ensure reproducible result
     TSNE_INIT = 'random'  # cannot use PCA becuase distance matrix is precomputed
@@ -217,7 +218,7 @@ class TSNE(Ordination):
     def run_dim_reduction(self):
         self.embedding = manifold.TSNE(
             n_components=self.N_COMPONENTS,
-            perplexity=30.0,
+            perplexity=self.PERPLEXITY,
             early_exaggeration=12.0,
             learning_rate=200.0,
             n_iter=1000,
@@ -225,7 +226,7 @@ class TSNE(Ordination):
             min_grad_norm=1e-7,
             metric=self.DISTANCE_METRIC,
             init=self.TSNE_INIT,
-            verbose=0,
+            verbose=1,
             random_state=self.RANDOM_STATE,
             method='barnes_hut',
             angle=0.5,
