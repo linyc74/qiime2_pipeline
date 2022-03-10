@@ -9,6 +9,7 @@ from .otu_clustering import Vsearch
 from .taxon_table import TaxonTable
 from .phylogeny import MafftFasttree
 from .labeling import FeatureLabeling
+from .normalization import FeatureNormalization
 from .dim_reduction import BatchPCoA, BatchNMDS, BatchTSNE
 from .generate_asv import FactoryGenerateASVPairedEnd, GenerateASVSingleEnd
 
@@ -28,6 +29,7 @@ class Qiime2Pipeline(Processor):
     clip_r1_5_prime: int
     clip_r2_5_prime: int
     heatmap_read_fraction: float
+    log_pseudocount: bool
 
     feature_table_qza: str
     feature_sequence_qza: str
@@ -35,6 +37,8 @@ class Qiime2Pipeline(Processor):
     labeled_feature_table_tsv: str
     labeled_feature_table_qza: str
     labeled_feature_sequence_qza: str
+    normalized_feature_table_tsv: str
+    normalized_feature_table_qza: str
     rooted_tree_qza: str
     distance_matrix_tsvs: List[str]
     taxon_table_tsv_dict: Dict[str, str]
@@ -53,7 +57,8 @@ class Qiime2Pipeline(Processor):
             alpha_metrics: List[str],
             clip_r1_5_prime: int,
             clip_r2_5_prime: int,
-            heatmap_read_fraction: float):
+            heatmap_read_fraction: float,
+            log_pseudocount: bool):
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
@@ -68,11 +73,13 @@ class Qiime2Pipeline(Processor):
         self.clip_r1_5_prime = clip_r1_5_prime
         self.clip_r2_5_prime = clip_r2_5_prime
         self.heatmap_read_fraction = heatmap_read_fraction
+        self.log_pseudocount = log_pseudocount
 
         self.generate_asv()
         self.otu_clustering()
         self.taxonomic_classification()
         self.feature_labeling()
+        self.feature_normalization()
         self.phylogenetic_tree()
         self.alpha_diversity()
         self.beta_diversity()
@@ -120,19 +127,25 @@ class Qiime2Pipeline(Processor):
                 feature_sequence_qza=self.feature_sequence_qza,
                 skip_otu=self.skip_otu)
 
+    def feature_normalization(self):
+        self.normalized_feature_table_tsv, \
+            self.normalized_feature_table_qza = FeatureNormalization(self.settings).main(
+                feature_table_qza=self.labeled_feature_table_qza,
+                log_pseudocount=self.log_pseudocount)
+
     def phylogenetic_tree(self):
         self.rooted_tree_qza = MafftFasttree(self.settings).main(
             seq_qza=self.labeled_feature_sequence_qza)
 
     def alpha_diversity(self):
         AlphaDiversity(self.settings).main(
-            feature_table_qza=self.labeled_feature_table_qza,
+            feature_table_qza=self.normalized_feature_table_qza,
             group_keywords=self.group_keywords,
             alpha_metrics=self.alpha_metrics)
 
     def beta_diversity(self):
         self.distance_matrix_tsvs = BetaDiversity(self.settings).main(
-            feature_table_qza=self.labeled_feature_table_qza,
+            feature_table_qza=self.normalized_feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza)
 
     def dimensionality_reduction(self):
@@ -143,7 +156,7 @@ class Qiime2Pipeline(Processor):
 
     def taxon_table(self):
         self.taxon_table_tsv_dict = TaxonTable(self.settings).main(
-            labeled_feature_table_tsv=self.labeled_feature_table_tsv)
+            labeled_feature_table_tsv=self.normalized_feature_table_tsv)
 
     def lefse(self):
         LefSe(self.settings).main(

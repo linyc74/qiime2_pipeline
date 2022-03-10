@@ -1,6 +1,6 @@
 import pandas as pd
 from typing import Tuple, Dict
-from .template import Processor, Settings
+from .template import Processor
 from .fasta import FastaParser, FastaWriter
 from .importing import ImportFeatureTable, ImportFeatureSequence
 from .exporting import ExportFeatureTable, ExportFeatureSequence, ExportTaxonomy
@@ -27,9 +27,6 @@ class FeatureLabeling(Processor):
 
     labeled_feature_table_qza: str
     labeled_feature_sequence_qza: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,
@@ -101,9 +98,6 @@ class GetFeatureIDToLabelDict(Processor):
     df: pd.DataFrame
     output_dict: Dict[str, str]
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(
             self,
             taxonomy_tsv: str,
@@ -131,9 +125,6 @@ class LabelFeatureSequence(Processor):
 
     output_fa: str
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
     def main(
             self,
             feature_sequence_fa: str,
@@ -160,9 +151,6 @@ class LabelFeatureTable(Processor):
 
     df: pd.DataFrame
     output_tsv: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,
@@ -209,9 +197,6 @@ class WriteTaxonomyCondifenceTable(Processor):
     feature_id_to_label: Dict[str, str]
 
     df: pd.DataFrame
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,

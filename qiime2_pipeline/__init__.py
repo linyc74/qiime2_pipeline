@@ -20,6 +20,7 @@ class Main:
     clip_r1_5_prime: int
     clip_r2_5_prime: int
     heatmap_read_fraction: float
+    log_pseudocount: bool
 
     settings: Settings
 
@@ -38,6 +39,7 @@ class Main:
             clip_r1_5_prime: int,
             clip_r2_5_prime: int,
             heatmap_read_fraction: float,
+            log_pseudocount: bool,
             outdir: str,
             threads: int,
             debug: bool):
@@ -55,6 +57,7 @@ class Main:
         self.clip_r1_5_prime = clip_r1_5_prime
         self.clip_r2_5_prime = clip_r2_5_prime
         self.heatmap_read_fraction = heatmap_read_fraction
+        self.log_pseudocount = log_pseudocount
 
         self.settings = Settings(
             workdir='./qiime2_pipeline_workdir',
@@ -85,7 +88,8 @@ class Main:
             alpha_metrics=self.alpha_metrics,
             clip_r1_5_prime=self.clip_r1_5_prime,
             clip_r2_5_prime=self.clip_r2_5_prime,
-            heatmap_read_fraction=self.heatmap_read_fraction)
+            heatmap_read_fraction=self.heatmap_read_fraction,
+            log_pseudocount=self.log_pseudocount)
 
     def clean_up(self):
         if not self.settings.debug:

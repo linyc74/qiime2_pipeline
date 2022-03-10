@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '1.7.1'
+__VERSION__ = '1.7.2-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -133,6 +133,13 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--log-pseudocount'],
+        'properties': {
+            'action': 'store_true',
+            'help': 'log10 pseudocount for feature table',
+        }
+    },
+    {
         'keys': ['-t', '--threads'],
         'properties': {
             'type': int,
@@ -210,6 +217,7 @@ class EntryPoint:
             clip_r1_5_prime=args.clip_r1_5_prime,
             clip_r2_5_prime=args.clip_r2_5_prime,
             heatmap_read_fraction=args.heatmap_read_fraction,
+            log_pseudocount=args.log_pseudocount,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)
