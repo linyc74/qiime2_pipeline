@@ -48,10 +48,13 @@ class BetaDiversity(Processor):
         return self.distance_matrix_tsvs
 
     def run_one_beta_metric_to_tsv(self, metric: str):
-        tsv = RunOneBetaMetric(self.settings).main(
-            feature_table_qza=self.feature_table_qza,
-            metric=metric)
-        self.distance_matrix_tsvs.append(tsv)
+        try:
+            tsv = RunOneBetaMetric(self.settings).main(
+                feature_table_qza=self.feature_table_qza,
+                metric=metric)
+            self.distance_matrix_tsvs.append(tsv)
+        except Exception as e:
+            self.log_error(metric=metric, exception_instance=e)
 
     def run_one_beta_phylogenetic_metric_to_tsv(self, metric: str):
         try:

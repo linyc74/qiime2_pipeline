@@ -136,7 +136,7 @@ OPTIONAL = [
         'keys': ['--log-pseudocount'],
         'properties': {
             'action': 'store_true',
-            'help': 'log10 pseudocount for feature table',
+            'help': 'log10 pseudocount of features to compute beta diversity',
         }
     },
     {

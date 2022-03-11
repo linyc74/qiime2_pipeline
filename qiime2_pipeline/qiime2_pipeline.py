@@ -138,7 +138,7 @@ class Qiime2Pipeline(Processor):
 
     def alpha_diversity(self):
         AlphaDiversity(self.settings).main(
-            feature_table_qza=self.normalized_labeled_feature_table_qza,
+            feature_table_qza=self.labeled_feature_table_qza,
             group_keywords=self.group_keywords,
             alpha_metrics=self.alpha_metrics)
 
