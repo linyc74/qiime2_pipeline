@@ -54,7 +54,7 @@ class Ordination(Processor):
         pass
 
     def make_dstdir(self):
-        self.dstdir = f'{self.outdir}/{self.NAME}'
+        self.dstdir = f'{self.outdir}/beta-embedding'
         os.makedirs(self.dstdir, exist_ok=True)
 
     def add_group_column(self):

@@ -1,63 +1,42 @@
 import numpy as np
 import pandas as pd
-from typing import Tuple
-from .tools import edit_fpath
 from .template import Processor
-from .importing import ImportFeatureTable
-from .exporting import ExportFeatureTable
 
 
-class FeatureNormalization(Processor):
+class CountNormalization(Processor):
 
-    feature_table_qza: str
-    log_pseudocount: bool
-
-    feature_table_tsv: str
     df: pd.DataFrame
-    normalized_feature_table_qza: str
-    normalized_feature_table_tsv: str
+    by_sample_reads: bool
+    sample_reads_unit: int
+    log_pseudocount: bool
 
     def main(
             self,
-            feature_table_qza: str,
-            log_pseudocount: bool) -> Tuple[str, str]:
+            df: pd.DataFrame,
+            by_sample_reads: bool,
+            sample_reads_unit: int,
+            log_pseudocount: bool) -> pd.DataFrame:
 
-        self.feature_table_qza = feature_table_qza
+        self.df = df
+        self.by_sample_reads = by_sample_reads
+        self.sample_reads_unit = sample_reads_unit
         self.log_pseudocount = log_pseudocount
 
-        self.decompress()
-        self.read_tsv()
-        if log_pseudocount:
-            self.df = log10_pseudocount(self.df)
-        self.save_tsv()
-        self.compress()
+        self.pseudocount()
+        self.normalize_by_sample_reads()
+        self.log10()
 
-        return self.normalized_feature_table_tsv, self.normalized_feature_table_qza
+        return self.df
 
-    def decompress(self):
-        self.feature_table_tsv = ExportFeatureTable(self.settings).main(
-            feature_table_qza=self.feature_table_qza)
+    def pseudocount(self):
+        if self.log_pseudocount:
+            self.df = self.df + 1
 
-    def read_tsv(self):
-        self.df = pd.read_csv(
-            self.feature_table_tsv,
-            sep='\t',
-            index_col=0,
-            skiprows=1  # exclude 1st line from qza (# Constructed from biom file)
-        )
+    def normalize_by_sample_reads(self):
+        if self.by_sample_reads:
+            sum_per_column = np.sum(self.df, axis=0) / self.sample_reads_unit
+            self.df = np.divide(self.df, sum_per_column)
 
-    def save_tsv(self):
-        self.normalized_feature_table_tsv = edit_fpath(
-            fpath=self.feature_table_qza,
-            old_suffix='.qza',
-            new_suffix='-normalized.tsv',
-            dstdir=self.outdir)
-        self.df.to_csv(self.normalized_feature_table_tsv, sep='\t', index=True)
-
-    def compress(self):
-        self.normalized_feature_table_qza = ImportFeatureTable(self.settings).main(
-            feature_table_tsv=self.normalized_feature_table_tsv)
-
-
-def log10_pseudocount(df: pd.DataFrame) -> pd.DataFrame:
-    return np.log10(df + 1)
+    def log10(self):
+        if self.log_pseudocount:
+            self.df = np.log10(self.df)

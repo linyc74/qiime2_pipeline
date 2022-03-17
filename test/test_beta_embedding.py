@@ -1,6 +1,6 @@
 import pandas as pd
 from os.path import exists
-from qiime2_pipeline.dim_reduction import PCoA, NMDS, TSNE, ScatterPlot, BatchPCoA, BatchNMDS, BatchTSNE
+from qiime2_pipeline.beta_embedding import PCoA, NMDS, TSNE, ScatterPlot, BatchPCoA, BatchNMDS, BatchTSNE
 from .setup import TestCase
 
 
@@ -18,9 +18,9 @@ class TestPCoA(TestCase):
             group_keywords=['H']
         )
         for f in [
-            f'{self.outdir}/PCoA/distance-matrix-pcoa-sample-coordinate.tsv',
-            f'{self.outdir}/PCoA/distance-matrix-pcoa-sample-coordinate.png',
-            f'{self.outdir}/PCoA/distance-matrix-pcoa-proportion-explained.tsv',
+            f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.tsv',
+            f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.png',
+            f'{self.outdir}/beta-embedding/distance-matrix-pcoa-proportion-explained.tsv',
         ]:
             self.assertTrue(exists(f))
 
@@ -39,9 +39,9 @@ class TestNMDS(TestCase):
             group_keywords=['H']
         )
         for f in [
-            f'{self.outdir}/NMDS/distance-matrix-nmds-sample-coordinate.tsv',
-            f'{self.outdir}/NMDS/distance-matrix-nmds-sample-coordinate.png',
-            f'{self.outdir}/NMDS/distance-matrix-nmds-stress.txt',
+            f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.tsv',
+            f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.png',
+            f'{self.outdir}/beta-embedding/distance-matrix-nmds-stress.txt',
         ]:
             self.assertTrue(exists(f))
 
@@ -60,8 +60,8 @@ class TestTSNE(TestCase):
             group_keywords=['H']
         )
         for f in [
-            f'{self.outdir}/t-SNE/distance-matrix-tsne-sample-coordinate.tsv',
-            f'{self.outdir}/t-SNE/distance-matrix-tsne-sample-coordinate.png',
+            f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.tsv',
+            f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.png',
         ]:
             self.assertTrue(exists(f))
 
@@ -80,9 +80,9 @@ class TestBatchPCoA(TestCase):
             group_keywords=['H']
         )
         for f in [
-            f'{self.outdir}/PCoA/distance-matrix-pcoa-sample-coordinate.tsv',
-            f'{self.outdir}/PCoA/distance-matrix-pcoa-sample-coordinate.png',
-            f'{self.outdir}/PCoA/distance-matrix-pcoa-proportion-explained.tsv',
+            f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.tsv',
+            f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.png',
+            f'{self.outdir}/beta-embedding/distance-matrix-pcoa-proportion-explained.tsv',
         ]:
             self.assertTrue(exists(f))
 
@@ -101,9 +101,9 @@ class TestBatchNMDS(TestCase):
             group_keywords=['H']
         )
         for f in [
-            f'{self.outdir}/NMDS/distance-matrix-nmds-sample-coordinate.tsv',
-            f'{self.outdir}/NMDS/distance-matrix-nmds-sample-coordinate.png',
-            f'{self.outdir}/NMDS/distance-matrix-nmds-stress.txt',
+            f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.tsv',
+            f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.png',
+            f'{self.outdir}/beta-embedding/distance-matrix-nmds-stress.txt',
         ]:
             self.assertTrue(exists(f))
 
@@ -122,8 +122,8 @@ class TestBatchTSNE(TestCase):
             group_keywords=['H']
         )
         for f in [
-            f'{self.outdir}/t-SNE/distance-matrix-tsne-sample-coordinate.tsv',
-            f'{self.outdir}/t-SNE/distance-matrix-tsne-sample-coordinate.png',
+            f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.tsv',
+            f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.png',
         ]:
             self.assertTrue(exists(f))
 

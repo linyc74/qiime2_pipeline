@@ -1,8 +1,9 @@
+import pandas as pd
 from .setup import TestCase
-from qiime2_pipeline.normalization import FeatureNormalization
+from qiime2_pipeline.normalization import CountNormalization
 
 
-class TestFeatureNormalization(TestCase):
+class TestCountNormalization(TestCase):
 
     def setUp(self):
         self.set_up(py_path=__file__)
@@ -11,13 +12,13 @@ class TestFeatureNormalization(TestCase):
         self.tear_down()
 
     def test_main(self):
-        table_tsv, table_qza = FeatureNormalization(self.settings).main(
-            feature_table_qza=f'{self.indir}/table.qza',
+        df = pd.read_csv(f'{self.indir}/count-table.tsv', sep='\t', index_col=0)
+        actual = CountNormalization(self.settings).main(
+            df=df,
+            by_sample_reads=True,
+            sample_reads_unit=10000,
             log_pseudocount=True
         )
+        expected = pd.read_csv(f'{self.indir}/count-table-normalized.tsv', sep='\t', index_col=0)
+        self.assertDataFrameEqual(expected, actual)
 
-        for expected, actual in [
-            (f'{self.outdir}/table-normalized.tsv', table_tsv),
-            (f'{self.workdir}/table-normalized.qza', table_qza),
-        ]:
-            self.assertFileExists(expected, actual)
