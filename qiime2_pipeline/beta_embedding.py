@@ -85,6 +85,62 @@ class Ordination(Processor):
         )
 
 
+class ScatterPlot(Processor):
+
+    FIGSIZE = (8, 8)
+    DPI = 300
+
+    sample_coordinate_df: pd.DataFrame
+    x_column: str
+    y_column: str
+    group_column: str
+    output_png: str
+
+    ax: Axes
+
+    def main(
+            self,
+            sample_coordinate_df: pd.DataFrame,
+            x_column: str,
+            y_column: str,
+            hue_column: str,
+            output_png: str):
+
+        self.sample_coordinate_df = sample_coordinate_df
+        self.x_column = x_column
+        self.y_column = y_column
+        self.group_column = hue_column
+        self.output_png = output_png
+
+        self.init_figure()
+        self.scatterplot()
+        self.label_points()
+        self.save_figure()
+
+    def init_figure(self):
+        plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
+
+    def scatterplot(self):
+        self.ax = sns.scatterplot(
+            data=self.sample_coordinate_df,
+            x=self.x_column,
+            y=self.y_column,
+            hue=self.group_column)
+
+    def label_points(self):
+        df = self.sample_coordinate_df
+        for sample_name in df.index:
+            self.ax.text(
+                x=df.loc[sample_name, self.x_column],
+                y=df.loc[sample_name, self.y_column],
+                s=sample_name
+            )
+
+    def save_figure(self):
+        plt.savefig(self.output_png)
+        plt.close()
+
+
 class PCoA(Ordination):
 
     NAME = 'PCoA'
@@ -286,59 +342,3 @@ class BatchTSNE(BatchOrdination):
     def __init__(self, settings: Settings):
         super().__init__(settings)
         self.ordination = TSNE(self.settings)
-
-
-class ScatterPlot(Processor):
-
-    FIGSIZE = (8, 8)
-    DPI = 300
-
-    sample_coordinate_df: pd.DataFrame
-    x_column: str
-    y_column: str
-    group_column: str
-    output_png: str
-
-    ax: Axes
-
-    def main(
-            self,
-            sample_coordinate_df: pd.DataFrame,
-            x_column: str,
-            y_column: str,
-            hue_column: str,
-            output_png: str):
-
-        self.sample_coordinate_df = sample_coordinate_df
-        self.x_column = x_column
-        self.y_column = y_column
-        self.group_column = hue_column
-        self.output_png = output_png
-
-        self.init_figure()
-        self.scatterplot()
-        self.label_points()
-        self.save_figure()
-
-    def init_figure(self):
-        plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
-
-    def scatterplot(self):
-        self.ax = sns.scatterplot(
-            data=self.sample_coordinate_df,
-            x=self.x_column,
-            y=self.y_column,
-            hue=self.group_column)
-
-    def label_points(self):
-        df = self.sample_coordinate_df
-        for sample_name in df.index:
-            self.ax.text(
-                x=df.loc[sample_name, self.x_column],
-                y=df.loc[sample_name, self.y_column],
-                s=sample_name
-            )
-
-    def save_figure(self):
-        plt.savefig(self.output_png)
-        plt.close()
