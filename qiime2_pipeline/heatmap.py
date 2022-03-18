@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from typing import Tuple, List
 from .tools import edit_fpath
 from .template import Processor
+from .normalization import CountNormalization
 
 
 class PlotHeatmaps(Processor):
@@ -27,28 +28,69 @@ class PlotHeatmaps(Processor):
 
         self.make_dstdir()
         for tsv in self.tsvs:
-            self.plot_one(tsv=tsv)
+            self.plot_one_heatmap(tsv=tsv)
 
     def make_dstdir(self):
         self.dstdir = f'{self.outdir}/{self.DSTDIR_NAME}'
         os.makedirs(self.dstdir, exist_ok=True)
 
-    def plot_one(self, tsv: str):
-        data = pd.read_csv(tsv, sep='\t', index_col=0)
-        data = FilterByCumulativeReads(self.settings).main(
-            df=data,
-            heatmap_read_fraction=self.heatmap_read_fraction
-        )
+    def plot_one_heatmap(self, tsv: str):
+        PlotOneHeatmap(self.settings).main(
+            tsv=tsv,
+            heatmap_read_fraction=self.heatmap_read_fraction,
+            dstdir=self.dstdir)
+
+
+class PlotOneHeatmap(Processor):
+
+    LOG_PSEUDOCOUNT = True
+    NORMALIZE_BY_SAMPLE_READS = False
+
+    tsv: str
+    heatmap_read_fraction: float
+    dstdir: str
+
+    df: pd.DataFrame
+
+    def main(
+            self,
+            tsv: str,
+            heatmap_read_fraction: float,
+            dstdir: str):
+
+        self.tsv = tsv
+        self.heatmap_read_fraction = heatmap_read_fraction
+        self.dstdir = dstdir
+
+        self.read_tsv(tsv)
+        self.filter_by_cumulative_reads()
+        self.count_normalization()
+        self.clustermap()
+
+    def read_tsv(self, tsv):
+        self.df = pd.read_csv(tsv, sep='\t', index_col=0)
+
+    def filter_by_cumulative_reads(self):
+        self.df = FilterByCumulativeReads(self.settings).main(
+            df=self.df,
+            heatmap_read_fraction=self.heatmap_read_fraction)
+
+    def count_normalization(self):
+        self.df = CountNormalization(self.settings).main(
+            df=self.df,
+            log_pseudocount=self.LOG_PSEUDOCOUNT,
+            by_sample_reads=self.NORMALIZE_BY_SAMPLE_READS)
+
+    def clustermap(self):
         output_prefix = edit_fpath(
-            fpath=tsv,
+            fpath=self.tsv,
             old_suffix='.tsv',
             new_suffix='',
-            dstdir=self.dstdir
-        )
+            dstdir=self.dstdir)
+
         Clustermap(self.settings).main(
-            data=data,
-            output_prefix=output_prefix
-        )
+            data=self.df,
+            output_prefix=output_prefix)
 
 
 class FilterByCumulativeReads(Processor):

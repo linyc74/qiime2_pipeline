@@ -15,9 +15,9 @@ class TestCountNormalization(TestCase):
         df = pd.read_csv(f'{self.indir}/count-table.tsv', sep='\t', index_col=0)
         actual = CountNormalization(self.settings).main(
             df=df,
+            log_pseudocount=True,
             by_sample_reads=True,
-            sample_reads_unit=10000,
-            log_pseudocount=True
+            sample_reads_unit=10000
         )
         expected = pd.read_csv(f'{self.indir}/count-table-normalized.tsv', sep='\t', index_col=0)
         self.assertDataFrameEqual(expected, actual)

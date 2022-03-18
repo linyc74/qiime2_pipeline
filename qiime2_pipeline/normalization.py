@@ -6,21 +6,21 @@ from .template import Processor
 class CountNormalization(Processor):
 
     df: pd.DataFrame
+    log_pseudocount: bool
     by_sample_reads: bool
     sample_reads_unit: int
-    log_pseudocount: bool
 
     def main(
             self,
             df: pd.DataFrame,
+            log_pseudocount: bool,
             by_sample_reads: bool,
-            sample_reads_unit: int,
-            log_pseudocount: bool) -> pd.DataFrame:
+            sample_reads_unit: int = 10000) -> pd.DataFrame:
 
         self.df = df
+        self.log_pseudocount = log_pseudocount
         self.by_sample_reads = by_sample_reads
         self.sample_reads_unit = sample_reads_unit
-        self.log_pseudocount = log_pseudocount
 
         self.pseudocount()
         self.normalize_by_sample_reads()

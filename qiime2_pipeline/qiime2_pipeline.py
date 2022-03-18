@@ -29,7 +29,6 @@ class Qiime2Pipeline(Processor):
     clip_r1_5_prime: int
     clip_r2_5_prime: int
     heatmap_read_fraction: float
-    log_pseudocount: bool
 
     feature_table_qza: str
     feature_sequence_qza: str
@@ -55,8 +54,7 @@ class Qiime2Pipeline(Processor):
             alpha_metrics: List[str],
             clip_r1_5_prime: int,
             clip_r2_5_prime: int,
-            heatmap_read_fraction: float,
-            log_pseudocount: bool):
+            heatmap_read_fraction: float):
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
@@ -71,7 +69,6 @@ class Qiime2Pipeline(Processor):
         self.clip_r1_5_prime = clip_r1_5_prime
         self.clip_r2_5_prime = clip_r2_5_prime
         self.heatmap_read_fraction = heatmap_read_fraction
-        self.log_pseudocount = log_pseudocount
 
         self.generate_asv()
         self.otu_clustering()
@@ -155,6 +152,7 @@ class Qiime2Pipeline(Processor):
             group_keywords=self.group_keywords)
 
     def plot_heatmaps(self):
+        tsvs = [self.labeled_feature_table_tsv] + [v for v in self.taxon_table_tsv_dict.values()]
         PlotHeatmaps(self.settings).main(
-            tsvs=list(self.taxon_table_tsv_dict.values()),
+            tsvs=tsvs,
             heatmap_read_fraction=self.heatmap_read_fraction)

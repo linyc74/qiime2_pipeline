@@ -13,8 +13,12 @@ class TestPlotHeatmaps(TestCase):
 
     def test_main(self):
         tsvs = [
-            f'{self.indir}/class.tsv',
-            f'{self.indir}/species.tsv',
+            f'{self.indir}/phylum-table.tsv',
+            f'{self.indir}/class-table.tsv',
+            f'{self.indir}/order-table.tsv',
+            f'{self.indir}/family-table.tsv',
+            f'{self.indir}/genus-table.tsv',
+            f'{self.indir}/species-table.tsv',
         ]
         PlotHeatmaps(self.settings).main(
             tsvs=tsvs,
