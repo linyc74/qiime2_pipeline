@@ -9,7 +9,7 @@ from .otu_clustering import Vsearch
 from .taxon_table import TaxonTable
 from .phylogeny import MafftFasttree
 from .labeling import FeatureLabeling
-from .normalization import CountNormalization
+from .feature_embedding import PCAProcess, NMDSProcess, TSNEProcess
 from .beta_embedding import BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess
 from .generate_asv import FactoryGenerateASVPairedEnd, GenerateASVSingleEnd
 
@@ -77,10 +77,11 @@ class Qiime2Pipeline(Processor):
         self.phylogenetic_tree()
         self.alpha_diversity()
         self.beta_diversity()
-        self.dimensionality_reduction()
+        self.beta_embedding()
         self.taxon_table()
         self.lefse()
         self.plot_heatmaps()
+        self.feature_embedding()
 
     def generate_asv(self):
         if self.fq2_suffix is None:
@@ -136,7 +137,7 @@ class Qiime2Pipeline(Processor):
             feature_table_qza=self.labeled_feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza)
 
-    def dimensionality_reduction(self):
+    def beta_embedding(self):
         for Batch in [BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess]:
             Batch(self.settings).main(
                 distance_matrix_tsvs=self.distance_matrix_tsvs,
@@ -156,3 +157,9 @@ class Qiime2Pipeline(Processor):
         PlotHeatmaps(self.settings).main(
             tsvs=tsvs,
             heatmap_read_fraction=self.heatmap_read_fraction)
+
+    def feature_embedding(self):
+        for Process in [PCAProcess, NMDSProcess, TSNEProcess]:
+            Process(self.settings).main(
+                tsv=self.labeled_feature_table_tsv,
+                group_keywords=self.group_keywords)
