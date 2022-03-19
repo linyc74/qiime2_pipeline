@@ -93,7 +93,7 @@ class PCACore(Core):
             random_state=self.RANDOM_STATE)
 
     def set_proportion_explained_serise(self):
-        self.proportion_explained_series = self.embedding.explained_variance_ratio_
+        self.proportion_explained_series = pd.Series(self.embedding.explained_variance_ratio_)
 
 
 class NMDSCore(Core):

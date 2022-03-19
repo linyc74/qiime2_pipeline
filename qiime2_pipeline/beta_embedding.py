@@ -27,8 +27,11 @@ class PCoAProcess(EmbeddingProcessTemplate):
         self.run_main_workflow()
         self.write_proportion_explained()
 
-    def run_embedding(self):
-        df = self.distance_matrix
+    def preprocessing(self):
+        pass
+
+    def embedding(self):
+        df = self.df
         dist_mat = DistanceMatrix(df, list(df.columns))
         result = pcoa(distance_matrix=dist_mat)
         self.sample_coordinate_df = result.samples
@@ -67,9 +70,12 @@ class NMDSProcess(EmbeddingProcessTemplate):
         self.run_main_workflow()
         self.write_stress()
 
-    def run_embedding(self):
+    def preprocessing(self):
+        pass
+
+    def embedding(self):
         self.sample_coordinate_df, self.stress = NMDSCore(self.settings).main(
-            df=self.distance_matrix,
+            df=self.df,
             data_structure='distance_matrix'
         )
 
@@ -98,9 +104,12 @@ class TSNEProcess(EmbeddingProcessTemplate):
         self.group_keywords = group_keywords
         self.run_main_workflow()
 
-    def run_embedding(self):
+    def preprocessing(self):
+        pass
+
+    def embedding(self):
         self.sample_coordinate_df = TSNECore(self.settings).main(
-            df=self.distance_matrix,
+            df=self.df,
             data_structure='distance_matrix'
         )
 

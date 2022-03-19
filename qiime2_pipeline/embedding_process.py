@@ -1,14 +1,14 @@
 import os
 import pandas as pd
 from typing import List, Tuple
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from .tools import edit_fpath
 from .template import Processor
 from .grouping import AddGroupColumn
 from .embedding_core import ScatterPlot
 
 
-class EmbeddingProcessTemplate(Processor):
+class EmbeddingProcessTemplate(Processor, ABC):
 
     NAME: str
     XY_COLUMNS: Tuple[str, str]
@@ -18,7 +18,7 @@ class EmbeddingProcessTemplate(Processor):
     tsv: str
     group_keywords: List[str]
 
-    distance_matrix: pd.DataFrame
+    df: pd.DataFrame
     sample_coordinate_df: pd.DataFrame
     dstdir: str
 
@@ -31,20 +31,27 @@ class EmbeddingProcessTemplate(Processor):
 
     def run_main_workflow(self):
         self.read_tsv()
-        self.run_embedding()
+
+        self.preprocessing()
+        self.embedding()
+
         self.add_group_column()
         self.make_dstdir()
         self.write_sample_coordinate()
         self.plot_sample_coordinate()
 
     def read_tsv(self):
-        self.distance_matrix = pd.read_csv(
+        self.df = pd.read_csv(
             self.tsv,
             sep='\t',
             index_col=0)
 
     @abstractmethod
-    def run_embedding(self):
+    def preprocessing(self):
+        pass
+
+    @abstractmethod
+    def embedding(self):
         pass
 
     def make_dstdir(self):
