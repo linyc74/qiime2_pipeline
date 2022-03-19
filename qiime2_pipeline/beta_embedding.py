@@ -1,4 +1,5 @@
 import pandas as pd
+from abc import ABC
 from typing import List
 from skbio import DistanceMatrix
 from skbio.stats.ordination import pcoa
@@ -8,11 +9,18 @@ from .embedding_core import NMDSCore, TSNECore
 from .embedding_process import EmbeddingProcessTemplate
 
 
-class PCoAProcess(EmbeddingProcessTemplate):
+class BetaEmbeddingProcess(EmbeddingProcessTemplate, ABC):
+
+    DSTDIR_NAME = 'beta-embedding'
+
+    def preprocessing(self):
+        pass
+
+
+class PCoAProcess(BetaEmbeddingProcess):
 
     NAME = 'PCoA'
     XY_COLUMNS = ('PC1', 'PC2')
-    DSTDIR_NAME = 'beta-embedding'
 
     proportion_explained_serise: pd.Series
 
@@ -26,9 +34,6 @@ class PCoAProcess(EmbeddingProcessTemplate):
 
         self.run_main_workflow()
         self.write_proportion_explained()
-
-    def preprocessing(self):
-        pass
 
     def embedding(self):
         df = self.df
@@ -51,11 +56,10 @@ class PCoAProcess(EmbeddingProcessTemplate):
         )
 
 
-class NMDSProcess(EmbeddingProcessTemplate):
+class NMDSProcess(BetaEmbeddingProcess):
 
     NAME = 'NMDS'
     XY_COLUMNS = ('NMDS 1', 'NMDS 2')
-    DSTDIR_NAME = 'beta-embedding'
 
     stress: float
 
@@ -69,9 +73,6 @@ class NMDSProcess(EmbeddingProcessTemplate):
 
         self.run_main_workflow()
         self.write_stress()
-
-    def preprocessing(self):
-        pass
 
     def embedding(self):
         self.sample_coordinate_df, self.stress = NMDSCore(self.settings).main(
@@ -89,11 +90,10 @@ class NMDSProcess(EmbeddingProcessTemplate):
             fh.write(str(self.stress))
 
 
-class TSNEProcess(EmbeddingProcessTemplate):
+class TSNEProcess(BetaEmbeddingProcess):
 
     NAME = 't-SNE'
     XY_COLUMNS = ('t-SNE 1', 't-SNE 2')
-    DSTDIR_NAME = 'beta-embedding'
 
     def main(
             self,
@@ -103,9 +103,6 @@ class TSNEProcess(EmbeddingProcessTemplate):
         self.tsv = tsv
         self.group_keywords = group_keywords
         self.run_main_workflow()
-
-    def preprocessing(self):
-        pass
 
     def embedding(self):
         self.sample_coordinate_df = TSNECore(self.settings).main(
