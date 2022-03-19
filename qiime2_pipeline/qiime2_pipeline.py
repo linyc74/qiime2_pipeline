@@ -10,7 +10,7 @@ from .taxon_table import TaxonTable
 from .phylogeny import MafftFasttree
 from .labeling import FeatureLabeling
 from .normalization import CountNormalization
-from .beta_embedding import BatchPCoA, BatchNMDS, BatchTSNE
+from .beta_embedding import BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess
 from .generate_asv import FactoryGenerateASVPairedEnd, GenerateASVSingleEnd
 
 
@@ -137,7 +137,7 @@ class Qiime2Pipeline(Processor):
             rooted_tree_qza=self.rooted_tree_qza)
 
     def dimensionality_reduction(self):
-        for Batch in [BatchPCoA, BatchNMDS, BatchTSNE]:
+        for Batch in [BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess]:
             Batch(self.settings).main(
                 distance_matrix_tsvs=self.distance_matrix_tsvs,
                 group_keywords=self.group_keywords)

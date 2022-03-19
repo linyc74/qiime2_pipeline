@@ -1,99 +1,27 @@
-import os
 import pandas as pd
-from typing import List, Tuple
+from typing import List
 from skbio import DistanceMatrix
-from abc import ABC, abstractmethod
 from skbio.stats.ordination import pcoa
 from .tools import edit_fpath
-from .grouping import AddGroupColumn
-from .embedding_core import ScatterPlot
 from .template import Processor, Settings
 from .embedding_core import NMDSCore, TSNECore
+from .embedding_process import EmbeddingProcessTemplate
 
 
-class BetaEmbedding(Processor, ABC):
-
-    NAME: str
-    XY_COLUMNS: Tuple[str, str]
-    GROUP_COLUMN: str = AddGroupColumn.GROUP_COLUMN
-
-    distance_matrix_tsv: str
-    group_keywords: List[str]
-
-    distance_matrix: pd.DataFrame
-    sample_coordinate_df: pd.DataFrame
-    dstdir: str
-
-    @abstractmethod
-    def main(
-            self,
-            distance_matrix_tsv: str,
-            group_keywords: List[str]):
-        pass
-
-    def run_main_workflow(self):
-        self.load_distance_matrix()
-        self.run_embedding()
-        self.add_group_column()
-        self.make_dstdir()
-        self.write_sample_coordinate()
-        self.plot_sample_coordinate()
-
-    def load_distance_matrix(self):
-        self.distance_matrix = pd.read_csv(
-            self.distance_matrix_tsv,
-            sep='\t',
-            index_col=0)
-
-    @abstractmethod
-    def run_embedding(self):
-        pass
-
-    def make_dstdir(self):
-        self.dstdir = f'{self.outdir}/beta-embedding'
-        os.makedirs(self.dstdir, exist_ok=True)
-
-    def add_group_column(self):
-        self.sample_coordinate_df = AddGroupColumn(self.settings).main(
-            df=self.sample_coordinate_df,
-            group_keywords=self.group_keywords)
-
-    def write_sample_coordinate(self):
-        tsv = self.__get_sample_coordinate_fpath(ext='tsv')
-        self.sample_coordinate_df.to_csv(tsv, sep='\t')
-
-    def plot_sample_coordinate(self):
-        png = self.__get_sample_coordinate_fpath(ext='png')
-        ScatterPlot(self.settings).main(
-            sample_coordinate_df=self.sample_coordinate_df,
-            x_column=self.XY_COLUMNS[0],
-            y_column=self.XY_COLUMNS[1],
-            hue_column=self.GROUP_COLUMN,
-            output_png=png)
-
-    def __get_sample_coordinate_fpath(self, ext: str) -> str:
-        name = self.NAME.lower().replace('-', '')
-        return edit_fpath(
-            fpath=self.distance_matrix_tsv,
-            old_suffix='.tsv',
-            new_suffix=f'-{name}-sample-coordinate.{ext}',
-            dstdir=self.dstdir
-        )
-
-
-class PCoA(BetaEmbedding):
+class PCoAProcess(EmbeddingProcessTemplate):
 
     NAME = 'PCoA'
     XY_COLUMNS = ('PC1', 'PC2')
+    DSTDIR_NAME = 'beta-embedding'
 
     proportion_explained_serise: pd.Series
 
     def main(
             self,
-            distance_matrix_tsv: str,
+            tsv: str,
             group_keywords: List[str]):
 
-        self.distance_matrix_tsv = distance_matrix_tsv
+        self.tsv = tsv
         self.group_keywords = group_keywords
 
         self.run_main_workflow()
@@ -108,7 +36,7 @@ class PCoA(BetaEmbedding):
 
     def write_proportion_explained(self):
         tsv = edit_fpath(
-            fpath=self.distance_matrix_tsv,
+            fpath=self.tsv,
             old_suffix='.tsv',
             new_suffix=f'-{self.NAME.lower()}-proportion-explained.tsv',
             dstdir=self.dstdir
@@ -120,19 +48,20 @@ class PCoA(BetaEmbedding):
         )
 
 
-class NMDS(BetaEmbedding):
+class NMDSProcess(EmbeddingProcessTemplate):
 
     NAME = 'NMDS'
     XY_COLUMNS = ('NMDS 1', 'NMDS 2')
+    DSTDIR_NAME = 'beta-embedding'
 
     stress: float
 
     def main(
             self,
-            distance_matrix_tsv: str,
+            tsv: str,
             group_keywords: List[str]):
 
-        self.distance_matrix_tsv = distance_matrix_tsv
+        self.tsv = tsv
         self.group_keywords = group_keywords
 
         self.run_main_workflow()
@@ -146,7 +75,7 @@ class NMDS(BetaEmbedding):
 
     def write_stress(self):
         txt = edit_fpath(
-            fpath=self.distance_matrix_tsv,
+            fpath=self.tsv,
             old_suffix='.tsv',
             new_suffix='-nmds-stress.txt',
             dstdir=self.dstdir)
@@ -154,17 +83,18 @@ class NMDS(BetaEmbedding):
             fh.write(str(self.stress))
 
 
-class TSNE(BetaEmbedding):
+class TSNEProcess(EmbeddingProcessTemplate):
 
     NAME = 't-SNE'
     XY_COLUMNS = ('t-SNE 1', 't-SNE 2')
+    DSTDIR_NAME = 'beta-embedding'
 
     def main(
             self,
-            distance_matrix_tsv: str,
+            tsv: str,
             group_keywords: List[str]):
 
-        self.distance_matrix_tsv = distance_matrix_tsv
+        self.tsv = tsv
         self.group_keywords = group_keywords
         self.run_main_workflow()
 
@@ -175,12 +105,12 @@ class TSNE(BetaEmbedding):
         )
 
 
-class BatchBetaEmbedding(Processor):
+class BatchEmbeddingProcess(Processor):
 
     distance_matrix_tsvs: List[str]
     group_keywords: List[str]
 
-    beta_embedding: BetaEmbedding
+    embedding: EmbeddingProcessTemplate
 
     def main(
             self,
@@ -191,28 +121,28 @@ class BatchBetaEmbedding(Processor):
         self.group_keywords = group_keywords
 
         for tsv in self.distance_matrix_tsvs:
-            self.logger.debug(f'{self.beta_embedding.NAME} for {tsv}')
-            self.beta_embedding.main(
-                distance_matrix_tsv=tsv,
+            self.logger.debug(f'{self.embedding.NAME} for {tsv}')
+            self.embedding.main(
+                tsv=tsv,
                 group_keywords=self.group_keywords)
 
 
-class BatchPCoA(BatchBetaEmbedding):
+class BatchPCoAProcess(BatchEmbeddingProcess):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
-        self.ordination = PCoA(self.settings)
+        self.embedding = PCoAProcess(self.settings)
 
 
-class BatchNMDS(BatchBetaEmbedding):
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-        self.ordination = NMDS(self.settings)
-
-
-class BatchTSNE(BatchBetaEmbedding):
+class BatchNMDSProcess(BatchEmbeddingProcess):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
-        self.ordination = TSNE(self.settings)
+        self.embedding = NMDSProcess(self.settings)
+
+
+class BatchTSNEProcess(BatchEmbeddingProcess):
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+        self.embedding = TSNEProcess(self.settings)
