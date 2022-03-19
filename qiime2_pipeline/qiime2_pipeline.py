@@ -10,8 +10,8 @@ from .taxon_table import TaxonTable
 from .phylogeny import MafftFasttree
 from .labeling import FeatureLabeling
 from .feature_embedding import PCAProcess, NMDSProcess, TSNEProcess
-from .beta_embedding import BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess
 from .generate_asv import FactoryGenerateASVPairedEnd, GenerateASVSingleEnd
+from .beta_embedding import BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess
 
 
 class Qiime2Pipeline(Processor):
