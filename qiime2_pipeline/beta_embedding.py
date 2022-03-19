@@ -1,19 +1,19 @@
 import os
-import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
-from sklearn import manifold
 from typing import List, Tuple
 from skbio import DistanceMatrix
+from abc import ABC, abstractmethod
 from skbio.stats.ordination import pcoa
 from .tools import edit_fpath
 from .grouping import AddGroupColumn
 from .template import Processor, Settings
+from .embedding_core import NMDSCore, TSNECore
 
 
-class Ordination(Processor):
+class BetaEmbedding(Processor, ABC):
 
     NAME: str
     XY_COLUMNS: Tuple[str, str]
@@ -26,10 +26,7 @@ class Ordination(Processor):
     sample_coordinate_df: pd.DataFrame
     dstdir: str
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-        self.scatterplot = ScatterPlot(self.settings).main
-
+    @abstractmethod
     def main(
             self,
             distance_matrix_tsv: str,
@@ -38,7 +35,7 @@ class Ordination(Processor):
 
     def run_main_workflow(self):
         self.load_distance_matrix()
-        self.run_dim_reduction()
+        self.run_embedding()
         self.add_group_column()
         self.make_dstdir()
         self.write_sample_coordinate()
@@ -50,7 +47,8 @@ class Ordination(Processor):
             sep='\t',
             index_col=0)
 
-    def run_dim_reduction(self):
+    @abstractmethod
+    def run_embedding(self):
         pass
 
     def make_dstdir(self):
@@ -68,7 +66,7 @@ class Ordination(Processor):
 
     def plot_sample_coordinate(self):
         png = self.__get_sample_coordinate_fpath(ext='png')
-        self.scatterplot(
+        ScatterPlot(self.settings).main(
             sample_coordinate_df=self.sample_coordinate_df,
             x_column=self.XY_COLUMNS[0],
             y_column=self.XY_COLUMNS[1],
@@ -141,13 +139,12 @@ class ScatterPlot(Processor):
         plt.close()
 
 
-class PCoA(Ordination):
+class PCoA(BetaEmbedding):
 
     NAME = 'PCoA'
     XY_COLUMNS = ('PC1', 'PC2')
 
     proportion_explained_serise: pd.Series
-    proportion_explained_tsv: str
 
     def main(
             self,
@@ -160,7 +157,7 @@ class PCoA(Ordination):
         self.run_main_workflow()
         self.write_proportion_explained()
 
-    def run_dim_reduction(self):
+    def run_embedding(self):
         df = self.distance_matrix
         dist_mat = DistanceMatrix(df, list(df.columns))
         result = pcoa(distance_matrix=dist_mat)
@@ -168,31 +165,24 @@ class PCoA(Ordination):
         self.proportion_explained_serise = result.proportion_explained
 
     def write_proportion_explained(self):
-        self.proportion_explained_tsv = edit_fpath(
+        tsv = edit_fpath(
             fpath=self.distance_matrix_tsv,
             old_suffix='.tsv',
             new_suffix=f'-{self.NAME.lower()}-proportion-explained.tsv',
             dstdir=self.dstdir
         )
         self.proportion_explained_serise.to_csv(
-            self.proportion_explained_tsv,
+            tsv,
             sep='\t',
             header=['Proportion Explained']
         )
 
 
-class NMDS(Ordination):
+class NMDS(BetaEmbedding):
 
     NAME = 'NMDS'
     XY_COLUMNS = ('NMDS 1', 'NMDS 2')
-    N_COMPONENTS = 2
-    METRIC = False  # i.e. non-metric MDS
-    N_INIT = 10  # number of independent fitting
-    EPS = 1e-3  # stress tolerance for convergence
-    RANDOM_STATE = 1  # to ensure reproducible result
-    DISSIMILARITY = 'precomputed'  # distance matrix is precomputed
 
-    embedding: manifold.MDS
     stress: float
 
     def main(
@@ -204,40 +194,13 @@ class NMDS(Ordination):
         self.group_keywords = group_keywords
 
         self.run_main_workflow()
-        self.normalize_stress()
         self.write_stress()
 
-    def run_dim_reduction(self):
-        self.embedding = manifold.MDS(
-            n_components=self.N_COMPONENTS,
-            metric=self.METRIC,
-            n_init=self.N_INIT,
-            max_iter=300,
-            verbose=0,
-            eps=self.EPS,
-            n_jobs=self.threads,
-            random_state=self.RANDOM_STATE,
-            dissimilarity=self.DISSIMILARITY)
-
-        transformed = self.embedding.fit_transform(
-            self.distance_matrix.to_numpy()
+    def run_embedding(self):
+        self.sample_coordinate_df, self.stress = NMDSCore(self.settings).main(
+            df=self.distance_matrix,
+            data_structure='distance_matrix'
         )
-
-        sample_names = list(self.distance_matrix.columns)
-        self.sample_coordinate_df = pd.DataFrame(
-            data=transformed,
-            columns=self.XY_COLUMNS,
-            index=sample_names)
-
-    def normalize_stress(self):
-        """
-        Normalize with sum of squared distances
-        i.e. Kruskal Stress, or Stress_1
-        https://stackoverflow.com/questions/36428205/stress-attribute-sklearn-manifold-mds-python
-        """
-        distances = self.distance_matrix.to_numpy()
-        squared_sum = np.sum(distances ** 2) / 2  # diagonal symmetry, thus divide by 2
-        self.stress = np.sqrt(self.embedding.stress_ / squared_sum)
 
     def write_stress(self):
         txt = edit_fpath(
@@ -249,17 +212,10 @@ class NMDS(Ordination):
             fh.write(str(self.stress))
 
 
-class TSNE(Ordination):
+class TSNE(BetaEmbedding):
 
     NAME = 't-SNE'
     XY_COLUMNS = ('t-SNE 1', 't-SNE 2')
-    N_COMPONENTS = 2
-    PERPLEXITY = 3.0
-    DISTANCE_METRIC = 'precomputed'  # distance matrix is precomputed
-    RANDOM_STATE = 1  # to ensure reproducible result
-    TSNE_INIT = 'random'  # cannot use PCA becuase distance matrix is precomputed
-
-    embedding: manifold.TSNE
 
     def main(
             self,
@@ -268,45 +224,21 @@ class TSNE(Ordination):
 
         self.distance_matrix_tsv = distance_matrix_tsv
         self.group_keywords = group_keywords
-
         self.run_main_workflow()
 
-    def run_dim_reduction(self):
-        self.embedding = manifold.TSNE(
-            n_components=self.N_COMPONENTS,
-            perplexity=self.PERPLEXITY,
-            early_exaggeration=12.0,
-            learning_rate=200.0,
-            n_iter=1000,
-            n_iter_without_progress=300,
-            min_grad_norm=1e-7,
-            metric=self.DISTANCE_METRIC,
-            init=self.TSNE_INIT,
-            verbose=1,
-            random_state=self.RANDOM_STATE,
-            method='barnes_hut',
-            angle=0.5,
-            n_jobs=self.threads,
-            square_distances='legacy'
+    def run_embedding(self):
+        self.sample_coordinate_df = TSNECore(self.settings).main(
+            df=self.distance_matrix,
+            data_structure='distance_matrix'
         )
 
-        transformed = self.embedding.fit_transform(
-            self.distance_matrix.to_numpy()
-        )
 
-        sample_names = list(self.distance_matrix.columns)
-        self.sample_coordinate_df = pd.DataFrame(
-            data=transformed,
-            columns=self.XY_COLUMNS,
-            index=sample_names)
-
-
-class BatchOrdination(Processor):
+class BatchBetaEmbedding(Processor):
 
     distance_matrix_tsvs: List[str]
     group_keywords: List[str]
 
-    ordination: Ordination
+    beta_embedding: BetaEmbedding
 
     def main(
             self,
@@ -317,27 +249,27 @@ class BatchOrdination(Processor):
         self.group_keywords = group_keywords
 
         for tsv in self.distance_matrix_tsvs:
-            self.logger.debug(f'{self.ordination.NAME} for {tsv}')
-            self.ordination.main(
+            self.logger.debug(f'{self.beta_embedding.NAME} for {tsv}')
+            self.beta_embedding.main(
                 distance_matrix_tsv=tsv,
                 group_keywords=self.group_keywords)
 
 
-class BatchPCoA(BatchOrdination):
+class BatchPCoA(BatchBetaEmbedding):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
         self.ordination = PCoA(self.settings)
 
 
-class BatchNMDS(BatchOrdination):
+class BatchNMDS(BatchBetaEmbedding):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
         self.ordination = NMDS(self.settings)
 
 
-class BatchTSNE(BatchOrdination):
+class BatchTSNE(BatchBetaEmbedding):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
