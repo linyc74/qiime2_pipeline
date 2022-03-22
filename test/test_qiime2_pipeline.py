@@ -24,7 +24,8 @@ class TestQiime2Pipeline(TestCase):
             alpha_metrics=['shannon', 'observed_features'],
             clip_r1_5_prime=17,
             clip_r2_5_prime=0,
-            heatmap_read_fraction=0.99
+            heatmap_read_fraction=0.99,
+            n_taxa_barplot=20
         )
 
     def test_single_end(self):
@@ -41,5 +42,6 @@ class TestQiime2Pipeline(TestCase):
             alpha_metrics=['shannon', 'observed_features'],
             clip_r1_5_prime=17,
             clip_r2_5_prime=0,
-            heatmap_read_fraction=0.99
+            heatmap_read_fraction=0.99,
+            n_taxa_barplot=20
         )

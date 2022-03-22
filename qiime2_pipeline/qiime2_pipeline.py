@@ -9,6 +9,7 @@ from .otu_clustering import Vsearch
 from .taxon_table import TaxonTable
 from .phylogeny import MafftFasttree
 from .labeling import FeatureLabeling
+from .taxon_barplot import PlotTaxonBarplots
 from .feature_embedding import PCAProcess, NMDSProcess, TSNEProcess
 from .generate_asv import FactoryGenerateASVPairedEnd, GenerateASVSingleEnd
 from .beta_embedding import BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess
@@ -29,6 +30,7 @@ class Qiime2Pipeline(Processor):
     clip_r1_5_prime: int
     clip_r2_5_prime: int
     heatmap_read_fraction: float
+    n_taxa_barplot: int
 
     feature_table_qza: str
     feature_sequence_qza: str
@@ -54,7 +56,8 @@ class Qiime2Pipeline(Processor):
             alpha_metrics: List[str],
             clip_r1_5_prime: int,
             clip_r2_5_prime: int,
-            heatmap_read_fraction: float):
+            heatmap_read_fraction: float,
+            n_taxa_barplot: int):
 
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
@@ -69,6 +72,7 @@ class Qiime2Pipeline(Processor):
         self.clip_r1_5_prime = clip_r1_5_prime
         self.clip_r2_5_prime = clip_r2_5_prime
         self.heatmap_read_fraction = heatmap_read_fraction
+        self.n_taxa_barplot = n_taxa_barplot
 
         self.generate_asv()
         self.otu_clustering()
@@ -82,6 +86,7 @@ class Qiime2Pipeline(Processor):
         self.lefse()
         self.plot_heatmaps()
         self.feature_embedding()
+        self.taxon_barplot()
 
     def generate_asv(self):
         if self.fq2_suffix is None:
@@ -163,3 +168,8 @@ class Qiime2Pipeline(Processor):
             Process(self.settings).main(
                 tsv=self.labeled_feature_table_tsv,
                 group_keywords=self.group_keywords)
+
+    def taxon_barplot(self):
+        PlotTaxonBarplots(self.settings).main(
+            taxon_table_tsv_dict=self.taxon_table_tsv_dict,
+            n_taxa=self.n_taxa_barplot)

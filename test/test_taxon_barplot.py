@@ -3,7 +3,7 @@ from qiime2_pipeline.taxon_barplot import PlotTaxonBarplots
 from .setup import TestCase
 
 
-class TestBarplot(TestCase):
+class TestPlotTaxonBarplots(TestCase):
 
     def setUp(self):
         self.set_up(py_path=__file__)
