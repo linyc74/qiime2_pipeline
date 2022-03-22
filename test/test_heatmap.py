@@ -1,5 +1,5 @@
 import pandas as pd
-from qiime2_pipeline.heatmap import Clustermap, FilterByCumulativeReads, PlotHeatmaps
+from qiime2_pipeline.heatmap import Clustermap, PlotHeatmaps, FilterByCumulativeReads
 from .setup import TestCase
 
 
@@ -53,6 +53,6 @@ class TestClustermap(TestCase):
 
     def test_main(self):
         Clustermap(self.settings).main(
-            data=pd.read_csv(f'{self.indir}/filtered.tsv', sep='\t', index_col=0),
+            data=pd.read_csv(f'{self.indir}/clustermap.tsv', sep='\t', index_col=0),
             output_prefix=f'{self.outdir}/clustermap'
         )

@@ -21,4 +21,3 @@ class TestCountNormalization(TestCase):
         )
         expected = pd.read_csv(f'{self.indir}/count-table-normalized.tsv', sep='\t', index_col=0)
         self.assertDataFrameEqual(expected, actual)
-
