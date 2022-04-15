@@ -10,7 +10,8 @@ RUN conda install -c anaconda -n qiime2-2021.11 scikit-bio
 
 ENV PATH /opt/conda/envs/qiime2-2021.11/bin:$PATH
 
-RUN /opt/conda/envs/qiime2-2021.11/bin/pip install lefse==1.1.2
+RUN /opt/conda/envs/qiime2-2021.11/bin/pip install lefse==1.1.2 \
+ && /opt/conda/envs/qiime2-2021.11/bin/pip matplotlib-venn==0.11.7
 
 RUN Rscript -e 'install.packages("survival", version="2.44", repos="https://cran.csie.ntu.edu.tw/")' \
  && Rscript -e 'install.packages("mvtnorm", version="1.1", repos="https://cran.csie.ntu.edu.tw/")' \

@@ -62,13 +62,13 @@ class PlotOneHeatmap(Processor):
         self.heatmap_read_fraction = heatmap_read_fraction
         self.dstdir = dstdir
 
-        self.read_tsv(tsv)
+        self.read_tsv()
         self.filter_by_cumulative_reads()
         self.count_normalization()
         self.clustermap()
 
-    def read_tsv(self, tsv):
-        self.df = pd.read_csv(tsv, sep='\t', index_col=0)
+    def read_tsv(self):
+        self.df = pd.read_csv(self.tsv, sep='\t', index_col=0)
 
     def filter_by_cumulative_reads(self):
         self.df = FilterByCumulativeReads(self.settings).main(

@@ -5,6 +5,7 @@ from .template import Processor
 from .beta import BetaDiversity
 from .heatmap import PlotHeatmaps
 from .alpha import AlphaDiversity
+from .venn import PlotVennDiagrams
 from .otu_clustering import Vsearch
 from .taxon_table import TaxonTable
 from .phylogeny import MafftFasttree
@@ -173,3 +174,9 @@ class Qiime2Pipeline(Processor):
         PlotTaxonBarplots(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             n_taxa=self.n_taxa_barplot)
+
+    def plot_venn_diagrams(self):
+        tsvs = [self.labeled_feature_table_tsv] + [v for v in self.taxon_table_tsv_dict.values()]
+        PlotVennDiagrams(self.settings).main(
+            tsvs=tsvs,
+            group_keywords=self.group_keywords)
