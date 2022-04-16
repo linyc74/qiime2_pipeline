@@ -1,4 +1,4 @@
-from qiime2_pipeline.venn import PlotVennDiagrams, PlotOneVenn
+from qiime2_pipeline.venn import PlotVennDiagrams, ProcessTsvPlotVenn
 from .setup import TestCase
 
 
@@ -25,7 +25,7 @@ class TestPlotVennDiagrams(TestCase):
         )
 
 
-class TestPlotOneVenn(TestCase):
+class TestProcessTsvPlotVenn(TestCase):
 
     def setUp(self):
         self.set_up(py_path=__file__)
@@ -35,26 +35,26 @@ class TestPlotOneVenn(TestCase):
 
     def test_1_group(self):
         with self.assertRaises(AssertionError):
-            PlotOneVenn(self.settings).main(
-                tsv='',
+            ProcessTsvPlotVenn(self.settings).main(
+                tsv=f'{self.indir}/mock-feature-table.tsv',
                 group_keywords=['A'],
-                dstdir='')
+                dstdir=self.outdir)
 
     def test_2_groups(self):
-        PlotOneVenn(self.settings).main(
+        ProcessTsvPlotVenn(self.settings).main(
             tsv=f'{self.indir}/mock-feature-table.tsv',
             group_keywords=['A', 'B'],
             dstdir=self.outdir)
 
     def test_3_groups(self):
-        PlotOneVenn(self.settings).main(
+        ProcessTsvPlotVenn(self.settings).main(
             tsv=f'{self.indir}/mock-feature-table.tsv',
             group_keywords=['A', 'B', 'C'],
             dstdir=self.outdir)
 
     def test_4_groups(self):
         with self.assertRaises(AssertionError):
-            PlotOneVenn(self.settings).main(
-                tsv='',
+            ProcessTsvPlotVenn(self.settings).main(
+                tsv=f'{self.indir}/mock-feature-table.tsv',
                 group_keywords=['A', 'B', 'C', 'D'],
-                dstdir='')
+                dstdir=self.outdir)

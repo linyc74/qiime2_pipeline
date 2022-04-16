@@ -33,13 +33,11 @@ class PlotVennDiagrams(Processor):
 
     def check_number_of_groups(self) -> bool:
         n = len(self.group_keywords)
-        if n == 2 or n == 3:
+        if n in [2, 3]:
             return True
         else:
-            if n == 1:
-                msg = f'There is only {n} group keyword: {self.group_keywords}, skip Venn diagram'
-            else:  # n >= 4
-                msg = f'There are {n} group keywords: {self.group_keywords}, skip Venn diagram'
+            p = 'There is only 1' if n == 1 else f'There are {n}'
+            msg = f'{p} group keywords: {self.group_keywords}, skip Venn diagram'
             self.logger.info(msg)
             return False
 
@@ -49,13 +47,13 @@ class PlotVennDiagrams(Processor):
 
     def plot_venn_diagrams(self):
         for tsv in self.tsvs:
-            PlotOneVenn(self.settings).main(
+            ProcessTsvPlotVenn(self.settings).main(
                 tsv=tsv,
                 group_keywords=self.group_keywords,
                 dstdir=self.dstdir)
 
 
-class PlotOneVenn(Processor):
+class ProcessTsvPlotVenn(Processor):
 
     FIGSIZE = (8, 6)
     DPI = 300
@@ -66,6 +64,7 @@ class PlotOneVenn(Processor):
 
     df: pd.DataFrame
     group_keyword_to_features: Dict[str, Set[str]]
+    png: str
 
     def main(
             self,
@@ -77,17 +76,11 @@ class PlotOneVenn(Processor):
         self.group_keywords = group_keywords
         self.dstdir = dstdir
 
-        self.assert_number_of_groups()
         self.read_tsv()
         self.init_group_keyword_to_features()
         self.count_features_for_each_group()
-
-        self.init_figure()
+        self.set_png()
         self.plot_venn()
-        self.save_figure()
-
-    def assert_number_of_groups(self):
-        assert len(self.group_keywords) in [2, 3]
 
     def read_tsv(self):
         self.df = pd.read_csv(self.tsv, sep='\t', index_col=0)
@@ -103,24 +96,58 @@ class PlotOneVenn(Processor):
                     set_2 = self.df[c][self.df[c] > 0].index
                     self.group_keyword_to_features[k] = set_1.union(set_2)
 
-    def init_figure(self):
-        plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
-
-    def plot_venn(self):
-        set_labels, subsets = [], []
-        for group, features in self.group_keyword_to_features.items():
-            set_labels.append(group)
-            subsets.append(features)
-
-        if len(subsets) == 2:
-            venn2(subsets=subsets, set_labels=set_labels)
-        else:
-            venn3(subsets=subsets, set_labels=set_labels)
-
-    def save_figure(self):
-        png = edit_fpath(
+    def set_png(self):
+        self.png = edit_fpath(
             fpath=self.tsv,
             old_suffix='.tsv',
             new_suffix='.png',
             dstdir=self.dstdir)
-        plt.savefig(png)
+
+    def plot_venn(self):
+        subsets = [
+            self.group_keyword_to_features[k] for k in self.group_keywords
+        ]
+        PlotVenn(self.settings).main(
+            set_labels=self.group_keywords,
+            subsets=subsets,
+            png=self.png)
+
+
+class PlotVenn(Processor):
+
+    FIGSIZE = (8, 6)
+    DPI = 300
+
+    set_labels: List[str]
+    subsets: List[Set[str]]
+    png: str
+
+    def main(
+            self,
+            set_labels: List[str],
+            subsets: List[Set[str]],
+            png: str):
+
+        self.set_labels = set_labels
+        self.subsets = subsets
+        self.png = png
+
+        self.assert_number_of_groups()
+        self.init_figure()
+        self.plot()
+        self.save_figure()
+
+    def assert_number_of_groups(self):
+        assert len(self.set_labels) in [2, 3]
+
+    def init_figure(self):
+        plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
+
+    def plot(self):
+        if len(self.subsets) == 2:
+            venn2(subsets=self.subsets, set_labels=self.set_labels)
+        else:
+            venn3(subsets=self.subsets, set_labels=self.set_labels)
+
+    def save_figure(self):
+        plt.savefig(self.png)
