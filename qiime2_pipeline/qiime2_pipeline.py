@@ -88,6 +88,7 @@ class Qiime2Pipeline(Processor):
         self.plot_heatmaps()
         self.feature_embedding()
         self.taxon_barplot()
+        self.plot_venn_diagrams()
 
     def generate_asv(self):
         if self.fq2_suffix is None:
