@@ -1,6 +1,6 @@
 from os.path import exists
 from .setup import TestCase
-from qiime2_pipeline.lefse import LefSe, LefSeOneTaxonLevel, InsertGroupRow
+from qiime2_pipeline.lefse import LefSe, LefSeOneTaxonLevel, InsertGroupRow, AddTaxonLevelPrefix
 
 
 class TestLefSe(TestCase):
@@ -46,6 +46,29 @@ class TestLefSeOneTaxonLevel(TestCase):
             f'{self.outdir}/lefse/lefse-genus-cladogram.png',
         ]:
             self.assertTrue(exists(file))
+
+
+class TestAddTaxonLevelPrefix(TestCase):
+
+    def setUp(self):
+        self.set_up(py_path=__file__)
+
+    def tearDown(self):
+        self.tear_down()
+
+    def test_main(self):
+        actual = AddTaxonLevelPrefix(self.settings).main(
+            taxon_table_tsv=f'{self.indir}/genus-table.tsv',
+        )
+        expected = f'{self.indir}/genus-table-relabeled.tsv'
+        self.assertFileEqual(expected, actual)
+
+    def test_add_level_prefixes(self):
+        actual = AddTaxonLevelPrefix(self.settings).add_level_prefixes(
+            s='A|B|C|D|E|F|G'
+        )
+        expected = 'domain__A|phylum__B|class__C|order__D|family__E|genus__F|species__G'
+        self.assertEqual(actual, expected)
 
 
 class TestInsertGroupRow(TestCase):

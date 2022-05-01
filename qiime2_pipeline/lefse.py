@@ -53,6 +53,7 @@ class LefSeOneTaxonLevel(Processor):
         self.group_keywords = group_keywords
 
         self.make_dstdir()
+        self.add_taxon_level_prefix()
         self.insert_group_row()
         self.format_input()
         self.run_lefse()
@@ -62,6 +63,10 @@ class LefSeOneTaxonLevel(Processor):
     def make_dstdir(self):
         self.dstdir = f'{self.outdir}/{self.DSTDIR_NAME}'
         os.makedirs(self.dstdir, exist_ok=True)
+
+    def add_taxon_level_prefix(self):
+        self.taxon_table_tsv = AddTaxonLevelPrefix(self.settings).main(
+            taxon_table_tsv=self.taxon_table_tsv)
 
     def insert_group_row(self):
         self.taxon_table_tsv = InsertGroupRow(self.settings).main(
@@ -114,6 +119,52 @@ class LefSeOneTaxonLevel(Processor):
             f'1> {self.lefse_log} 2> {self.lefse_log}'
         ])
         self.call(cmd)
+
+
+class AddTaxonLevelPrefix(Processor):
+
+    LEVEL_PREFIXES = [
+        'domain__',
+        'phylum__',
+        'class__',
+        'order__',
+        'family__',
+        'genus__',
+        'species__',
+    ]
+
+    taxon_table_tsv: str
+
+    df: pd.DataFrame
+    output_tsv: str
+
+    def main(self, taxon_table_tsv: str) -> str:
+
+        self.taxon_table_tsv = taxon_table_tsv
+
+        self.read_taxon_table_tsv()
+        self.df.index = map(self.add_level_prefixes, self.df.index)
+        self.write_output_tsv()
+
+        return self.output_tsv
+
+    def add_level_prefixes(self, s: str) -> str:
+        items = []
+        for i, taxon in enumerate(s.split('|')):
+            items.append(self.LEVEL_PREFIXES[i] + taxon)
+        return '|'.join(items)
+
+    def read_taxon_table_tsv(self):
+        self.df = pd.read_csv(self.taxon_table_tsv, sep='\t', index_col=0)
+
+    def write_output_tsv(self):
+        self.output_tsv = edit_fpath(
+            fpath=self.taxon_table_tsv,
+            old_suffix='.tsv',
+            new_suffix='-relabeled.tsv',
+            dstdir=self.workdir
+        )
+        self.df.to_csv(self.output_tsv, sep='\t', index=True)
 
 
 class InsertGroupRow(Processor):
