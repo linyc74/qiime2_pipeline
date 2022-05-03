@@ -6,7 +6,10 @@ RUN wget https://data.qiime2.org/distro/core/qiime2-2021.11-py38-linux-conda.yml
 
 RUN conda install -c bioconda -n qiime2-2021.11 trim-galore=0.6.6
 
-RUN conda install -c anaconda -n qiime2-2021.11 scikit-bio
+RUN conda install -c anaconda -n qiime2-2021.11 scikit-bio=0.5.6
+
+RUN conda install -c conda-forge -n qiime2-2021.11 ete3=3.1.2 \
+ && export QT_QPA_PLATFORM=offscreen
 
 ENV PATH /opt/conda/envs/qiime2-2021.11/bin:$PATH
 

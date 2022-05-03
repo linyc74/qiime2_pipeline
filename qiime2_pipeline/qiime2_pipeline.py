@@ -3,12 +3,12 @@ from .lefse import LefSe
 from .taxonomy import Taxonomy
 from .template import Processor
 from .beta import BetaDiversity
+from .phylogeny import Phylogeny
 from .heatmap import PlotHeatmaps
 from .alpha import AlphaDiversity
 from .venn import PlotVennDiagrams
 from .otu_clustering import Vsearch
 from .taxon_table import TaxonTable
-from .phylogeny import MafftFasttree
 from .labeling import FeatureLabeling
 from .taxon_barplot import PlotTaxonBarplots
 from .feature_embedding import PCAProcess, NMDSProcess, TSNEProcess
@@ -130,7 +130,7 @@ class Qiime2Pipeline(Processor):
                 skip_otu=self.skip_otu)
 
     def phylogenetic_tree(self):
-        self.rooted_tree_qza = MafftFasttree(self.settings).main(
+        self.rooted_tree_qza = Phylogeny(self.settings).main(
             seq_qza=self.labeled_feature_sequence_qza)
 
     def alpha_diversity(self):
