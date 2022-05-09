@@ -10,7 +10,7 @@ RUN conda install -c anaconda -n qiime2-2021.11 scikit-bio=0.5.6
 
 ENV PATH /opt/conda/envs/qiime2-2021.11/bin:$PATH
 
-RUN /opt/conda/envs/qiime2-2021.11/bin/pip install \
+RUN /opt/conda/envs/qiime2-2021.11/bin/pip install --no-cache-dir \
     lefse==1.1.2 \
     matplotlib-venn==0.11.7
 
@@ -21,9 +21,13 @@ RUN Rscript -e 'install.packages("survival", version="2.44", repos="https://cran
 
 RUN apt-get update \
  && apt-get install -y \
-    libgl1 \
-    libxcb-xinerama0 \
- && /opt/conda/envs/qiime2-2021.11/bin/pip install \
+    libgl1-mesa-glx \
+    libx11-xcb1 \
+    libfontconfig \
+    libxkbcommon0 \
+    libxkbcommon-x11-0 \
+    libdbus-1-3 \
+ && /opt/conda/envs/qiime2-2021.11/bin/pip install --no-cache-dir \
     PyQt5==5.15.6 \
     ete3==3.1.2
 ENV QT_QPA_PLATFORM offscreen
