@@ -22,6 +22,7 @@ RUN Rscript -e 'install.packages("survival", version="2.44", repos="https://cran
 RUN apt-get update \
  && apt-get install -y \
     libgl1 \
+    libxcb-xinerama0 \
  && /opt/conda/envs/qiime2-2021.11/bin/pip install \
     PyQt5==5.15.6 \
     ete3==3.1.2
