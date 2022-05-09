@@ -19,7 +19,9 @@ RUN Rscript -e 'install.packages("survival", version="2.44", repos="https://cran
  && Rscript -e 'install.packages("modeltools", version="0.2", repos="https://cran.csie.ntu.edu.tw/")' \
  && Rscript -e 'install.packages("coin", version="1.4", repos="https://cran.csie.ntu.edu.tw/")'
 
-RUN conda install -c anaconda -n qiime2-2021.11 pyqt=5.9.2 \
+RUN apt-get update \
+ && apt-get install -y libgl1 \
+ && conda install -c anaconda -n qiime2-2021.11 pyqt=5.9.2 \
  && conda install -c conda-forge -n qiime2-2021.11 ete3=3.1.2 \
  && export QT_QPA_PLATFORM=offscreen
 
