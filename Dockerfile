@@ -24,8 +24,8 @@ RUN apt-get update \
     libgl1 \
  && /opt/conda/envs/qiime2-2021.11/bin/pip install \
     PyQt5==5.15.6 \
-    ete3==3.1.2 \
- && export QT_QPA_PLATFORM=offscreen
+    ete3==3.1.2
+ENV QT_QPA_PLATFORM offscreen
 
 COPY ./qiime2_pipeline/* /qiime2_pipeline/qiime2_pipeline/
 COPY ./__main__.py /qiime2_pipeline/
