@@ -19,9 +19,9 @@ RUN Rscript -e 'install.packages("survival", version="2.44", repos="https://cran
  && Rscript -e 'install.packages("modeltools", version="0.2", repos="https://cran.csie.ntu.edu.tw/")' \
  && Rscript -e 'install.packages("coin", version="1.4", repos="https://cran.csie.ntu.edu.tw/")'
 
-RUN /opt/conda/envs/qiime2-2021.11/bin/pip install \
-    PyQt5==5.15.6 \
-    ete3==3.1.2 \
+RUN conda install -c anaconda -n qiime2-2021.11 \
+    pyqt=5.15.2 \
+    ete3=3.1.2 \
  && export QT_QPA_PLATFORM=offscreen
 
 COPY ./qiime2_pipeline/* /qiime2_pipeline/qiime2_pipeline/
