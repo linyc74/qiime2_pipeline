@@ -1,6 +1,6 @@
 import os
 from random import randrange
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 from ete3 import Tree, TreeStyle, NodeStyle, TextFace, RectFace
 from .tools import edit_fpath
 from .template import Processor
@@ -122,26 +122,32 @@ class DrawTree(Processor):
     LINE_WIDTH = 1
     LEAF_LENGTH = 100
     COLORS = [
-        'midnightblue',
-        'royalblue',
-        'cornflowerblue',
-        'purple',
-        'palevioletred',
-        'mediumvioletred',
-        'moccasin',
-        'firebrick',
-        'silver',
-        'turquoise',
-        'yellow',
-        'crimson',
-        'orangered',
-        'darkgreen',
+        'RoyalBlue',
+        'Crimson',
+        'DarkSlateBlue',
+        'DarkOrange',
+        'Navy',
+        'MediumVioletRed',
+        'Indigo',
+        'DodgerBlue',
+        'DarkMagenta',
+        'DarkGreen',
+        'SteelBlue',
+        'DarkRed',
+        'Teal',
+        'MediumBlue',
+        'MidnightBlue',
+        'SaddleBrown',
+        'Maroon',
+        'DeepSkyBlue',
+        'ForestGreen',
     ]
 
     nwk: str
     dstdir: str
 
     tree: Tree
+    sorted_phylums: List[str]
     phylum_to_color: Dict[str, str]
 
     def main(self, nwk: str, dstdir: str):
@@ -149,6 +155,7 @@ class DrawTree(Processor):
         self.dstdir = dstdir
 
         self.set_tree()
+        self.sort_phylums_by_count()
         self.set_phylum_to_color()
         self.traverse_tree_to_color_leafs()
         self.render_tree()
@@ -159,12 +166,28 @@ class DrawTree(Processor):
             format=self.NEWICK_FORMAT,
             quoted_node_names=self.QUOTED_NODE_NAMES)
 
-    def set_phylum_to_color(self):
-        unique_phylums = set(map(
+    def sort_phylums_by_count(self):
+        leaf_phylums = map(
             leaf_name_to_bacterial_phylum, self.tree.get_leaf_names()
-        ))
+        )
+        phylum_to_count = {}
+        for p in leaf_phylums:
+            phylum_to_count.setdefault(p, 0)
+            phylum_to_count[p] += 1
+
+        def __get_count(tup: Tuple[str, int]) -> int:
+            return tup[1]
+
+        sorted_phylum_and_count = sorted(
+            phylum_to_count.items(),
+            key=__get_count,
+            reverse=True
+        )
+        self.sorted_phylums, _ = zip(*sorted_phylum_and_count)  # unzip
+
+    def set_phylum_to_color(self):
         self.phylum_to_color = {}
-        for i, phylum in enumerate(unique_phylums):
+        for i, phylum in enumerate(self.sorted_phylums):
             self.phylum_to_color[phylum] = self.COLORS[i] if i < len(self.COLORS) else random_color()
 
     def traverse_tree_to_color_leafs(self):
