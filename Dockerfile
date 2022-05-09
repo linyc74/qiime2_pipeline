@@ -23,7 +23,7 @@ RUN apt-get update \
  && apt-get install -y \
     libgl1 \
  && /opt/conda/envs/qiime2-2021.11/bin/pip install \
-    pyqt==5.9.2 \
+    PyQt5==5.15.6 \
     ete3==3.1.2 \
  && export QT_QPA_PLATFORM=offscreen
 
