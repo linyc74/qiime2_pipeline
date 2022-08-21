@@ -1,9 +1,61 @@
-from typing import Tuple, Callable
+from typing import Tuple, Callable, Optional
 from .template import Processor
 from .concat import BatchConcat, BatchPool
 from .denoise import Dada2SingleEnd, Dada2PairedEnd
 from .importing import ImportSingleEndFastq, ImportPairedEndFastq
 from .trimming import BatchTrimGalorePairedEnd, BatchTrimGaloreSingleEnd
+
+
+class GenerateASV(Processor):
+
+    fq_dir: str
+    fq1_suffix: str
+    fq2_suffix: Optional[str]
+    paired_end_mode: str
+    clip_r1_5_prime: int
+    clip_r2_5_prime: int
+
+    feature_table_qza: str
+    feature_sequence_qza: str
+
+    def main(
+            self,
+            fq_dir: str,
+            fq1_suffix: str,
+            fq2_suffix: Optional[str],
+            paired_end_mode: str,
+            clip_r1_5_prime: int,
+            clip_r2_5_prime: int) -> Tuple[str, str]:
+
+        self.fq_dir = fq_dir
+        self.fq1_suffix = fq1_suffix
+        self.fq2_suffix = fq2_suffix
+        self.paired_end_mode = paired_end_mode
+        self.clip_r1_5_prime = clip_r1_5_prime
+        self.clip_r2_5_prime = clip_r2_5_prime
+
+        if self.fq2_suffix is None:
+            self.generate_asv_single_end()
+        else:
+            self.generate_asv_paired_end()
+
+        return self.feature_table_qza, self.feature_sequence_qza
+
+    def generate_asv_single_end(self):
+        self.feature_table_qza, self.feature_sequence_qza = GenerateASVSingleEnd(self.settings).main(
+            fq_dir=self.fq_dir,
+            fq_suffix=self.fq1_suffix,
+            clip_5_prime=self.clip_r1_5_prime)
+
+    def generate_asv_paired_end(self):
+        generate_asv = FactoryGenerateASVPairedEnd(self.settings).main(
+            paired_end_mode=self.paired_end_mode)
+        self.feature_table_qza, self.feature_sequence_qza = generate_asv(
+            fq_dir=self.fq_dir,
+            fq1_suffix=self.fq1_suffix,
+            fq2_suffix=self.fq2_suffix,
+            clip_r1_5_prime=self.clip_r1_5_prime,
+            clip_r2_5_prime=self.clip_r2_5_prime)
 
 
 class GenerateASVPairedEnd(Processor):

@@ -1,5 +1,4 @@
 from .setup import TestCase
-from qiime2_pipeline.beta import BetaDiversity
 from qiime2_pipeline.denoise import Dada2PairedEnd, Dada2SingleEnd
 from qiime2_pipeline.concat import Concat, BatchConcat, Pool, BatchPool
 from qiime2_pipeline.importing import ImportPairedEndFastq, ImportSingleEndFastq
@@ -69,20 +68,3 @@ class MyTest(TestCase):
         Dada2PairedEnd(self.settings).main(
             demultiplexed_seq_qza=f'{self.indir}/paired-end-demultiplexed.qza'
         )
-
-    def __test_beta_diversity(self):
-        actual = BetaDiversity(self.settings).main(
-            feature_table_qza=f'{self.indir}/feature-table.qza',
-            rooted_tree_qza=f'{self.indir}/rooted-tree.qza'
-        )
-        expected = [
-            f'{self.outdir}/beta-diversity/jaccard.tsv',
-            f'{self.outdir}/beta-diversity/euclidean.tsv',
-            f'{self.outdir}/beta-diversity/cosine.tsv',
-            f'{self.outdir}/beta-diversity/weighted_normalized_unifrac.tsv',
-            f'{self.outdir}/beta-diversity/weighted_unifrac.tsv',
-            f'{self.outdir}/beta-diversity/generalized_unifrac.tsv',
-            f'{self.outdir}/beta-diversity/unweighted_unifrac.tsv',
-        ]
-        for e, a in zip(expected, actual):
-            self.assertFileExists(e, a)

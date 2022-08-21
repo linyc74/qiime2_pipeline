@@ -9,7 +9,7 @@ from .embedding_core import NMDSCore, TSNECore
 from .embedding_process import EmbeddingProcessTemplate
 
 
-class BetaEmbeddingProcess(EmbeddingProcessTemplate, ABC):
+class EmbeddingProcess(EmbeddingProcessTemplate, ABC):
 
     DSTDIR_NAME = 'beta-embedding'
 
@@ -17,7 +17,7 @@ class BetaEmbeddingProcess(EmbeddingProcessTemplate, ABC):
         pass
 
 
-class PCoAProcess(BetaEmbeddingProcess):
+class PCoAProcess(EmbeddingProcess):
 
     NAME = 'PCoA'
     XY_COLUMNS = ('PC1', 'PC2')
@@ -56,7 +56,7 @@ class PCoAProcess(BetaEmbeddingProcess):
         )
 
 
-class NMDSProcess(BetaEmbeddingProcess):
+class NMDSProcess(EmbeddingProcess):
 
     NAME = 'NMDS'
     XY_COLUMNS = ('NMDS 1', 'NMDS 2')
@@ -90,7 +90,7 @@ class NMDSProcess(BetaEmbeddingProcess):
             fh.write(str(self.stress))
 
 
-class TSNEProcess(BetaEmbeddingProcess):
+class TSNEProcess(EmbeddingProcess):
 
     NAME = 't-SNE'
     XY_COLUMNS = ('t-SNE 1', 't-SNE 2')

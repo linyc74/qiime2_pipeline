@@ -2,18 +2,17 @@ from typing import List, Optional, Dict
 from .lefse import LefSe
 from .taxonomy import Taxonomy
 from .template import Processor
-from .beta import BetaDiversity
 from .phylogeny import Phylogeny
 from .heatmap import PlotHeatmaps
 from .alpha import AlphaDiversity
 from .venn import PlotVennDiagrams
 from .otu_clustering import Vsearch
 from .taxon_table import TaxonTable
+from .beta_my import MyBetaDiversity
 from .labeling import FeatureLabeling
+from .generate_asv import GenerateASV
+from .beta_qiime import QiimeBetaDiversity
 from .taxon_barplot import PlotTaxonBarplots
-from .feature_embedding import PCAProcess, NMDSProcess, TSNEProcess
-from .generate_asv import FactoryGenerateASVPairedEnd, GenerateASVSingleEnd
-from .beta_embedding import BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess
 
 
 class Qiime2Pipeline(Processor):
@@ -77,34 +76,31 @@ class Qiime2Pipeline(Processor):
 
         self.generate_asv()
         self.otu_clustering()
+
         self.taxonomic_classification()
         self.feature_labeling()
+
         self.phylogenetic_tree()
+
         self.alpha_diversity()
-        self.beta_diversity()
-        self.beta_embedding()
+
+        self.qiime_beta_diversity()
+        self.my_beta_diversity()
+
         self.taxon_table()
-        self.lefse()
         self.plot_heatmaps()
-        self.feature_embedding()
-        self.taxon_barplot()
         self.plot_venn_diagrams()
+        self.taxon_barplot()
+        self.lefse()
 
     def generate_asv(self):
-        if self.fq2_suffix is None:
-            self.feature_table_qza, self.feature_sequence_qza = GenerateASVSingleEnd(self.settings).main(
-                fq_dir=self.fq_dir,
-                fq_suffix=self.fq1_suffix,
-                clip_5_prime=self.clip_r1_5_prime)
-        else:
-            generate_asv = FactoryGenerateASVPairedEnd(self.settings).main(
-                paired_end_mode=self.paired_end_mode)
-            self.feature_table_qza, self.feature_sequence_qza = generate_asv(
-                fq_dir=self.fq_dir,
-                fq1_suffix=self.fq1_suffix,
-                fq2_suffix=self.fq2_suffix,
-                clip_r1_5_prime=self.clip_r1_5_prime,
-                clip_r2_5_prime=self.clip_r2_5_prime)
+        self.feature_table_qza, self.feature_sequence_qza = GenerateASV(self.settings).main(
+            fq_dir=self.fq_dir,
+            fq1_suffix=self.fq1_suffix,
+            fq2_suffix=self.fq2_suffix,
+            paired_end_mode=self.paired_end_mode,
+            clip_r1_5_prime=self.clip_r1_5_prime,
+            clip_r2_5_prime=self.clip_r2_5_prime)
 
     def otu_clustering(self):
         if self.skip_otu:
@@ -139,25 +135,20 @@ class Qiime2Pipeline(Processor):
             group_keywords=self.group_keywords,
             alpha_metrics=self.alpha_metrics)
 
-    def beta_diversity(self):
-        self.distance_matrix_tsvs = BetaDiversity(self.settings).main(
+    def qiime_beta_diversity(self):
+        self.distance_matrix_tsvs = QiimeBetaDiversity(self.settings).main(
             feature_table_qza=self.labeled_feature_table_qza,
-            rooted_tree_qza=self.rooted_tree_qza)
+            rooted_tree_qza=self.rooted_tree_qza,
+            group_keywords=self.group_keywords)
 
-    def beta_embedding(self):
-        for Batch in [BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess]:
-            Batch(self.settings).main(
-                distance_matrix_tsvs=self.distance_matrix_tsvs,
-                group_keywords=self.group_keywords)
+    def my_beta_diversity(self):
+        MyBetaDiversity(self.settings).main(
+            feature_table_tsv=self.labeled_feature_table_tsv,
+            group_keywords=self.group_keywords)
 
     def taxon_table(self):
         self.taxon_table_tsv_dict = TaxonTable(self.settings).main(
             labeled_feature_table_tsv=self.labeled_feature_table_tsv)
-
-    def lefse(self):
-        LefSe(self.settings).main(
-            taxon_table_tsv_dict=self.taxon_table_tsv_dict,
-            group_keywords=self.group_keywords)
 
     def plot_heatmaps(self):
         tsvs = [self.labeled_feature_table_tsv] + [v for v in self.taxon_table_tsv_dict.values()]
@@ -165,19 +156,18 @@ class Qiime2Pipeline(Processor):
             tsvs=tsvs,
             heatmap_read_fraction=self.heatmap_read_fraction)
 
-    def feature_embedding(self):
-        for Process in [PCAProcess, NMDSProcess, TSNEProcess]:
-            Process(self.settings).main(
-                tsv=self.labeled_feature_table_tsv,
-                group_keywords=self.group_keywords)
+    def plot_venn_diagrams(self):
+        tsvs = [self.labeled_feature_table_tsv] + [v for v in self.taxon_table_tsv_dict.values()]
+        PlotVennDiagrams(self.settings).main(
+            tsvs=tsvs,
+            group_keywords=self.group_keywords)
 
     def taxon_barplot(self):
         PlotTaxonBarplots(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             n_taxa=self.n_taxa_barplot)
 
-    def plot_venn_diagrams(self):
-        tsvs = [self.labeled_feature_table_tsv] + [v for v in self.taxon_table_tsv_dict.values()]
-        PlotVennDiagrams(self.settings).main(
-            tsvs=tsvs,
+    def lefse(self):
+        LefSe(self.settings).main(
+            taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             group_keywords=self.group_keywords)

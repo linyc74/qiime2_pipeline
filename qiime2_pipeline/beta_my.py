@@ -2,12 +2,32 @@ import pandas as pd
 from abc import ABC
 from typing import List
 from .tools import edit_fpath
+from .template import Processor
 from .normalization import CountNormalization
 from .embedding_core import PCACore, NMDSCore, TSNECore
 from .embedding_process import EmbeddingProcessTemplate
 
 
-class FeatureEmbeddingProcess(EmbeddingProcessTemplate, ABC):
+class MyBetaDiversity(Processor):
+
+    feature_table_tsv: str
+    group_keywords: List[str]
+
+    def main(
+            self,
+            feature_table_tsv: str,
+            group_keywords: List[str]):
+
+        self.feature_table_tsv = feature_table_tsv
+        self.group_keywords = group_keywords
+
+        for Process in [PCAProcess, NMDSProcess, TSNEProcess]:
+            Process(self.settings).main(
+                tsv=self.feature_table_tsv,
+                group_keywords=self.group_keywords)
+
+
+class EmbeddingProcess(EmbeddingProcessTemplate, ABC):
 
     DSTDIR_NAME = 'feature-embedding'
     LOG_PSEUDOCOUNT = True
@@ -21,7 +41,7 @@ class FeatureEmbeddingProcess(EmbeddingProcessTemplate, ABC):
         )
 
 
-class PCAProcess(FeatureEmbeddingProcess):
+class PCAProcess(EmbeddingProcess):
 
     NAME = 'PCA'
     XY_COLUMNS = ('PC 1', 'PC 2')
@@ -59,7 +79,7 @@ class PCAProcess(FeatureEmbeddingProcess):
         )
 
 
-class NMDSProcess(FeatureEmbeddingProcess):
+class NMDSProcess(EmbeddingProcess):
 
     NAME = 'NMDS'
     XY_COLUMNS = ('NMDS 1', 'NMDS 2')
@@ -93,7 +113,7 @@ class NMDSProcess(FeatureEmbeddingProcess):
             fh.write(str(self.stress))
 
 
-class TSNEProcess(FeatureEmbeddingProcess):
+class TSNEProcess(EmbeddingProcess):
 
     NAME = 't-SNE'
     XY_COLUMNS = ('t-SNE 1', 't-SNE 2')

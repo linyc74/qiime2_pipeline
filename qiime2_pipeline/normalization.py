@@ -22,21 +22,16 @@ class CountNormalization(Processor):
         self.by_sample_reads = by_sample_reads
         self.sample_reads_unit = sample_reads_unit
 
-        self.pseudocount()
         self.normalize_by_sample_reads()
-        self.log10()
+        self.pseudocount_then_log10()
 
         return self.df
-
-    def pseudocount(self):
-        if self.log_pseudocount:
-            self.df = self.df + 1
 
     def normalize_by_sample_reads(self):
         if self.by_sample_reads:
             sum_per_column = np.sum(self.df, axis=0) / self.sample_reads_unit
             self.df = np.divide(self.df, sum_per_column)
 
-    def log10(self):
+    def pseudocount_then_log10(self):
         if self.log_pseudocount:
-            self.df = np.log10(self.df)
+            self.df = np.log10(self.df + 1)

@@ -149,7 +149,7 @@ class NMDSCore(Core):
 class TSNECore(Core):
 
     XY_COLUMNS = ('t-SNE 1', 't-SNE 2')
-    PERPLEXITY = 3.0
+    PERPLEXITY = 5.0
 
     embedding: manifold.TSNE
 

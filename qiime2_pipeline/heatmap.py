@@ -44,7 +44,7 @@ class PlotHeatmaps(Processor):
 class PlotOneHeatmap(Processor):
 
     LOG_PSEUDOCOUNT = True
-    NORMALIZE_BY_SAMPLE_READS = False
+    NORMALIZE_BY_SAMPLE_READS = True
 
     tsv: str
     heatmap_read_fraction: float

@@ -1,5 +1,5 @@
 from os.path import exists
-from qiime2_pipeline.beta_embedding import PCoAProcess, NMDSProcess, TSNEProcess, \
+from qiime2_pipeline.beta_qiime_embedding import PCoAProcess, NMDSProcess, TSNEProcess, \
     BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess
 from .setup import TestCase
 
