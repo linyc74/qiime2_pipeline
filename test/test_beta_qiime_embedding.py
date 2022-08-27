@@ -20,6 +20,7 @@ class TestPCoAProcess(TestCase):
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.tsv',
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.png',
+            f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.pdf',
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-proportion-explained.tsv',
         ]:
             self.assertTrue(exists(f))
@@ -41,6 +42,7 @@ class TestNMDSProcess(TestCase):
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.tsv',
             f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.png',
+            f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.pdf',
             f'{self.outdir}/beta-embedding/distance-matrix-nmds-stress.txt',
         ]:
             self.assertTrue(exists(f))
@@ -62,6 +64,7 @@ class TestTSNEProcess(TestCase):
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.tsv',
             f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.png',
+            f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.pdf',
         ]:
             self.assertTrue(exists(f))
 
@@ -82,6 +85,7 @@ class TestBatchPCoAProcess(TestCase):
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.tsv',
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.png',
+            f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.pdf',
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-proportion-explained.tsv',
         ]:
             self.assertTrue(exists(f))
@@ -103,6 +107,7 @@ class TestBatchNMDSProcess(TestCase):
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.tsv',
             f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.png',
+            f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.pdf',
             f'{self.outdir}/beta-embedding/distance-matrix-nmds-stress.txt',
         ]:
             self.assertTrue(exists(f))
@@ -124,5 +129,6 @@ class TestBatchTSNEProcess(TestCase):
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.tsv',
             f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.png',
+            f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.pdf',
         ]:
             self.assertTrue(exists(f))

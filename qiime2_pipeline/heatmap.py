@@ -164,6 +164,7 @@ class Clustermap(Processor):
     DENDROGRAM_RATIO = (0.1, 0.1)
     COLORBAR_WIDTH = 0.01
     COLORBAR_HORIZONTAL_POSITION = 1.
+    DPI = 600
 
     data: pd.DataFrame
     output_prefix: str
@@ -180,7 +181,7 @@ class Clustermap(Processor):
         self.set_figsize()
         self.clustermap()
         self.config_clustermap()
-        self.save_pdf()
+        self.save_fig()
         self.save_csv()
 
     def set_figsize(self):
@@ -248,10 +249,11 @@ class Clustermap(Processor):
             p.height  # height
         ])
 
-    def save_pdf(self):
+    def save_fig(self):
         # must use grid.savefig(), but not plt.savefig()
         # plt.savefig() crops out the colorbar
-        self.grid.savefig(f'{self.output_prefix}.pdf')
+        for ext in ['pdf', 'png']:
+            self.grid.savefig(f'{self.output_prefix}.{ext}', dpi=self.DPI)
         plt.close()
 
     def save_csv(self):

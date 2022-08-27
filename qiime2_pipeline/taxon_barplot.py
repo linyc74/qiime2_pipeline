@@ -94,7 +94,7 @@ class PlotOneTaxonBarplot(Processor):
         PercentageBarplot(self.settings).main(
             data=self.df,
             title=self.taxon_level,
-            output_png=f'{self.dstdir}/{self.taxon_level}-barplot.png'
+            output_prefix=f'{self.dstdir}/{self.taxon_level}-barplot'
         )
 
 
@@ -142,7 +142,6 @@ class PoolMinorFeatures(Processor):
 
 class PercentageBarplot(Processor):
 
-    DPI = 300
     Y_LABEL = 'Percentage'
     X_LABEL = 'Sample'
     X_LABEL_CHAR_WIDTH = 0.08
@@ -167,10 +166,11 @@ class PercentageBarplot(Processor):
         'orangered',
         'darkgreen',
     ]
+    DPI = 600
 
     data: pd.DataFrame
     title: str
-    output_png: str
+    output_prefix: str
 
     figsize: Tuple[float, float]
     figure: plt.Figure
@@ -179,11 +179,11 @@ class PercentageBarplot(Processor):
             self,
             data: pd.DataFrame,
             title: str,
-            output_png: str):
+            output_prefix: str):
 
         self.data = data
         self.title = title
-        self.output_png = output_png
+        self.output_prefix = output_prefix
 
         self.set_figsize()
         self.init_figure()
@@ -231,7 +231,9 @@ class PercentageBarplot(Processor):
         plt.ylabel(self.Y_LABEL)
         plt.legend(self.data.index, bbox_to_anchor=(1, 1))
         plt.tight_layout()
-        plt.savefig(self.output_png)
+        for ext in ['pdf', 'png']:
+            plt.savefig(f'{self.output_prefix}.{ext}', dpi=self.DPI)
+        plt.close()
 
 
 def get_random_color() -> Tuple[float]:

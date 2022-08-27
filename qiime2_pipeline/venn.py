@@ -64,7 +64,6 @@ class ProcessTsvPlotVenn(Processor):
 
     df: pd.DataFrame
     group_keyword_to_features: Dict[str, Set[str]]
-    png: str
 
     def main(
             self,
@@ -79,7 +78,6 @@ class ProcessTsvPlotVenn(Processor):
         self.read_tsv()
         self.init_group_keyword_to_features()
         self.count_features_for_each_group()
-        self.set_png()
         self.plot_venn()
 
     def read_tsv(self):
@@ -96,41 +94,41 @@ class ProcessTsvPlotVenn(Processor):
                     set_2 = self.df[c][self.df[c] > 0].index
                     self.group_keyword_to_features[k] = set_1.union(set_2)
 
-    def set_png(self):
-        self.png = edit_fpath(
-            fpath=self.tsv,
-            old_suffix='.tsv',
-            new_suffix='.png',
-            dstdir=self.dstdir)
-
     def plot_venn(self):
         subsets = [
             self.group_keyword_to_features[k] for k in self.group_keywords
         ]
+
+        output_prefix = edit_fpath(
+            fpath=self.tsv,
+            old_suffix='.tsv',
+            new_suffix='',
+            dstdir=self.dstdir)
+
         PlotVenn(self.settings).main(
             set_labels=self.group_keywords,
             subsets=subsets,
-            png=self.png)
+            output_prefix=output_prefix)
 
 
 class PlotVenn(Processor):
 
     FIGSIZE = (8, 6)
-    DPI = 300
+    DPI = 600
 
     set_labels: List[str]
     subsets: List[Set[str]]
-    png: str
+    output_prefix: str
 
     def main(
             self,
             set_labels: List[str],
             subsets: List[Set[str]],
-            png: str):
+            output_prefix: str):
 
         self.set_labels = set_labels
         self.subsets = subsets
-        self.png = png
+        self.output_prefix = output_prefix
 
         self.assert_number_of_groups()
         self.init_figure()
@@ -150,4 +148,6 @@ class PlotVenn(Processor):
             venn3(subsets=self.subsets, set_labels=self.set_labels)
 
     def save_figure(self):
-        plt.savefig(self.png)
+        for ext in ['pdf', 'png']:
+            plt.savefig(f'{self.output_prefix}.{ext}', dpi=self.DPI)
+        plt.close()

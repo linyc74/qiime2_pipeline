@@ -133,8 +133,8 @@ class PlotAlphaDiversity(Processor):
 
     GROUP = 'Group'
     FIGSIZE = (6, 6)
-    DPI = 300
     BOX_WIDTH = 0.5
+    DPI = 600
 
     df: pd.DataFrame
     dstdir: str
@@ -162,5 +162,6 @@ class PlotAlphaDiversity(Processor):
             y=metric,
             width=self.BOX_WIDTH
         )
-        plt.savefig(f'{self.dstdir}/{metric}.png')
+        for ext in ['pdf', 'png']:
+            plt.savefig(f'{self.dstdir}/{metric}.{ext}', dpi=self.DPI)
         plt.close()
