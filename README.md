@@ -62,7 +62,8 @@ Rscript -e 'install.packages("coin", version="1.4", repos="https://cran.csie.ntu
 
 ## Docker
 
-Pull the docker image, then run the python command in the container:
+Pull the [docker image](https://hub.docker.com/repository/docker/linyc74/qiime2-pipeline),
+then run the python command in the container:
 
 ```bash
 docker pull linyc74/qiime2-pipeline:latest
