@@ -1,5 +1,3 @@
-[![DOI](https://zenodo.org/badge/425668537.svg)](https://zenodo.org/badge/latestdoi/425668537)
-
 # Qiime2 Pipeline
 
 **Custom-built Qiime2 pipeline for 16S rRNA sequence analysis**
