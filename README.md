@@ -1,6 +1,6 @@
 # Qiime2 Pipeline
 
-**Custom-built Qiime2 pipeline**
+**Custom-built Qiime2 pipeline for 16S rRNA sequence analysis**
 
 ## Usage
 
@@ -14,6 +14,13 @@ python qiime2_pipeline \
   -b NB_CLASSIFIER_QZA
 ```
 
+The program automatically detects all fastq files in the `FQ_DIR` directory,
+using suffixes of read 1 (`FQ1_SUFFIX`) and read 2 (`FQ2_SUFFIX`) files,
+then run the computational pipeline. Taxonomic classification is performed
+using pre-trained naïve Bayes classifier (`NB_CLASSIFIER_QZA`), which can be
+downloaded [here](https://data.qiime2.org/2022.8/common/silva-138-99-nb-classifier.qza)
+from the [Qiime2 data resources page](https://docs.qiime2.org/2022.8/data-resources/).
+
 For more options, see help message by
 
 ```bash
@@ -22,22 +29,32 @@ python qiime2_pipeline --help
 
 ## Environment
 
-Create a Qiime2 environment:
+Assuming [Anaconda](https://www.anaconda.com/) has already been installed, create a Qiime2 environment named `qiime2`:
 
 ```bash
 wget https://data.qiime2.org/distro/core/qiime2-2021.11-py38-linux-conda.yml
-conda env create -n qiime2-2021.11 --file qiime2-2021.11-py38-linux-conda.yml
-rm qiime2-2021.11-py38-linux-conda.yml
+conda env create --name qiime2 --file qiime2-2021.11-py38-linux-conda.yml
 ```
 
-Install TrimGalore:
+Activate the `qiime2` environment:
 
 ```bash
-conda install -c bioconda -n qiime2-2021.11 trim-galore
+conda activate qiime2
 ```
 
-Activate the environment before usage.
+There are additional packages to be installed as the following:
 
 ```bash
-conda activate qiime2-2021.11
+conda install --channel bioconda --name qiime2 trim-galore
+conda install --channel anaconda --name qiime2 scikit-bio
+pip install lefse matplotlib-venn PyQt5 ete3
+```
+
+Several other R packages required for [LEfSe](https://github.com/SegataLab/lefse) analysis:
+
+```bash
+Rscript -e 'install.packages("survival", version="2.44", repos="https://cran.csie.ntu.edu.tw/")'
+Rscript -e 'install.packages("mvtnorm", version="1.1", repos="https://cran.csie.ntu.edu.tw/")'
+Rscript -e 'install.packages("modeltools", version="0.2", repos="https://cran.csie.ntu.edu.tw/")'
+Rscript -e 'install.packages("coin", version="1.4", repos="https://cran.csie.ntu.edu.tw/")'
 ```
