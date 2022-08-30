@@ -44,19 +44,35 @@ Activate the `qiime2` environment:
 conda activate qiime2
 ```
 
-There are additional packages to be installed as the following:
+Additional packages to be installed:
 
 ```bash
 conda install --channel bioconda --name qiime2 trim-galore
+
+# Python packages
 conda install --channel anaconda --name qiime2 scikit-bio
 pip install lefse matplotlib-venn PyQt5 ete3
-```
 
-Several other R packages required for [LEfSe](https://github.com/SegataLab/lefse) analysis:
-
-```bash
+# R packages
 Rscript -e 'install.packages("survival", version="2.44", repos="https://cran.csie.ntu.edu.tw/")'
 Rscript -e 'install.packages("mvtnorm", version="1.1", repos="https://cran.csie.ntu.edu.tw/")'
 Rscript -e 'install.packages("modeltools", version="0.2", repos="https://cran.csie.ntu.edu.tw/")'
 Rscript -e 'install.packages("coin", version="1.4", repos="https://cran.csie.ntu.edu.tw/")'
+```
+
+## Docker
+
+Pull the docker image, then run the python command in the container:
+
+```bash
+docker pull linyc74/qiime2-pipeline:latest
+
+docker run \
+  --volume "path/to/fq_dir":"path/to/fq_dir" \
+  linyc74/qiime2-pipeline:latest \
+  python qiime2_pipeline \
+    -f FQ_DIR \
+    -1 FQ1_SUFFIX \
+    -2 FQ2_SUFFIX \
+    -b NB_CLASSIFIER_QZA
 ```
