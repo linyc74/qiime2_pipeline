@@ -252,9 +252,18 @@ class Clustermap(Processor):
     def save_fig(self):
         # must use grid.savefig(), but not plt.savefig()
         # plt.savefig() crops out the colorbar
+
+        dpi = self.__downsize_dpi_if_too_large()
         for ext in ['pdf', 'png']:
-            self.grid.savefig(f'{self.output_prefix}.{ext}', dpi=self.DPI)
+            self.grid.savefig(f'{self.output_prefix}.{ext}', dpi=dpi)
         plt.close()
+
+    def __downsize_dpi_if_too_large(self) -> int:
+        longer_side = max(self.figsize)
+        dpi = self.DPI
+        while longer_side * dpi >= 2**16:  # 2^16 is the limit
+            dpi = int(dpi/2)  # downsize
+        return dpi
 
     def save_csv(self):
         self.data.to_csv(f'{self.output_prefix}.tsv', sep='\t', index=True)

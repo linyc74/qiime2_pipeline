@@ -2,7 +2,7 @@
 
 # Qiime2 Pipeline
 
-**Custom-built Qiime2 pipeline for 16S rRNA sequence analysis**
+**Custom-built Qiime2 pipeline for 16S rRNA analysis**
 
 ## Usage
 
