@@ -18,7 +18,9 @@ python qiime2_pipeline \
 
 The program automatically detects all fastq files in the `FQ_DIR` directory,
 using suffixes of read 1 (`FQ1_SUFFIX`) and read 2 (`FQ2_SUFFIX`) files,
-then run the computational pipeline. Taxonomic classification is performed
+then run the computational pipeline.
+
+Taxonomic classification is performed
 using pre-trained naïve Bayes classifier (`NB_CLASSIFIER_QZA`), which can be
 downloaded [here](https://data.qiime2.org/2022.8/common/silva-138-99-nb-classifier.qza)
 from the [Qiime2 data resources page](https://docs.qiime2.org/2022.8/data-resources/).
@@ -31,7 +33,8 @@ python qiime2_pipeline --help
 
 ## Environment
 
-Assuming [Anaconda](https://www.anaconda.com/) has already been installed, create a Qiime2 environment named `qiime2`:
+Assuming [Anaconda](https://www.anaconda.com/) has already been installed,
+create an environment named `qiime2`:
 
 ```bash
 wget https://data.qiime2.org/distro/core/qiime2-2021.11-py38-linux-conda.yml
@@ -63,17 +66,22 @@ Rscript -e 'install.packages("coin", version="1.4", repos="https://cran.csie.ntu
 ## Docker
 
 Pull the [docker image](https://hub.docker.com/repository/docker/linyc74/qiime2-pipeline),
-then run the python command in the container:
+then run the python command in the docker container:
 
 ```bash
 docker pull linyc74/qiime2-pipeline:latest
 
 docker run \
-  --volume "path/to/fq_dir":"path/to/fq_dir" \
+  --volume "../FQ_DIR":"../FQ_DIR" \
+  --volume "../NB_CLASSIFIER_DIR":"../NB_CLASSIFIER_DIR" \
+  --volume "../OUTDIR":"../OUTDIR" \
   linyc74/qiime2-pipeline:latest \
   python qiime2_pipeline \
     -f FQ_DIR \
     -1 FQ1_SUFFIX \
     -2 FQ2_SUFFIX \
-    -b NB_CLASSIFIER_QZA
+    -b NB_CLASSIFIER_QZA \
+    -o OUTDIR
 ```
+
+Note that input/output directories need to be mounted with `--volume`.
