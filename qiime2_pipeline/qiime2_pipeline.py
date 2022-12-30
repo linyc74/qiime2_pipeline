@@ -12,6 +12,7 @@ from .beta_my import MyBetaDiversity
 from .labeling import FeatureLabeling
 from .generate_asv import GenerateASV
 from .beta_qiime import QiimeBetaDiversity
+from .raw_read_counts import RawReadCounts
 from .taxon_barplot import PlotTaxonBarplots
 
 
@@ -74,6 +75,8 @@ class Qiime2Pipeline(Processor):
         self.heatmap_read_fraction = heatmap_read_fraction
         self.n_taxa_barplot = n_taxa_barplot
 
+        self.raw_read_counts()
+
         self.generate_asv()
         self.otu_clustering()
 
@@ -92,6 +95,12 @@ class Qiime2Pipeline(Processor):
         self.plot_venn_diagrams()
         self.taxon_barplot()
         self.lefse()
+
+    def raw_read_counts(self):
+        RawReadCounts(self.settings).main(
+            fq_dir=self.fq_dir,
+            fq1_suffix=self.fq1_suffix,
+            fq2_suffix=self.fq2_suffix)
 
     def generate_asv(self):
         self.feature_table_qza, self.feature_sequence_qza = GenerateASV(self.settings).main(
