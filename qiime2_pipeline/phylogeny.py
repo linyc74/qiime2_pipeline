@@ -85,6 +85,7 @@ class MafftFasttree(Processor):
         self.unrooted_tree_nwk = f'{self.dstdir}/fasttree-unrooted.nwk'
 
     def execute(self):
+        log = f'{self.outdir}/qiime-phylogeny-align-to-tree-mafft-fasttree.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime phylogeny align-to-tree-mafft-fasttree',
             f'--i-sequences {self.seq_qza}',
@@ -92,7 +93,9 @@ class MafftFasttree(Processor):
             f'--o-alignment {self.aligned_seq_qza}',
             f'--o-masked-alignment {self.masked_aligned_seq_qza}',
             f'--o-tree {self.unrooted_tree_qza}',
-            f'--o-rooted-tree {self.rooted_tree_qza}'
+            f'--o-rooted-tree {self.rooted_tree_qza}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)
 

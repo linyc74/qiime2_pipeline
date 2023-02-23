@@ -31,6 +31,7 @@ class Vsearch(Processor):
         self.clustered_sequence_qza = f'{self.workdir}/vsearch-feature-sequence.qza'
 
     def execute(self):
+        log = f'{self.outdir}/qiime-vsearch-cluster-features-de-novo.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime vsearch cluster-features-de-novo',
             f'--i-sequences {self.feature_sequence_qza}',
@@ -39,5 +40,7 @@ class Vsearch(Processor):
             f'--p-threads {self.threads}',
             f'--o-clustered-table {self.clustered_table_qza}',
             f'--o-clustered-sequences {self.clustered_sequence_qza}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)

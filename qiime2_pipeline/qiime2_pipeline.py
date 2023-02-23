@@ -1,3 +1,4 @@
+from os import makedirs
 from typing import List, Optional, Dict
 from .lefse import LefSe
 from .taxonomy import Taxonomy
@@ -96,6 +97,8 @@ class Qiime2Pipeline(Processor):
         self.taxon_barplot()
         self.lefse()
 
+        self.collect_log_files()
+
     def raw_read_counts(self):
         RawReadCounts(self.settings).main(
             fq_dir=self.fq_dir,
@@ -180,3 +183,8 @@ class Qiime2Pipeline(Processor):
         LefSe(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             group_keywords=self.group_keywords)
+
+    def collect_log_files(self):
+        makedirs(f'{self.outdir}/log', exist_ok=True)
+        cmd = f'mv {self.outdir}/*.log {self.outdir}/log/'
+        self.call(cmd)

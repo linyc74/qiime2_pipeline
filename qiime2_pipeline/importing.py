@@ -38,12 +38,15 @@ class ImportSingleEndFastq(ImportFastq):
 
     def import_with_manifest_tsv(self):
         self.output_qza = f'{self.workdir}/single-end-demultiplexed.qza'
+        log = f'{self.outdir}/qiime-tools-import.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime tools import',
             f'--type \'SampleData[SequencesWithQuality]\'',
             f'--input-format SingleEndFastqManifestPhred33V2',
             f'--input-path {self.manifest_tsv}',
             f'--output-path {self.output_qza}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)
 
@@ -78,12 +81,15 @@ class ImportPairedEndFastq(ImportFastq):
 
     def import_with_manifest_tsv(self):
         self.output_qza = f'{self.workdir}/paired-end-demultiplexed.qza'
+        log = f'{self.outdir}/qiime-tools-import.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime tools import',
             f'--type \'SampleData[PairedEndSequencesWithQuality]\'',
             f'--input-format PairedEndFastqManifestPhred33V2',
             f'--input-path {self.manifest_tsv}',
             f'--output-path {self.output_qza}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)
 
@@ -216,13 +222,15 @@ class ImportFeatureTable(Processor):
             old_suffix='.tsv',
             new_suffix='.biom',
             dstdir=self.workdir)
-
+        log = f'{self.outdir}/biom-convert.log'
         cmd = self.CMD_LINEBREAK.join([
             'biom convert',
             '--to-hdf5',
             '--table-type="OTU table"',
             f'-i {self.feature_table_tsv}',
-            f'-o {self.biom}'
+            f'-o {self.biom}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)
 
@@ -232,7 +240,7 @@ class ImportFeatureTable(Processor):
             old_suffix='.biom',
             new_suffix='.qza',
             dstdir=self.workdir)
-
+        log = f'{self.outdir}/qiime-tools-import.log'
         # https://biom-format.org/documentation/format_versions/biom-2.1.html
         # HDF5 is Biom file format version 2.1
         cmd = self.CMD_LINEBREAK.join([
@@ -241,6 +249,8 @@ class ImportFeatureTable(Processor):
             f'--input-format BIOMV210Format',
             f'--input-path {self.biom}',
             f'--output-path {self.qza}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)
 
@@ -261,12 +271,14 @@ class ImportFeatureSequence(Processor):
             old_suffix='.fa',
             new_suffix='.qza',
             dstdir=self.workdir)
-
+        log = f'{self.outdir}/qiime-tools-import.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime tools import',
             f'--type FeatureData[Sequence]',
             f'--input-path {self.feature_sequence_fa}',
             f'--output-path {self.qza}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)
 
@@ -288,10 +300,13 @@ class ImportTaxonomy(Processor):
             old_suffix='.tsv',
             new_suffix='.qza',
             dstdir=self.workdir)
+        log = f'{self.outdir}/qiime-tools-import.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime tools import',
             f'--type FeatureData[Taxonomy]',
             f'--input-path {self.taxonomy_tsv}',
             f'--output-path {self.qza}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)

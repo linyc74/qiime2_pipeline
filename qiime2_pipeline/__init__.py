@@ -68,7 +68,7 @@ class Main:
 
         self.makedirs()
         self.run_pipeline()
-        self.clean_up()
+        self.remove_workdir()
 
     def makedirs(self):
         for d in [self.settings.workdir, self.settings.outdir]:
@@ -91,6 +91,6 @@ class Main:
             heatmap_read_fraction=self.heatmap_read_fraction,
             n_taxa_barplot=self.n_taxa_barplot)
 
-    def clean_up(self):
+    def remove_workdir(self):
         if not self.settings.debug:
             shutil.rmtree(self.settings.workdir)

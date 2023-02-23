@@ -86,6 +86,7 @@ class Classify(Processor):
 
     def classify(self):
         self.taxonomy_qza = f'{self.workdir}/taxonomy-{self.read_orientation}.qza'
+        log = f'{self.outdir}/qiime-feature-classifier-classify-sklearn.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime feature-classifier classify-sklearn',
             f'--i-classifier {self.nb_classifier_qza}',
@@ -95,6 +96,8 @@ class Classify(Processor):
             f'--p-n-jobs {self.threads}',
             f'--p-reads-per-batch {self.classifier_reads_per_batch}',
             f'--o-classification {self.taxonomy_qza}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)
 

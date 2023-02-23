@@ -82,7 +82,8 @@ class LefSeOneTaxonLevel(Processor):
             self.lefse_input,
             f'-u 1',  # first row subject id
             f'-c 2',  # second row class id
-            f'1> {self.lefse_log} 2> {self.lefse_log}'
+            f'1>> {self.lefse_log}',
+            f'2>> {self.lefse_log}'
         ])
         self.call(cmd)
 
@@ -92,7 +93,8 @@ class LefSeOneTaxonLevel(Processor):
             'lefse_run.py',
             self.lefse_input,
             self.lefse_result,
-            f'1> {self.lefse_log} 2> {self.lefse_log}'
+            f'1>> {self.lefse_log}',
+            f'2>> {self.lefse_log}'
         ])
         self.call(cmd)
 
@@ -104,7 +106,8 @@ class LefSeOneTaxonLevel(Processor):
             f'--width {self.FIGURE_WIDTH}',
             self.lefse_result,
             self.feature_png,
-            f'1> {self.lefse_log} 2> {self.lefse_log}'
+            f'1>> {self.lefse_log}',
+            f'2>> {self.lefse_log}'
         ])
         self.call(cmd)
 
@@ -116,7 +119,8 @@ class LefSeOneTaxonLevel(Processor):
             '--format png',
             self.lefse_result,
             self.cladogram_png,
-            f'1> {self.lefse_log} 2> {self.lefse_log}'
+            f'1>> {self.lefse_log}',
+            f'2>> {self.lefse_log}'
         ])
         self.call(cmd)
 

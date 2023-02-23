@@ -97,11 +97,14 @@ class RunOneAlphaMetric(Processor):
         self.output_qza = f'{self.workdir}/alpha-{self.metric}.qza'
 
     def execute(self):
+        log = f'{self.outdir}/qiime-diversity-alpha.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime diversity alpha',
             f'--i-table {self.feature_table_qza}',
             f'--p-metric {self.metric}',
-            f'--o-alpha-diversity {self.output_qza}'
+            f'--o-alpha-diversity {self.output_qza}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)
 
@@ -121,10 +124,13 @@ class ReadAlphaDiversityQza(Processor):
         )
 
     def qza_to_tsv(self):
+        log = f'{self.outdir}/qiime-tools-export.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime tools export',
             f'--input-path {self.qza}',
             f'--output-path {self.workdir}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)
 

@@ -33,6 +33,7 @@ class Dada2SingleEnd(Dada2):
         return self.feature_table_qza, self.feature_sequence_qza
 
     def execute(self):
+        log = f'{self.outdir}/qiime-dada2-denoise-single.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime dada2 denoise-single',
             f'--i-demultiplexed-seqs {self.demultiplexed_seq_qza}',
@@ -42,6 +43,8 @@ class Dada2SingleEnd(Dada2):
             f'--o-representative-sequences {self.feature_sequence_qza}',
             f'--o-table {self.feature_table_qza}',
             f'--o-denoising-stats {self.denoising_stats_qza}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)
 
@@ -62,6 +65,7 @@ class Dada2PairedEnd(Dada2):
         return self.feature_table_qza, self.feature_sequence_qza
 
     def execute(self):
+        log = f'{self.outdir}/qiime-dada2-denoise-paired.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime dada2 denoise-paired',
             f'--i-demultiplexed-seqs {self.demultiplexed_seq_qza}',
@@ -74,5 +78,7 @@ class Dada2PairedEnd(Dada2):
             f'--o-representative-sequences {self.feature_sequence_qza}',
             f'--o-table {self.feature_table_qza}',
             f'--o-denoising-stats {self.denoising_stats_qza}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)

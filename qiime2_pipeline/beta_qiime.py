@@ -133,11 +133,14 @@ class RunOneBetaMetricToTsv(Processor):
 
     def execute(self):
         self.distance_matrix_qza = f'{self.workdir}/{self.metric}.qza'
+        log = f'{self.outdir}/qiime-diversity-beta.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime diversity beta',
             f'--i-table {self.feature_table_qza}',
             f'--p-metric {self.metric}',
-            f'--o-distance-matrix {self.distance_matrix_qza}'
+            f'--o-distance-matrix {self.distance_matrix_qza}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)
 
@@ -169,12 +172,15 @@ class RunOneBetaPhylogeneticMetricToTsv(Processor):
 
     def execute(self):
         self.distance_matrix_qza = f'{self.workdir}/{self.metric}.qza'
+        log = f'{self.outdir}/qiime-diversity-beta-phylogenetic.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime diversity beta-phylogenetic',
             f'--i-table {self.feature_table_qza}',
             f'--i-phylogeny {self.rooted_tree_qza}',
             f'--p-metric {self.metric}',
-            f'--o-distance-matrix {self.distance_matrix_qza}'
+            f'--o-distance-matrix {self.distance_matrix_qza}',
+            f'1>> {log}',
+            f'2>> {log}'
         ])
         self.call(cmd)
 
