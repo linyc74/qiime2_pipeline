@@ -19,10 +19,13 @@ class LefSe(Processor):
         self.group_keywords = group_keywords
 
         for level, tsv in self.taxon_table_tsv_dict.items():
-            LefSeOneTaxonLevel(self.settings).main(
-                taxon_table_tsv=tsv,
-                taxon_level=level,
-                group_keywords=self.group_keywords)
+            try:
+                LefSeOneTaxonLevel(self.settings).main(
+                    taxon_table_tsv=tsv,
+                    taxon_level=level,
+                    group_keywords=self.group_keywords)
+            except Exception as e:
+                self.logger.warning(f'Failed to run LefSe on "{level}" taxon table, with Exception:\n{e}')
 
 
 class LefSeOneTaxonLevel(Processor):

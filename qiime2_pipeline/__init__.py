@@ -2,6 +2,7 @@ import os
 import shutil
 from typing import List, Optional
 from .template import Settings
+from .tools import get_temp_path
 from .qiime2_pipeline import Qiime2Pipeline
 
 
@@ -60,7 +61,7 @@ class Main:
         self.n_taxa_barplot = n_taxa_barplot
 
         self.settings = Settings(
-            workdir='./qiime2_pipeline_workdir',
+            workdir=get_temp_path(prefix='./qiime2_pipeline_workdir_'),
             outdir=outdir,
             threads=int(threads),
             debug=debug,

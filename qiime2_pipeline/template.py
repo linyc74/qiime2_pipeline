@@ -1,4 +1,5 @@
 import subprocess
+from typing import Any
 from datetime import datetime
 
 
@@ -27,8 +28,9 @@ class Settings:
 
 class Logger:
 
-    INFO: str = 'INFO'
-    DEBUG: str = 'DEBUG'
+    WARNING = 'WARNING'
+    INFO = 'INFO'
+    DEBUG = 'DEBUG'
 
     name: str
     level: str
@@ -38,15 +40,22 @@ class Logger:
         assert level in [self.INFO, self.DEBUG]
         self.level = level
 
-    def info(self, msg: str):
-        print(f'{self.name}\tINFO\t{datetime.now()}', flush=True)
-        print(msg + '\n', flush=True)
+    def warning(self, msg: Any):
+        self.__print(level=self.WARNING, msg=msg)
 
-    def debug(self, msg: str):
-        if self.level == self.INFO:
+    def info(self, msg: Any):
+        if self.level in [self.WARNING]:
             return
-        print(f'{self.name}\tDEBUG\t{datetime.now()}', flush=True)
-        print(msg + '\n', flush=True)
+        self.__print(level=self.INFO, msg=msg)
+
+    def debug(self, msg: Any):
+        if self.level in [self.INFO, self.WARNING]:
+            return
+        self.__print(level=self.DEBUG, msg=msg)
+
+    def __print(self, level: str, msg: Any):
+        print(f'{self.name}\t{level}\t{datetime.now()}', flush=True)
+        print(f'{msg}\n', flush=True)
 
 
 class Processor:
