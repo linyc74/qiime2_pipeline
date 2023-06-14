@@ -31,6 +31,7 @@ class Qiime2Pipeline(Processor):
     alpha_metrics: List[str]
     clip_r1_5_prime: int
     clip_r2_5_prime: int
+    max_expected_error_bases: float
     heatmap_read_fraction: float
     n_taxa_barplot: int
 
@@ -58,6 +59,7 @@ class Qiime2Pipeline(Processor):
             alpha_metrics: List[str],
             clip_r1_5_prime: int,
             clip_r2_5_prime: int,
+            max_expected_error_bases: float,
             heatmap_read_fraction: float,
             n_taxa_barplot: int):
 
@@ -73,6 +75,7 @@ class Qiime2Pipeline(Processor):
         self.alpha_metrics = alpha_metrics
         self.clip_r1_5_prime = clip_r1_5_prime
         self.clip_r2_5_prime = clip_r2_5_prime
+        self.max_expected_error_bases = max_expected_error_bases
         self.heatmap_read_fraction = heatmap_read_fraction
         self.n_taxa_barplot = n_taxa_barplot
 
@@ -112,7 +115,8 @@ class Qiime2Pipeline(Processor):
             fq2_suffix=self.fq2_suffix,
             paired_end_mode=self.paired_end_mode,
             clip_r1_5_prime=self.clip_r1_5_prime,
-            clip_r2_5_prime=self.clip_r2_5_prime)
+            clip_r2_5_prime=self.clip_r2_5_prime,
+            max_expected_error_bases=self.max_expected_error_bases)
 
     def otu_clustering(self):
         if self.skip_otu:

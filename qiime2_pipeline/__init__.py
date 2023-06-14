@@ -20,6 +20,7 @@ class Main:
     alpha_metrics: List[str]
     clip_r1_5_prime: int
     clip_r2_5_prime: int
+    max_expected_error_bases: float
     heatmap_read_fraction: float
     n_taxa_barplot: int
 
@@ -39,6 +40,7 @@ class Main:
             alpha_metrics: str,
             clip_r1_5_prime: int,
             clip_r2_5_prime: int,
+            max_expected_error_bases: float,
             heatmap_read_fraction: float,
             n_taxa_barplot: int,
             outdir: str,
@@ -57,6 +59,7 @@ class Main:
         self.alpha_metrics = [] if alpha_metrics == 'all' else alpha_metrics.split(',')
         self.clip_r1_5_prime = clip_r1_5_prime
         self.clip_r2_5_prime = clip_r2_5_prime
+        self.max_expected_error_bases = max_expected_error_bases
         self.heatmap_read_fraction = heatmap_read_fraction
         self.n_taxa_barplot = n_taxa_barplot
 
@@ -89,6 +92,7 @@ class Main:
             alpha_metrics=self.alpha_metrics,
             clip_r1_5_prime=self.clip_r1_5_prime,
             clip_r2_5_prime=self.clip_r2_5_prime,
+            max_expected_error_bases=self.max_expected_error_bases,
             heatmap_read_fraction=self.heatmap_read_fraction,
             n_taxa_barplot=self.n_taxa_barplot)
 

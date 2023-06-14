@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '1.9.4'
+__VERSION__ = '1.9.5-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -117,6 +117,15 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--max-expected-error-bases'],
+        'properties': {
+            'type': float,
+            'required': False,
+            'default': 2.0,
+            'help': 'max number of expected error bases, i.e. the sum error rates across all bases (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['--skip-otu'],
         'properties': {
             'action': 'store_true',
@@ -218,6 +227,7 @@ class EntryPoint:
             alpha_metrics=args.alpha_metrics,
             clip_r1_5_prime=args.clip_r1_5_prime,
             clip_r2_5_prime=args.clip_r2_5_prime,
+            max_expected_error_bases=args.max_expected_error_bases,
             heatmap_read_fraction=args.heatmap_read_fraction,
             n_taxa_barplot=args.n_taxa_barplot,
             outdir=args.outdir,
