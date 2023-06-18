@@ -15,6 +15,7 @@ from .generate_asv import GenerateASV
 from .beta_qiime import QiimeBetaDiversity
 from .raw_read_counts import RawReadCounts
 from .taxon_barplot import PlotTaxonBarplots
+from .differential_abundance import DifferentialAbundance
 
 
 class Qiime2Pipeline(Processor):
@@ -99,6 +100,7 @@ class Qiime2Pipeline(Processor):
         self.plot_venn_diagrams()
         self.taxon_barplot()
         self.lefse()
+        self.differential_abundance()
 
         self.collect_log_files()
 
@@ -185,6 +187,11 @@ class Qiime2Pipeline(Processor):
 
     def lefse(self):
         LefSe(self.settings).main(
+            taxon_table_tsv_dict=self.taxon_table_tsv_dict,
+            group_keywords=self.group_keywords)
+
+    def differential_abundance(self):
+        DifferentialAbundance(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             group_keywords=self.group_keywords)
 
