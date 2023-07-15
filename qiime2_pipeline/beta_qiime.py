@@ -1,9 +1,13 @@
 import os
+import pandas as pd
+from abc import ABC
 from typing import List
+from skbio import DistanceMatrix
+from skbio.stats.ordination import pcoa
 from .tools import edit_fpath
-from .template import Processor
+from .template import Processor, Settings
 from .exporting import ExportBetaDiversity
-from .beta_qiime_embedding import BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess
+from .embedding_core_process import EmbeddingProcessTemplate, NMDSCore, TSNECore
 
 
 class QiimeBetaDiversity(Processor):
@@ -24,11 +28,11 @@ class QiimeBetaDiversity(Processor):
         self.rooted_tree_qza = rooted_tree_qza
         self.group_keywords = group_keywords
 
-        self.run_all_beta_metrics_to_tsvs()
+        self.run_all_beta_metrics_to_distance_matrix_tsvs()
         self.run_batch_embedding_processes()
 
-    def run_all_beta_metrics_to_tsvs(self):
-        self.distance_matrix_tsvs = RunAllBetaMetricsToTsvs(self.settings).main(
+    def run_all_beta_metrics_to_distance_matrix_tsvs(self):
+        self.distance_matrix_tsvs = RunAllBetaMetricsToDistanceMatrixTsvs(self.settings).main(
             feature_table_qza=self.feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza)
 
@@ -39,7 +43,10 @@ class QiimeBetaDiversity(Processor):
                 group_keywords=self.group_keywords)
 
 
-class RunAllBetaMetricsToTsvs(Processor):
+#
+
+
+class RunAllBetaMetricsToDistanceMatrixTsvs(Processor):
 
     METRICS = [
         'jaccard',
@@ -187,3 +194,154 @@ class RunOneBetaPhylogeneticMetricToTsv(Processor):
     def export(self):
         self.distance_matrix_tsv = ExportBetaDiversity(self.settings).main(
             distance_matrix_qza=self.distance_matrix_qza)
+
+
+#
+
+
+class EmbeddingProcess(EmbeddingProcessTemplate, ABC):
+
+    DSTDIR_NAME = 'beta-embedding'
+
+    def preprocessing(self):
+        pass
+
+
+class PCoAProcess(EmbeddingProcess):
+
+    NAME = 'PCoA'
+    XY_COLUMNS = ('PC1', 'PC2')
+
+    proportion_explained_serise: pd.Series
+
+    def main(
+            self,
+            tsv: str,
+            group_keywords: List[str]):
+
+        self.tsv = tsv
+        self.group_keywords = group_keywords
+
+        self.run_main_workflow()
+        self.write_proportion_explained()
+
+    def embedding(self):
+        df = self.df
+        dist_mat = DistanceMatrix(df, list(df.columns))
+        result = pcoa(distance_matrix=dist_mat)
+        self.sample_coordinate_df = result.samples
+        self.proportion_explained_serise = result.proportion_explained
+
+    def write_proportion_explained(self):
+        tsv = edit_fpath(
+            fpath=self.tsv,
+            old_suffix='.tsv',
+            new_suffix=f'-{self.NAME.lower()}-proportion-explained.tsv',
+            dstdir=self.dstdir
+        )
+        self.proportion_explained_serise.to_csv(
+            tsv,
+            sep='\t',
+            header=['Proportion Explained']
+        )
+
+
+class NMDSProcess(EmbeddingProcess):
+
+    NAME = 'NMDS'
+    XY_COLUMNS = ('NMDS 1', 'NMDS 2')
+
+    stress: float
+
+    def main(
+            self,
+            tsv: str,
+            group_keywords: List[str]):
+
+        self.tsv = tsv
+        self.group_keywords = group_keywords
+
+        self.run_main_workflow()
+        self.write_stress()
+
+    def embedding(self):
+        self.sample_coordinate_df, self.stress = NMDSCore(self.settings).main(
+            df=self.df,
+            data_structure='distance_matrix'
+        )
+
+    def write_stress(self):
+        txt = edit_fpath(
+            fpath=self.tsv,
+            old_suffix='.tsv',
+            new_suffix='-nmds-stress.txt',
+            dstdir=self.dstdir)
+        with open(txt, 'w') as fh:
+            fh.write(str(self.stress))
+
+
+class TSNEProcess(EmbeddingProcess):
+
+    NAME = 't-SNE'
+    XY_COLUMNS = ('t-SNE 1', 't-SNE 2')
+
+    def main(
+            self,
+            tsv: str,
+            group_keywords: List[str]):
+
+        self.tsv = tsv
+        self.group_keywords = group_keywords
+        self.run_main_workflow()
+
+    def embedding(self):
+        self.sample_coordinate_df = TSNECore(self.settings).main(
+            df=self.df,
+            data_structure='distance_matrix'
+        )
+
+
+#
+
+
+class BatchEmbeddingProcess(Processor):
+
+    distance_matrix_tsvs: List[str]
+    group_keywords: List[str]
+
+    embedding: EmbeddingProcessTemplate
+
+    def main(
+            self,
+            distance_matrix_tsvs: List[str],
+            group_keywords: List[str]):
+
+        self.distance_matrix_tsvs = distance_matrix_tsvs
+        self.group_keywords = group_keywords
+
+        for tsv in self.distance_matrix_tsvs:
+            self.logger.debug(f'{self.embedding.NAME} for {tsv}')
+            self.embedding.main(
+                tsv=tsv,
+                group_keywords=self.group_keywords)
+
+
+class BatchPCoAProcess(BatchEmbeddingProcess):
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+        self.embedding = PCoAProcess(self.settings)
+
+
+class BatchNMDSProcess(BatchEmbeddingProcess):
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+        self.embedding = NMDSProcess(self.settings)
+
+
+class BatchTSNEProcess(BatchEmbeddingProcess):
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+        self.embedding = TSNEProcess(self.settings)
