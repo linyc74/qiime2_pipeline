@@ -1,5 +1,5 @@
 import pandas as pd
-from qiime2_pipeline.embedding_core import PCACore, NMDSCore, TSNECore
+from qiime2_pipeline.embedding_core_process import PCACore, NMDSCore, TSNECore
 from .setup import TestCase
 
 

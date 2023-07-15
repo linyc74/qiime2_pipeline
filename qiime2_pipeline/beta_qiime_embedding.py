@@ -5,8 +5,7 @@ from skbio import DistanceMatrix
 from skbio.stats.ordination import pcoa
 from .tools import edit_fpath
 from .template import Processor, Settings
-from .embedding_core import NMDSCore, TSNECore
-from .embedding_process import EmbeddingProcessTemplate
+from .embedding_core_process import NMDSCore, TSNECore, EmbeddingProcessTemplate
 
 
 class EmbeddingProcess(EmbeddingProcessTemplate, ABC):

@@ -4,8 +4,7 @@ from typing import List
 from .tools import edit_fpath
 from .template import Processor
 from .normalization import CountNormalization
-from .embedding_core import PCACore, NMDSCore, TSNECore
-from .embedding_process import EmbeddingProcessTemplate
+from .embedding_core_process import PCACore, NMDSCore, TSNECore, EmbeddingProcessTemplate
 
 
 class MyBetaDiversity(Processor):
