@@ -147,8 +147,13 @@ class PrepareTaxonDf(Processor):
         self.df = self.df.transpose()
 
     def shorten_taxon_columns(self):
+
         def shorten(s: str) -> str:
-            return s.split('|')[-1]
+            """
+            Seen examples where '/' is used as a separator, which causes error in the output file path
+            """
+            return s.replace('/', '|').split('|')[-1]
+
         self.df.columns = pd.Series(self.df.columns).apply(shorten)
 
     def add_suffix_to_duplicated_taxon_columns(self):

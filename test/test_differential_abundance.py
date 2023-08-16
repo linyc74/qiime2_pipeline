@@ -36,3 +36,10 @@ class TestOneTaxonLevelDifferentialAbundance(TestCase):
             taxon_tsv=f'{self.indir}/genus-table.tsv',
             group_keywords=['H', 'O', 'A']
         )
+
+    def test_error_separator(self):
+        OneTaxonLevelDifferentialAbundance(self.settings).main(
+            taxon_level='species',
+            taxon_tsv=f'{self.indir}/error-separator-table.tsv',
+            group_keywords=['CA', 'N']
+        )
