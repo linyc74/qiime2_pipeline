@@ -32,7 +32,7 @@ RUN apt-get update \
     ete3==3.1.2
 ENV QT_QPA_PLATFORM offscreen
 
-RUN conda install -c conda-forge -n qiime2-2021.11 zip=3.0
+RUN conda install -c conda-forge zip=3.0  # base env
 
 COPY ./qiime2_pipeline/* /qiime2_pipeline/qiime2_pipeline/
 COPY ./__main__.py /qiime2_pipeline/
