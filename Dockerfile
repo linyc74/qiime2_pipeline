@@ -32,7 +32,7 @@ RUN apt-get update \
     ete3==3.1.2
 ENV QT_QPA_PLATFORM offscreen
 
-RUN apt-get install -y zip
+RUN apt-get install -y --fix-missing zip
 
 COPY ./qiime2_pipeline/* /qiime2_pipeline/qiime2_pipeline/
 COPY ./__main__.py /qiime2_pipeline/
