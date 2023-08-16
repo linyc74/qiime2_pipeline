@@ -10,15 +10,17 @@ RUN apt-get update \
     libdbus-1-3 \
     build-essential
 
-ARG YML="qiime2-2023.2-py38-linux-conda.yml"
+ARG yml="qiime2-2023.2-py38-linux-conda.yml"
 
-RUN wget https://data.qiime2.org/distro/core/${YML} \
- && conda env create -n qiime2 --file ${YML} \
- && rm ${YML}
+RUN wget https://data.qiime2.org/distro/core/${yml} \
+ && conda env create -n qiime2 --file ${yml} \
+ && rm ${yml}
 
-ENV PATH "/opt/conda/envs/qiime2/bin":$PATH
+ARG bin_path="/opt/conda/envs/qiime2/bin"
 
-RUN /opt/conda/envs/qiime2/bin/pip install --no-cache-dir \
+ENV PATH ${bin_path}:$PATH
+
+RUN ${bin_path}/pip install --no-cache-dir \
     lefse==1.1.2 \
     matplotlib-venn==0.11.7 \
     PyQt5==5.15.6 \
