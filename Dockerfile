@@ -16,11 +16,9 @@ RUN wget https://data.qiime2.org/distro/core/${YML} \
  && conda env create -n qiime2 --file ${YML} \
  && rm ${YML}
 
-ARG ENV="/opt/conda/envs/qiime2/bin"
+ENV PATH /opt/conda/envs/qiime2/bin:$PATH
 
-ENV PATH $ENV:$PATH
-
-RUN $ENV/pip install --no-cache-dir \
+RUN /opt/conda/envs/qiime2/bin/pip install --no-cache-dir \
     lefse==1.1.2 \
     matplotlib-venn==0.11.7 \
     PyQt5==5.15.6 \
