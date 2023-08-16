@@ -1,4 +1,4 @@
-FROM continuumio/anaconda3:2022.10
+FROM continuumio/miniconda3:23.5.2-0
 
 RUN apt-get update \
  && apt-get install -y \
@@ -10,15 +10,15 @@ RUN apt-get update \
     libdbus-1-3 \
     build-essential
 
-ARG YML="qiime2-2023.5-py38-linux-conda.yml"
+ARG YML="qiime2-2023.2-py38-linux-conda.yml"
 
 RUN wget https://data.qiime2.org/distro/core/${YML} \
- && conda env create -n qiime2-2023.5 --file ${YML} \
+ && conda env create -n qiime2 --file ${YML} \
  && rm ${YML}
 
-ENV PATH "/opt/conda/envs/qiime2-2023.5/bin":$PATH
+ENV PATH "/opt/conda/envs/qiime2/bin":$PATH
 
-RUN /opt/conda/envs/qiime2-2023.5/bin/pip install --no-cache-dir \
+RUN /opt/conda/envs/qiime2/bin/pip install --no-cache-dir \
     lefse==1.1.2 \
     matplotlib-venn==0.11.7 \
     PyQt5==5.15.6 \
@@ -27,7 +27,7 @@ RUN /opt/conda/envs/qiime2-2023.5/bin/pip install --no-cache-dir \
 
 ENV QT_QPA_PLATFORM offscreen
 
-RUN conda install -c bioconda -n qiime2-2023.5 \
+RUN conda install -c bioconda -n qiime2 \
     trim-galore=0.6.6 \
  && conda install -c conda-forge \
     zip=3.0
