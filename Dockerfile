@@ -25,8 +25,7 @@ RUN $ENV/pip install --no-cache-dir \
     matplotlib-venn==0.11.7 \
     PyQt5==5.15.6 \
     ete3==3.1.2 \
-    scikit-bio==0.5.9 \
-    scipy==1.8.1
+    scikit-bio==0.5.6
 
 ENV QT_QPA_PLATFORM offscreen
 
