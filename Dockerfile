@@ -39,7 +39,7 @@ RUN Rscript -e 'install.packages("survival", version="2.44", repos="https://cran
  && Rscript -e 'install.packages("modeltools", version="0.2", repos="https://cran.csie.ntu.edu.tw/")' \
  && Rscript -e 'install.packages("coin", version="1.4", repos="https://cran.csie.ntu.edu.tw/")'
 
-RUN conda clean --all
+RUN conda clean --all --yes
 
 COPY ./qiime2_pipeline/* /qiime2_pipeline/qiime2_pipeline/
 COPY ./__main__.py /qiime2_pipeline/
