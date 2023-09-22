@@ -1,5 +1,5 @@
 from .setup import TestCase
-from qiime2_pipeline.importing import ImportFeatureTable, ImportFeatureSequence, ImportTaxonomy
+from qiime2_pipeline.importing import ImportFeatureTable, ImportFeatureSequence, ImportTaxonomy, ImportPairedEndFastq, ImportSingleEndFastq
 from qiime2_pipeline.exporting import ExportFeatureTable, ExportFeatureSequence
 
 
@@ -59,4 +59,38 @@ class TestImportTaxonomy(TestCase):
         actual = ImportTaxonomy(self.settings).main(
             taxonomy_tsv=f'{self.indir}/taxonomy.tsv')
         expected = f'{self.workdir}/taxonomy.qza'
+        self.assertFileExists(expected, actual)
+
+
+class TestImportPairedEndFastq(TestCase):
+
+    def setUp(self):
+        self.set_up(py_path=__file__)
+
+    # def tearDown(self):
+    #     self.tear_down()
+
+    def test_main(self):
+        actual = ImportPairedEndFastq(self.settings).main(
+            fq_dir=f'{self.indir}/fq_dir',
+            fq1_suffix='_L001_R1_001.fastq.gz',
+            fq2_suffix='_L001_R2_001.fastq.gz')
+        expected = f'{self.workdir}/paired-end-demultiplexed.qza'
+        self.assertFileExists(expected, actual)
+
+
+class TestImportSingleEndFastq(TestCase):
+
+    def setUp(self):
+        self.set_up(py_path=__file__)
+
+    def tearDown(self):
+        self.tear_down()
+
+    def test_main(self):
+        actual = ImportSingleEndFastq(self.settings).main(
+            fq_dir=f'{self.indir}/concat_fastqs',
+            fq_suffix='.fq'
+        )
+        expected = f'{self.workdir}/single-end-demultiplexed.qza'
         self.assertFileExists(expected, actual)
