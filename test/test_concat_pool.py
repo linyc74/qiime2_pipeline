@@ -1,5 +1,5 @@
 from .setup import TestCase
-from qiime2_pipeline.concat import Concat, BatchConcat, Pool, BatchPool
+from qiime2_pipeline.concat_pool import Concat, BatchConcat, Pool, BatchPool
 
 
 class TestConcat(TestCase):
@@ -10,7 +10,7 @@ class TestConcat(TestCase):
     def tearDown(self):
         self.tear_down()
 
-    def test_concat(self):
+    def test_main(self):
         actual = Concat(self.settings).main(
             fq1=f'{self.indir}/R1.fastq.gz',
             fq2=f'{self.indir}/R2.fastq.gz'
@@ -27,7 +27,7 @@ class TestBatchConcat(TestCase):
     def tearDown(self):
         self.tear_down()
 
-    def test_batch_concat(self):
+    def test_main(self):
         fq_dir, fq_suffix = BatchConcat(self.settings).main(
             fq_dir=f'{self.indir}/fq_dir',
             fq1_suffix='_L001_R1_001.fastq.gz',
@@ -44,7 +44,7 @@ class TestPool(TestCase):
     def tearDown(self):
         self.tear_down()
 
-    def test_pool(self):
+    def test_main(self):
         actual = Pool(self.settings).main(
             fq1=f'{self.indir}/R1.fastq.gz',
             fq2=f'{self.indir}/R2.fastq.gz'
@@ -61,7 +61,7 @@ class TestBatchPool(TestCase):
     def tearDown(self):
         self.tear_down()
 
-    def test_batch_pool(self):
+    def test_main(self):
         fq_dir, fq_suffix = BatchPool(self.settings).main(
             fq_dir=f'{self.indir}/fq_dir',
             fq1_suffix='_L001_R1_001.fastq.gz',

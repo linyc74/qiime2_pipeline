@@ -88,8 +88,8 @@ class TestGenerateASVMergePairedEnd(TestCase):
     def test_main(self):
         feature_table_qza, feature_sequence_qza = GenerateASVMergePairedEnd(self.settings).main(
             fq_dir=f'{self.indir}/fq_dir',
-            fq1_suffix='-Colon_000000000-KHGJP_L1_R1.fastq.gz',
-            fq2_suffix='-Colon_000000000-KHGJP_L1_R2.fastq.gz',
+            fq1_suffix='_L001_R1_001.fastq.gz',
+            fq2_suffix='_L001_R2_001.fastq.gz',
             clip_r1_5_prime=17,
             clip_r2_5_prime=21,
             max_expected_error_bases=2.,

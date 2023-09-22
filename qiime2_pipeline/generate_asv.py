@@ -1,6 +1,6 @@
 from typing import Tuple, Optional
 from .template import Processor
-from .concat import BatchConcat, BatchPool
+from .concat_pool import BatchConcat, BatchPool
 from .denoise import Dada2SingleEnd, Dada2PairedEnd
 from .importing import ImportSingleEndFastq, ImportPairedEndFastq
 from .trimming import BatchTrimGalorePairedEnd, BatchTrimGaloreSingleEnd

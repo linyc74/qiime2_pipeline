@@ -1,6 +1,7 @@
 from .setup import TestCase
-from qiime2_pipeline.importing import ImportFeatureTable, ImportFeatureSequence, ImportTaxonomy, ImportPairedEndFastq, ImportSingleEndFastq
 from qiime2_pipeline.exporting import ExportFeatureTable, ExportFeatureSequence
+from qiime2_pipeline.importing import ImportFeatureTable, ImportFeatureSequence, ImportTaxonomy, \
+    ImportPairedEndFastq, ImportSingleEndFastq
 
 
 class TestImportFeatureTable(TestCase):
@@ -67,8 +68,8 @@ class TestImportPairedEndFastq(TestCase):
     def setUp(self):
         self.set_up(py_path=__file__)
 
-    # def tearDown(self):
-    #     self.tear_down()
+    def tearDown(self):
+        self.tear_down()
 
     def test_main(self):
         actual = ImportPairedEndFastq(self.settings).main(
