@@ -12,6 +12,7 @@ class TestReadCounts(TestCase):
 
     def test_single_end(self):
         RawReadCounts(self.settings).main(
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
             fq_dir=f'{self.indir}/fq_dir',
             fq1_suffix='_L001_R1_001.fastq.gz',
             fq2_suffix=None,
@@ -19,6 +20,7 @@ class TestReadCounts(TestCase):
 
     def test_paired_end(self):
         RawReadCounts(self.settings).main(
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
             fq_dir=f'{self.indir}/fq_dir',
             fq1_suffix='_L001_R1_001.fastq.gz',
             fq2_suffix='_L001_R2_001.fastq.gz',

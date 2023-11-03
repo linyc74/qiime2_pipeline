@@ -2,32 +2,36 @@ import gzip
 import pandas as pd
 from os.path import basename
 from typing import List, Dict, Union, Optional
-from .tools import get_files
 from .template import Processor
 
 
 class RawReadCounts(Processor):
 
+    sample_sheet: str
     fq_dir: str
     fq1_suffix: str
     fq2_suffix: Optional[str]
 
     def main(
             self,
+            sample_sheet: str,
             fq_dir: str,
             fq1_suffix: str,
             fq2_suffix: Optional[str]):
 
+        self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
 
         if self.fq2_suffix is None:
             SingleEnd(self.settings).main(
+                sample_sheet=self.sample_sheet,
                 fq_dir=self.fq_dir,
                 fq_suffix=self.fq1_suffix)
         else:
             PairedEnd(self.settings).main(
+                sample_sheet=self.sample_sheet,
                 fq_dir=self.fq_dir,
                 fq1_suffix=self.fq1_suffix,
                 fq2_suffix=self.fq2_suffix)
@@ -35,6 +39,7 @@ class RawReadCounts(Processor):
 
 class PairedEnd(Processor):
 
+    sample_sheet: str
     fq_dir: str
     fq1_suffix: str
     fq2_suffix: str
@@ -43,7 +48,14 @@ class PairedEnd(Processor):
     fq2s: List[str]
     data: List[Dict[str, Union[str, int]]]
 
-    def main(self, fq_dir: str, fq1_suffix: str, fq2_suffix: str):
+    def main(
+            self,
+            sample_sheet: str,
+            fq_dir: str,
+            fq1_suffix: str,
+            fq2_suffix: str):
+
+        self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
@@ -53,15 +65,15 @@ class PairedEnd(Processor):
         self.save_csv()
 
     def set_fqs(self):
-        self.fq1s = get_files(
-            source=self.fq_dir,
-            endswith=self.fq1_suffix,
-            isfullpath=True)
-        self.fq2s = get_files(
-            source=self.fq_dir,
-            endswith=self.fq1_suffix,
-            isfullpath=True)
-        assert len(self.fq1s) == len(self.fq2s), f'The number of read 1 fastq files is not equal to the number of read 2 fastq files'
+        df = pd.read_csv(self.sample_sheet, index_col=0)
+        self.fq1s = [
+            f'{self.fq_dir}/{sample_id}{self.fq1_suffix}'
+            for sample_id in df.index
+        ]
+        self.fq2s = [
+            f'{self.fq_dir}/{sample_id}{self.fq2_suffix}'
+            for sample_id in df.index
+        ]
 
     def read_fqs(self):
         self.data = []
@@ -78,13 +90,20 @@ class PairedEnd(Processor):
 
 class SingleEnd(Processor):
 
+    sample_sheet: str
     fq_dir: str
     fq_suffix: str
 
     fqs: List[str]
     data: List[Dict[str, Union[str, int]]]
 
-    def main(self, fq_dir: str, fq_suffix: str):
+    def main(
+            self,
+            sample_sheet: str,
+            fq_dir: str,
+            fq_suffix: str):
+
+        self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
         self.fq_suffix = fq_suffix
 
@@ -93,10 +112,11 @@ class SingleEnd(Processor):
         self.save_csv()
 
     def set_fqs(self):
-        self.fqs = get_files(
-            source=self.fq_dir,
-            endswith=self.fq_suffix,
-            isfullpath=True)
+        df = pd.read_csv(self.sample_sheet, index_col=0)
+        self.fqs = [
+            f'{self.fq_dir}/{sample_id}{self.fq_suffix}'
+            for sample_id in df.index
+        ]
 
     def read_fqs(self):
         self.data = []
