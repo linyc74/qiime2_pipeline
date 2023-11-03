@@ -20,6 +20,7 @@ from .differential_abundance import DifferentialAbundance
 
 class Qiime2Pipeline(Processor):
 
+    sample_sheet: str
     fq_dir: str
     fq1_suffix: str
     fq2_suffix: Optional[str]
@@ -48,6 +49,7 @@ class Qiime2Pipeline(Processor):
 
     def main(
             self,
+            sample_sheet: str,
             fq_dir: str,
             fq1_suffix: str,
             fq2_suffix: Optional[str],
@@ -64,6 +66,7 @@ class Qiime2Pipeline(Processor):
             heatmap_read_fraction: float,
             n_taxa_barplot: int):
 
+        self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
@@ -147,18 +150,21 @@ class Qiime2Pipeline(Processor):
         self.rooted_tree_qza = Phylogeny(self.settings).main(
             seq_qza=self.labeled_feature_sequence_qza)
 
+    # group_keywords
     def alpha_diversity(self):
         AlphaDiversity(self.settings).main(
             feature_table_qza=self.labeled_feature_table_qza,
             group_keywords=self.group_keywords,
             alpha_metrics=self.alpha_metrics)
 
+    # group_keywords
     def qiime_beta_diversity(self):
         self.distance_matrix_tsvs = QiimeBetaDiversity(self.settings).main(
             feature_table_qza=self.labeled_feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza,
             group_keywords=self.group_keywords)
 
+    # group_keywords
     def my_beta_diversity(self):
         MyBetaDiversity(self.settings).main(
             feature_table_tsv=self.labeled_feature_table_tsv,
@@ -174,6 +180,7 @@ class Qiime2Pipeline(Processor):
             tsvs=tsvs,
             heatmap_read_fraction=self.heatmap_read_fraction)
 
+    # group_keywords
     def plot_venn_diagrams(self):
         tsvs = [self.labeled_feature_table_tsv] + [v for v in self.taxon_table_tsv_dict.values()]
         PlotVennDiagrams(self.settings).main(
@@ -185,11 +192,13 @@ class Qiime2Pipeline(Processor):
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             n_taxa=self.n_taxa_barplot)
 
+    # group_keywords
     def lefse(self):
         LefSe(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             group_keywords=self.group_keywords)
 
+    # group_keywords
     def differential_abundance(self):
         DifferentialAbundance(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
