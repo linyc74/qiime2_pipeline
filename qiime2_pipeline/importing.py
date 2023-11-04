@@ -1,12 +1,13 @@
 import os
 import pandas as pd
 from typing import List
+from .tools import edit_fpath
 from .template import Processor
-from .tools import get_files, edit_fpath
 
 
 class ImportFastq(Processor):
 
+    sample_sheet: str
     fq_dir: str
     manifest_tsv: str
     output_qza: str
@@ -18,9 +19,11 @@ class ImportSingleEndFastq(ImportFastq):
 
     def main(
             self,
+            sample_sheet: str,
             fq_dir: str,
             fq_suffix: str) -> str:
 
+        self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
         self.fq_suffix = fq_suffix
 
@@ -32,6 +35,7 @@ class ImportSingleEndFastq(ImportFastq):
     def write_manifest_tsv(self):
         self.manifest_tsv = f'{self.workdir}/manifest.tsv'
         WriteSingleEndManifestTsv(self.settings).main(
+            sample_sheet=self.sample_sheet,
             fq_dir=self.fq_dir,
             fq_suffix=self.fq_suffix,
             manifest_tsv=self.manifest_tsv)
@@ -53,15 +57,18 @@ class ImportSingleEndFastq(ImportFastq):
 
 class ImportPairedEndFastq(ImportFastq):
 
+    sample_sheet: str
     fq1_suffix: str
     fq2_suffix: str
 
     def main(
             self,
+            sample_sheet: str,
             fq_dir: str,
             fq1_suffix: str,
             fq2_suffix: str) -> str:
 
+        self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
@@ -74,6 +81,7 @@ class ImportPairedEndFastq(ImportFastq):
     def write_manifest_tsv(self):
         self.manifest_tsv = f'{self.workdir}/manifest.tsv'
         WritePairedEndManifestTsv(self.settings).main(
+            sample_sheet=self.sample_sheet,
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix,
@@ -99,17 +107,13 @@ class WriteManifestTsv(Processor):
     # https://docs.qiime2.org/2021.11/tutorials/importing/
     SAMPLE_ID_COLUMN = 'sample-id'
 
+    sample_sheet: str
     fq_dir: str
     manifest_tsv: str
     sample_names: List[str]
 
-    def set_sample_names(self, fq_suffix: str):
-        files = get_files(
-            source=self.fq_dir,
-            endswith=fq_suffix,
-            isfullpath=False)
-        n_char = len(fq_suffix)
-        self.sample_names = [f[:-n_char] for f in files]
+    def set_sample_names(self):
+        self.sample_names = pd.read_csv(self.sample_sheet, index_col=0).index.tolist()
 
 
 class WriteSingleEndManifestTsv(WriteManifestTsv):
@@ -121,15 +125,17 @@ class WriteSingleEndManifestTsv(WriteManifestTsv):
 
     def main(
             self,
+            sample_sheet: str,
             fq_dir: str,
             fq_suffix: str,
             manifest_tsv: str):
 
+        self.sample_sheet = sample_sheet
         self.fq_dir = os.path.abspath(fq_dir)  # qiime2 only accepts absolute path in the manifest tsv
         self.fq_suffix = fq_suffix
         self.manifest_tsv = manifest_tsv
 
-        self.set_sample_names(fq_suffix=self.fq_suffix)
+        self.set_sample_names()
         self.set_fq_paths()
         self.write_tsv()
 
@@ -165,17 +171,19 @@ class WritePairedEndManifestTsv(WriteManifestTsv):
 
     def main(
             self,
+            sample_sheet: str,
             fq_dir: str,
             fq1_suffix: str,
             fq2_suffix: str,
             manifest_tsv: str):
 
+        self.sample_sheet = sample_sheet
         self.fq_dir = os.path.abspath(fq_dir)  # qiime2 only accepts absolute path in the manifest tsv
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
         self.manifest_tsv = manifest_tsv
 
-        self.set_sample_names(fq_suffix=self.fq1_suffix)
+        self.set_sample_names()
         self.set_fq1_fq2_paths()
         self.write_tsv()
 

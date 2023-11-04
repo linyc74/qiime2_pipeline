@@ -1,6 +1,6 @@
 from typing import Tuple, Optional
 from .template import Processor
-from .concat_pool import BatchConcat, BatchPool
+from .pool import BatchPool
 from .denoise import Dada2SingleEnd, Dada2PairedEnd
 from .importing import ImportSingleEndFastq, ImportPairedEndFastq
 from .trimming import BatchTrimGalorePairedEnd, BatchTrimGaloreSingleEnd
@@ -8,10 +8,10 @@ from .trimming import BatchTrimGalorePairedEnd, BatchTrimGaloreSingleEnd
 
 class GenerateASV(Processor):
 
-    CONCAT = 'concat'
     MERGE = 'merge'
     POOL = 'pool'
 
+    sample_sheet: str
     fq_dir: str
     fq1_suffix: str
     fq2_suffix: Optional[str]
@@ -25,6 +25,7 @@ class GenerateASV(Processor):
 
     def main(
             self,
+            sample_sheet: str,
             fq_dir: str,
             fq1_suffix: str,
             fq2_suffix: Optional[str],
@@ -33,6 +34,7 @@ class GenerateASV(Processor):
             clip_r2_5_prime: int,
             max_expected_error_bases: float) -> Tuple[str, str]:
 
+        self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
@@ -50,23 +52,23 @@ class GenerateASV(Processor):
 
     def generate_asv_single_end(self):
         self.feature_table_qza, self.feature_sequence_qza = GenerateASVSingleEnd(self.settings).main(
+            sample_sheet=self.sample_sheet,
             fq_dir=self.fq_dir,
             fq_suffix=self.fq1_suffix,
             clip_5_prime=self.clip_r1_5_prime,
             max_expected_error_bases=self.max_expected_error_bases)
 
     def generate_asv_paired_end(self):
-        assert self.paired_end_mode in [self.CONCAT, self.MERGE, self.POOL], \
+        assert self.paired_end_mode in [self.MERGE, self.POOL], \
             f'"{self.paired_end_mode}" is not a valid mode for GenerateASV'
 
-        if self.paired_end_mode == self.CONCAT:
-            method = GenerateASVConcatPairedEnd(self.settings).main
-        elif self.paired_end_mode == self.MERGE:
+        if self.paired_end_mode == self.MERGE:
             method = GenerateASVMergePairedEnd(self.settings).main
         else:
             method = GenerateASVPoolPairedEnd(self.settings).main
 
         self.feature_table_qza, self.feature_sequence_qza = method(
+            sample_sheet=self.sample_sheet,
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix,
@@ -77,6 +79,7 @@ class GenerateASV(Processor):
 
 class GenerateASVSingleEnd(Processor):
 
+    sample_sheet: str
     fq_dir: str
     fq_suffix: str
     clip_5_prime: int
@@ -89,11 +92,13 @@ class GenerateASVSingleEnd(Processor):
 
     def main(
             self,
+            sample_sheet: str,
             fq_dir: str,
             fq_suffix: str,
             clip_5_prime: int,
             max_expected_error_bases: float) -> Tuple[str, str]:
 
+        self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
         self.fq_suffix = fq_suffix
         self.clip_5_prime = clip_5_prime
@@ -107,12 +112,14 @@ class GenerateASVSingleEnd(Processor):
 
     def trimming(self):
         self.trimmed_fq_dir = BatchTrimGaloreSingleEnd(self.settings).main(
+            sample_sheet=self.sample_sheet,
             fq_dir=self.fq_dir,
             fq_suffix=self.fq_suffix,
             clip_5_prime=self.clip_5_prime)
 
     def importing(self):
         self.single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
+            sample_sheet=self.sample_sheet,
             fq_dir=self.trimmed_fq_dir,
             fq_suffix=self.fq_suffix)
 
@@ -124,6 +131,7 @@ class GenerateASVSingleEnd(Processor):
 
 class GenerateASVPairedEnd(Processor):
 
+    sample_sheet: str
     fq_dir: str
     fq1_suffix: str
     fq2_suffix: str
@@ -137,6 +145,7 @@ class GenerateASVPairedEnd(Processor):
 
     def main(
             self,
+            sample_sheet: str,
             fq_dir: str,
             fq1_suffix: str,
             fq2_suffix: str,
@@ -144,6 +153,7 @@ class GenerateASVPairedEnd(Processor):
             clip_r2_5_prime: int,
             max_expected_error_bases: float) -> Tuple[str, str]:
 
+        self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
@@ -160,43 +170,12 @@ class GenerateASVPairedEnd(Processor):
 
     def trimming(self):
         self.trimmed_fq_dir = BatchTrimGalorePairedEnd(self.settings).main(
+            sample_sheet=self.sample_sheet,
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix,
             clip_r1_5_prime=self.clip_r1_5_prime,
             clip_r2_5_prime=self.clip_r2_5_prime)
-
-
-class GenerateASVConcatPairedEnd(GenerateASVPairedEnd):
-
-    concat_fq_dir: str
-    fq_suffix: str
-    single_end_seq_qza: str
-
-    def workflow(self):
-
-        self.trimming()
-        self.concat()
-        self.importing()
-        self.denoise()
-
-        return self.feature_table_qza, self.feature_sequence_qza
-
-    def concat(self):
-        self.concat_fq_dir, self.fq_suffix = BatchConcat(self.settings).main(
-            fq_dir=self.trimmed_fq_dir,
-            fq1_suffix=self.fq1_suffix,
-            fq2_suffix=self.fq2_suffix)
-
-    def importing(self):
-        self.single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
-            fq_dir=self.concat_fq_dir,
-            fq_suffix=self.fq_suffix)
-
-    def denoise(self):
-        self.feature_table_qza, self.feature_sequence_qza = Dada2SingleEnd(self.settings).main(
-            demultiplexed_seq_qza=self.single_end_seq_qza,
-            max_expected_error_bases=self.max_expected_error_bases)
 
 
 class GenerateASVMergePairedEnd(GenerateASVPairedEnd):
@@ -213,6 +192,7 @@ class GenerateASVMergePairedEnd(GenerateASVPairedEnd):
 
     def importing(self):
         self.paired_end_seq_qza = ImportPairedEndFastq(self.settings).main(
+            sample_sheet=self.sample_sheet,
             fq_dir=self.trimmed_fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix)
@@ -240,12 +220,14 @@ class GenerateASVPoolPairedEnd(GenerateASVPairedEnd):
 
     def pool(self):
         self.pooled_fq_dir, self.fq_suffix = BatchPool(self.settings).main(
+            sample_sheet=self.sample_sheet,
             fq_dir=self.trimmed_fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix)
 
     def importing(self):
         self.single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
+            sample_sheet=self.sample_sheet,
             fq_dir=self.pooled_fq_dir,
             fq_suffix=self.fq_suffix)
 

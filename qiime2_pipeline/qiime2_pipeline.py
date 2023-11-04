@@ -109,12 +109,14 @@ class Qiime2Pipeline(Processor):
 
     def raw_read_counts(self):
         RawReadCounts(self.settings).main(
+            sample_sheet=self.sample_sheet,
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix)
 
     def generate_asv(self):
         self.feature_table_qza, self.feature_sequence_qza = GenerateASV(self.settings).main(
+            sample_sheet=self.sample_sheet,
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix,

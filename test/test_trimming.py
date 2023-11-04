@@ -35,6 +35,7 @@ class TestBatchTrimGalorePairedEnd(TestCase):
 
     def test_main(self):
         actual = BatchTrimGalorePairedEnd(self.settings).main(
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
             fq_dir=f'{self.indir}/fq_dir',
             fq1_suffix='_L001_R1_001.fastq.gz',
             fq2_suffix='_L001_R2_001.fastq.gz',
@@ -71,6 +72,7 @@ class TestBatchTrimGaloreSingleEnd(TestCase):
 
     def test_main(self):
         actual = BatchTrimGaloreSingleEnd(self.settings).main(
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
             fq_dir=f'{self.indir}/fq_dir',
             fq_suffix='_L001_R2_001.fastq.gz',
             clip_5_prime=17)

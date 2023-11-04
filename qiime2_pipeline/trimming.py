@@ -1,7 +1,9 @@
 import os
+import pandas as pd
 from os.path import basename
 from typing import Tuple, List
-from .tools import get_files
+
+
 from .template import Processor, Settings
 
 
@@ -105,6 +107,7 @@ class TrimGalorePairedEnd(Processor):
 
 class BatchTrimGalorePairedEnd(Processor):
 
+    sample_sheet: str
     fq_dir: str
     fq1_suffix: str
     fq2_suffix: str
@@ -120,12 +123,14 @@ class BatchTrimGalorePairedEnd(Processor):
 
     def main(
             self,
+            sample_sheet: str,
             fq_dir: str,
             fq1_suffix: str,
             fq2_suffix: str,
             clip_r1_5_prime: int,
             clip_r2_5_prime: int) -> str:
 
+        self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
@@ -140,12 +145,7 @@ class BatchTrimGalorePairedEnd(Processor):
         return self.out_fq_dir
 
     def set_sample_names(self):
-        files = get_files(
-            source=self.fq_dir,
-            endswith=self.fq1_suffix,
-            isfullpath=False)
-        n_char = len(self.fq1_suffix)
-        self.sample_names = [f[:-n_char] for f in files]
+        self.sample_names = pd.read_csv(self.sample_sheet, index_col=0).index.tolist()
 
     def set_out_fq_dir(self):
         self.out_fq_dir = f'{self.workdir}/trimmed_fastqs'
@@ -248,6 +248,7 @@ class TrimGaloreSingleEnd(Processor):
 
 class BatchTrimGaloreSingleEnd(Processor):
 
+    sample_sheet: str
     fq_dir: str
     fq_suffix: str
     clip_5_prime: int
@@ -261,10 +262,12 @@ class BatchTrimGaloreSingleEnd(Processor):
 
     def main(
             self,
+            sample_sheet: str,
             fq_dir: str,
             fq_suffix: str,
             clip_5_prime: int) -> str:
 
+        self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
         self.fq_suffix = fq_suffix
         self.clip_5_prime = clip_5_prime
@@ -277,12 +280,7 @@ class BatchTrimGaloreSingleEnd(Processor):
         return self.out_fq_dir
 
     def set_sample_names(self):
-        files = get_files(
-            source=self.fq_dir,
-            endswith=self.fq_suffix,
-            isfullpath=False)
-        n_char = len(self.fq_suffix)
-        self.sample_names = [f[:-n_char] for f in files]
+        self.sample_names = pd.read_csv(self.sample_sheet, index_col=0).index.tolist()
 
     def set_out_fq_dir(self):
         self.out_fq_dir = f'{self.workdir}/trimmed_fastqs'
