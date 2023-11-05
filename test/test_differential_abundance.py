@@ -18,7 +18,7 @@ class TestDifferentialAbundance(TestCase):
         }
         DifferentialAbundance(self.settings).main(
             taxon_table_tsv_dict=taxon_table_tsv_dict,
-            group_keywords=['H', 'O']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
 
 
@@ -34,12 +34,12 @@ class TestOneTaxonLevelDifferentialAbundance(TestCase):
         OneTaxonLevelDifferentialAbundance(self.settings).main(
             taxon_level='genus',
             taxon_tsv=f'{self.indir}/genus-table.tsv',
-            group_keywords=['H', 'O', 'A']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
 
     def test_error_separator(self):
         OneTaxonLevelDifferentialAbundance(self.settings).main(
             taxon_level='genus',
             taxon_tsv=f'{self.indir}/error-separator-table.tsv',
-            group_keywords=['H', 'O', 'A']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )

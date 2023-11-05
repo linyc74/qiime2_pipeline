@@ -195,11 +195,10 @@ class Qiime2Pipeline(Processor):
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             sample_sheet=self.sample_sheet)
 
-    # group_keywords
     def differential_abundance(self):
         DifferentialAbundance(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
-            group_keywords=self.group_keywords)
+            sample_sheet=self.sample_sheet)
 
     def collect_log_files(self):
         makedirs(f'{self.outdir}/log', exist_ok=True)

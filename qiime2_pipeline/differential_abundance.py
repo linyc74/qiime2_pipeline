@@ -27,21 +27,21 @@ YLIM = None
 class DifferentialAbundance(Processor):
 
     taxon_table_tsv_dict: Dict[str, str]
-    group_keywords: List[str]
+    sample_sheet: str
 
     def main(
             self,
             taxon_table_tsv_dict: Dict[str, str],
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.taxon_table_tsv_dict = taxon_table_tsv_dict
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         for taxon_level, taxon_tsv in self.taxon_table_tsv_dict.items():
             OneTaxonLevelDifferentialAbundance(self.settings).main(
                 taxon_level=taxon_level,
                 taxon_tsv=taxon_tsv,
-                group_keywords=self.group_keywords)
+                sample_sheet=self.sample_sheet)
 
         self.zip_dstdir()
 
@@ -55,7 +55,7 @@ class OneTaxonLevelDifferentialAbundance(Processor):
 
     taxon_level: str
     taxon_tsv: str
-    group_keywords: List[str]
+    sample_sheet: str
 
     taxon_df: pd.DataFrame
 
@@ -63,11 +63,11 @@ class OneTaxonLevelDifferentialAbundance(Processor):
             self,
             taxon_level: str,
             taxon_tsv: str,
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.taxon_level = taxon_level
         self.taxon_tsv = taxon_tsv
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         self.read_taxon_tsv()
         self.prepare_taxon_df()
@@ -79,10 +79,13 @@ class OneTaxonLevelDifferentialAbundance(Processor):
     def prepare_taxon_df(self):
         self.taxon_df = PrepareTaxonDf(self.settings).main(
             df=self.taxon_df,
-            group_keywords=self.group_keywords)
+            sample_sheet=self.sample_sheet)
 
     def mannwhitneyu_tests_and_boxplots(self):
-        for group_1, group_2 in combinations(self.group_keywords, 2):
+
+        groups = pd.read_csv(self.sample_sheet, index_col=0)[GROUP_COLUMN].unique()
+
+        for group_1, group_2 in combinations(groups, 2):
 
             dstdir = f'{self.outdir}/{DSTDIR_NAME}/{self.taxon_level}/{group_1}-{group_2}'
             os.makedirs(dstdir, exist_ok=True)
@@ -118,15 +121,15 @@ class OneTaxonLevelDifferentialAbundance(Processor):
 class PrepareTaxonDf(Processor):
 
     df: pd.DataFrame
-    group_keywords: List[str]
+    sample_sheet: str
 
     def main(
             self,
             df: pd.DataFrame,
-            group_keywords: List[str]) -> pd.DataFrame:
+            sample_sheet: str) -> pd.DataFrame:
 
         self.df = df.copy()
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         self.normalize_counts()
         self.transpose_taxon_df()
@@ -162,7 +165,7 @@ class PrepareTaxonDf(Processor):
     def add_group_column(self):
         self.df = AddGroupColumn(self.settings).main(
             df=self.df,
-            group_keywords=self.group_keywords)
+            sample_sheet=self.sample_sheet)
 
 
 class AddSuffixToDuplicatedColumns(Processor):
