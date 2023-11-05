@@ -7,22 +7,25 @@ from .tools import edit_fpath
 from .template import Processor
 
 
+GROUP_COLUMN = 'Group'
+
+
 class PlotVennDiagrams(Processor):
 
     DSTDIR_NAME = 'venn'
 
     tsvs: List[str]
-    group_keywords: List[str]
+    sample_sheet: str
 
     dstdir: str
 
     def main(
             self,
             tsvs: List[str],
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.tsvs = tsvs
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         valid = self.check_number_of_groups()
         if not valid:
@@ -32,12 +35,14 @@ class PlotVennDiagrams(Processor):
         self.plot_venn_diagrams()
 
     def check_number_of_groups(self) -> bool:
-        n = len(self.group_keywords)
+        groups = pd.read_csv(self.sample_sheet, index_col=0)[GROUP_COLUMN].unique()
+
+        n = len(groups)
         if n in [2, 3]:
             return True
         else:
             p = 'There is only 1' if n == 1 else f'There are {n}'
-            msg = f'{p} group keywords: {self.group_keywords}, skip Venn diagram'
+            msg = f'{p} group keywords: {groups}, skip Venn diagram'
             self.logger.info(msg)
             return False
 
@@ -49,7 +54,7 @@ class PlotVennDiagrams(Processor):
         for tsv in self.tsvs:
             ProcessTsvPlotVenn(self.settings).main(
                 tsv=tsv,
-                group_keywords=self.group_keywords,
+                sample_sheet=self.sample_sheet,
                 dstdir=self.dstdir)
 
 
@@ -59,45 +64,54 @@ class ProcessTsvPlotVenn(Processor):
     DPI = 300
 
     tsv: str
-    group_keywords: List[str]
+    sample_sheet: str
     dstdir: str
 
     df: pd.DataFrame
-    group_keyword_to_features: Dict[str, Set[str]]
+    sample_to_group: Dict[str, str]
+    group_to_features: Dict[str, Set[str]]
 
     def main(
             self,
             tsv: str,
-            group_keywords: List[str],
+            sample_sheet: str,
             dstdir: str):
 
         self.tsv = tsv
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
         self.dstdir = dstdir
 
         self.read_tsv()
-        self.init_group_keyword_to_features()
+        self.set_sample_to_group()
+        self.init_group_to_features()
+        print(self.group_to_features)
         self.count_features_for_each_group()
         self.plot_venn()
 
     def read_tsv(self):
         self.df = pd.read_csv(self.tsv, sep='\t', index_col=0)
 
-    def init_group_keyword_to_features(self):
-        self.group_keyword_to_features = {k: set() for k in self.group_keywords}
+    def set_sample_to_group(self):
+        df = pd.read_csv(self.sample_sheet, index_col=0)
+        self.sample_to_group = df[GROUP_COLUMN].to_dict()
+
+    def init_group_to_features(self):
+        df = pd.read_csv(self.sample_sheet, index_col=0)
+        groups = df[GROUP_COLUMN].unique()
+        self.group_to_features = {g: set() for g in groups}
 
     def count_features_for_each_group(self):
-        for c in self.df.columns:
-            for k in self.group_keyword_to_features.keys():
-                if k in c:
-                    set_1 = self.group_keyword_to_features[k]
-                    set_2 = self.df[c][self.df[c] > 0].index
-                    self.group_keyword_to_features[k] = set_1.union(set_2)
+        for sample in self.df.columns:
+            group = self.sample_to_group[sample]
+            set_1 = self.group_to_features[group]
+
+            set_2 = self.df[sample][self.df[sample] > 0].index
+
+            self.group_to_features[group] = set_1.union(set_2)
 
     def plot_venn(self):
-        subsets = [
-            self.group_keyword_to_features[k] for k in self.group_keywords
-        ]
+        groups = list(self.group_to_features.keys())
+        subsets = [self.group_to_features[g] for g in groups]
 
         output_prefix = edit_fpath(
             fpath=self.tsv,
@@ -106,7 +120,7 @@ class ProcessTsvPlotVenn(Processor):
             dstdir=self.dstdir)
 
         PlotVenn(self.settings).main(
-            set_labels=self.group_keywords,
+            set_labels=groups,
             subsets=subsets,
             output_prefix=output_prefix)
 

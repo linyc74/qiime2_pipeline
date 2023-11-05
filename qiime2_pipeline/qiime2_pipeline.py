@@ -179,12 +179,11 @@ class Qiime2Pipeline(Processor):
             tsvs=tsvs,
             heatmap_read_fraction=self.heatmap_read_fraction)
 
-    # group_keywords
     def plot_venn_diagrams(self):
         tsvs = [self.labeled_feature_table_tsv] + [v for v in self.taxon_table_tsv_dict.values()]
         PlotVennDiagrams(self.settings).main(
             tsvs=tsvs,
-            group_keywords=self.group_keywords)
+            sample_sheet=self.sample_sheet)
 
     def taxon_barplot(self):
         PlotTaxonBarplots(self.settings).main(

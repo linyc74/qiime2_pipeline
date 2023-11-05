@@ -21,7 +21,7 @@ class TestPlotVennDiagrams(TestCase):
         ]
         PlotVennDiagrams(self.settings).main(
             tsvs=tsvs,
-            group_keywords=['H', 'O'],
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
 
 
@@ -37,24 +37,24 @@ class TestProcessTsvPlotVenn(TestCase):
         with self.assertRaises(AssertionError):
             ProcessTsvPlotVenn(self.settings).main(
                 tsv=f'{self.indir}/mock-feature-table.tsv',
-                group_keywords=['A'],
+                sample_sheet=f'{self.indir}/mock-sample-sheet-1-group.csv',
                 dstdir=self.outdir)
 
     def test_2_groups(self):
         ProcessTsvPlotVenn(self.settings).main(
             tsv=f'{self.indir}/mock-feature-table.tsv',
-            group_keywords=['A', 'B'],
+            sample_sheet=f'{self.indir}/mock-sample-sheet-2-groups.csv',
             dstdir=self.outdir)
 
     def test_3_groups(self):
         ProcessTsvPlotVenn(self.settings).main(
             tsv=f'{self.indir}/mock-feature-table.tsv',
-            group_keywords=['A', 'B', 'C'],
+            sample_sheet=f'{self.indir}/mock-sample-sheet-3-groups.csv',
             dstdir=self.outdir)
 
     def test_4_groups(self):
         with self.assertRaises(AssertionError):
             ProcessTsvPlotVenn(self.settings).main(
                 tsv=f'{self.indir}/mock-feature-table.tsv',
-                group_keywords=['A', 'B', 'C', 'D'],
+                sample_sheet=f'{self.indir}/mock-sample-sheet-4-groups.csv',
                 dstdir=self.outdir)
