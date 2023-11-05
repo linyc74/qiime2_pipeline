@@ -9,6 +9,14 @@ PROG = 'python qiime2_pipeline'
 DESCRIPTION = f'Custom-built Qiime2 pipeline (version {__VERSION__}) by Yu-Cheng Lin (ylin@nycu.edu.tw)'
 REQUIRED = [
     {
+        'keys': ['-s', '--sample-sheet'],
+        'properties': {
+            'type': str,
+            'required': True,
+            'help': 'path to the sample sheet (CSV format), "Sample" and "Group" cloumns are required',
+        }
+    },
+    {
         'keys': ['-f', '--fq-dir'],
         'properties': {
             'type': str,
@@ -59,15 +67,6 @@ OPTIONAL = [
             'required': False,
             'default': 'merge',
             'help': 'mode to combine paired end reads: "merge" or "pool" (default: %(default)s)',
-        }
-    },
-    {
-        'keys': ['-k', '--group-keywords'],
-        'properties': {
-            'type': str,
-            'required': False,
-            'default': 'None',
-            'help': 'comma-separated group keywords, e.g. "control,treatment" (default: %(default)s)',
         }
     },
     {
@@ -215,12 +214,12 @@ class EntryPoint:
         args = self.parser.parse_args()
         print(f'Start running Qiime2 pipeline version {__VERSION__}\n', flush=True)
         qiime2_pipeline.Main().main(
+            sample_sheet=args.sample_sheet,
             fq_dir=args.fq_dir,
             fq1_suffix=args.fq1_suffix,
             fq2_suffix=args.fq2_suffix,
             nb_classifier_qza=args.nb_classifier_qza,
             paired_end_mode=args.paired_end_mode,
-            group_keywords=args.group_keywords,
             otu_identity=args.otu_identity,
             skip_otu=args.skip_otu,
             classifier_reads_per_batch=args.classifier_reads_per_batch,

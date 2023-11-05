@@ -26,7 +26,6 @@ class Qiime2Pipeline(Processor):
     fq2_suffix: Optional[str]
     nb_classifier_qza: str
     paired_end_mode: str
-    group_keywords: List[str]
     otu_identity: float
     skip_otu: bool
     classifier_reads_per_batch: int
@@ -55,7 +54,6 @@ class Qiime2Pipeline(Processor):
             fq2_suffix: Optional[str],
             nb_classifier_qza: str,
             paired_end_mode: str,
-            group_keywords: List[str],
             otu_identity: float,
             skip_otu: bool,
             classifier_reads_per_batch: int,
@@ -72,7 +70,6 @@ class Qiime2Pipeline(Processor):
         self.fq2_suffix = fq2_suffix
         self.nb_classifier_qza = nb_classifier_qza
         self.paired_end_mode = paired_end_mode
-        self.group_keywords = group_keywords
         self.otu_identity = otu_identity
         self.skip_otu = skip_otu
         self.classifier_reads_per_batch = classifier_reads_per_batch
