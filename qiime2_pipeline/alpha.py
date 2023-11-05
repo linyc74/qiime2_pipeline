@@ -22,7 +22,7 @@ class AlphaDiversity(Processor):
     ALPHA_DIVERSITY_DIRNAME = 'alpha-diversity'
 
     feature_table_qza: str
-    group_keywords: List[str]
+    sample_sheet: str
     alpha_metrics: List[str]
 
     df: pd.DataFrame
@@ -30,11 +30,11 @@ class AlphaDiversity(Processor):
     def main(
             self,
             feature_table_qza: str,
-            group_keywords: List[str],
+            sample_sheet: str,
             alpha_metrics: List[str]):
 
         self.feature_table_qza = feature_table_qza
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
         self.alpha_metrics = self.ALPHA_METRICS if alpha_metrics == [] else alpha_metrics
 
         self.df = pd.DataFrame()
@@ -60,7 +60,7 @@ class AlphaDiversity(Processor):
     def add_group_column(self):
         self.df = AddGroupColumn(self.settings).main(
             df=self.df,
-            group_keywords=self.group_keywords)
+            sample_sheet=self.sample_sheet)
 
     def save_csv(self):
         dstdir = f'{self.outdir}/{self.ALPHA_DIVERSITY_DIRNAME}'

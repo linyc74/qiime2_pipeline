@@ -14,7 +14,7 @@ class TestAddGroupColumn(TestCase):
     def test_main(self):
         actual = AddGroupColumn(self.settings).main(
             df=pd.read_csv(f'{self.indir}/indf.csv', index_col=0),
-            group_keywords=['H', 'O']
+            sample_sheet=f'{self.indir}/sample-sheet.csv'
         )
         expected = pd.read_csv(f'{self.indir}/outdf.csv', index_col=0)
         self.assertDataFrameEqual(expected, actual)

@@ -13,8 +13,8 @@ class TestAlphaDiversity(TestCase):
 
     def test_main(self):
         AlphaDiversity(self.settings).main(
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
             feature_table_qza=f'{self.indir}/feature-table.qza',
-            group_keywords=['H'],
             alpha_metrics=[]  # empty list -> all alpha metrics
         )
         for file in [
