@@ -16,7 +16,7 @@ class TestQiimeBetaDiversity(TestCase):
         QiimeBetaDiversity(self.settings).main(
             feature_table_qza=f'{self.indir}/labeled-feature-table-normalized.qza',
             rooted_tree_qza=f'{self.indir}/mafft-aligned-sequences-masked.qza',
-            group_keywords=['H']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
 
 
@@ -60,7 +60,7 @@ class TestPCoAProcess(TestCase):
     def test_main(self):
         PCoAProcess(self.settings).main(
             tsv=f'{self.indir}/distance-matrix.tsv',
-            group_keywords=['H']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.tsv',
@@ -82,7 +82,7 @@ class TestNMDSProcess(TestCase):
     def test_main(self):
         NMDSProcess(self.settings).main(
             tsv=f'{self.indir}/distance-matrix.tsv',
-            group_keywords=['H']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.tsv',
@@ -104,7 +104,7 @@ class TestTSNEProcess(TestCase):
     def test_main(self):
         TSNEProcess(self.settings).main(
             tsv=f'{self.indir}/distance-matrix.tsv',
-            group_keywords=['H']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.tsv',
@@ -128,7 +128,7 @@ class TestBatchPCoAProcess(TestCase):
     def test_main(self):
         BatchPCoAProcess(self.settings).main(
             distance_matrix_tsvs=[f'{self.indir}/distance-matrix.tsv'],
-            group_keywords=['H']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.tsv',
@@ -150,7 +150,7 @@ class TestBatchNMDSProcess(TestCase):
     def test_main(self):
         BatchNMDSProcess(self.settings).main(
             distance_matrix_tsvs=[f'{self.indir}/distance-matrix.tsv'],
-            group_keywords=['H']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.tsv',
@@ -172,7 +172,7 @@ class TestBatchTSNEProcess(TestCase):
     def test_main(self):
         BatchTSNEProcess(self.settings).main(
             distance_matrix_tsvs=[f'{self.indir}/distance-matrix.tsv'],
-            group_keywords=['H']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.tsv',

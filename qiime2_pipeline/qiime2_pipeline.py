@@ -152,25 +152,22 @@ class Qiime2Pipeline(Processor):
         self.rooted_tree_qza = Phylogeny(self.settings).main(
             seq_qza=self.labeled_feature_sequence_qza)
 
-    # group_keywords
     def alpha_diversity(self):
         AlphaDiversity(self.settings).main(
             feature_table_qza=self.labeled_feature_table_qza,
-            group_keywords=self.group_keywords,
+            sample_sheet=self.sample_sheet,
             alpha_metrics=self.alpha_metrics)
 
-    # group_keywords
     def qiime_beta_diversity(self):
         self.distance_matrix_tsvs = QiimeBetaDiversity(self.settings).main(
             feature_table_qza=self.labeled_feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza,
-            group_keywords=self.group_keywords)
+            sample_sheet=self.sample_sheet)
 
-    # group_keywords
     def my_beta_diversity(self):
         MyBetaDiversity(self.settings).main(
             feature_table_tsv=self.labeled_feature_table_tsv,
-            group_keywords=self.group_keywords)
+            sample_sheet=self.sample_sheet)
 
     def taxon_table(self):
         self.taxon_table_tsv_dict = TaxonTable(self.settings).main(

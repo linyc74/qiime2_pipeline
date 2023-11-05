@@ -10,20 +10,20 @@ from .embedding_core_process import PCACore, NMDSCore, TSNECore, EmbeddingProces
 class MyBetaDiversity(Processor):
 
     feature_table_tsv: str
-    group_keywords: List[str]
+    sample_sheet: str
 
     def main(
             self,
             feature_table_tsv: str,
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.feature_table_tsv = feature_table_tsv
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         for Process in [PCAProcess, NMDSProcess, TSNEProcess]:
             Process(self.settings).main(
                 tsv=self.feature_table_tsv,
-                group_keywords=self.group_keywords)
+                sample_sheet=self.sample_sheet)
 
 
 class EmbeddingProcess(EmbeddingProcessTemplate, ABC):
@@ -50,10 +50,10 @@ class PCAProcess(EmbeddingProcess):
     def main(
             self,
             tsv: str,
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.tsv = tsv
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         self.run_main_workflow()
         self.write_proportion_explained()
@@ -88,10 +88,10 @@ class NMDSProcess(EmbeddingProcess):
     def main(
             self,
             tsv: str,
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.tsv = tsv
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         self.run_main_workflow()
         self.write_stress()
@@ -120,10 +120,10 @@ class TSNEProcess(EmbeddingProcess):
     def main(
             self,
             tsv: str,
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.tsv = tsv
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         self.run_main_workflow()
 

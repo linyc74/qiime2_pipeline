@@ -14,7 +14,7 @@ class TestMyBetaDiversity(TestCase):
     def test_main(self):
         MyBetaDiversity(self.settings).main(
             feature_table_tsv=f'{self.indir}/feature-table.tsv',
-            group_keywords=['H', 'O']
+            sample_sheet=f'{self.indir}/sample-sheet.csv'
         )
         for f in [
             f'{self.outdir}/feature-embedding/feature-table-pca-sample-coordinate.tsv',
@@ -45,7 +45,7 @@ class TestPCAProcess(TestCase):
     def test_main(self):
         PCAProcess(self.settings).main(
             tsv=f'{self.indir}/feature-table.tsv',
-            group_keywords=['H', 'O']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
         for f in [
             f'{self.outdir}/feature-embedding/feature-table-pca-sample-coordinate.tsv',
@@ -67,7 +67,7 @@ class TestNMDSProcess(TestCase):
     def test_main(self):
         NMDSProcess(self.settings).main(
             tsv=f'{self.indir}/feature-table.tsv',
-            group_keywords=['H', 'O']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
         for f in [
             f'{self.outdir}/feature-embedding/feature-table-nmds-sample-coordinate.tsv',
@@ -89,7 +89,7 @@ class TestTSNEProcess(TestCase):
     def test_main(self):
         TSNEProcess(self.settings).main(
             tsv=f'{self.indir}/feature-table.tsv',
-            group_keywords=['H', 'O']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
         for f in [
             f'{self.outdir}/feature-embedding/feature-table-tsne-sample-coordinate.tsv',

@@ -14,7 +14,7 @@ class QiimeBetaDiversity(Processor):
 
     feature_table_qza: str
     rooted_tree_qza: str
-    group_keywords: List[str]
+    sample_sheet: str
 
     distance_matrix_tsvs: List[str]
 
@@ -22,11 +22,11 @@ class QiimeBetaDiversity(Processor):
             self,
             feature_table_qza: str,
             rooted_tree_qza: str,
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.feature_table_qza = feature_table_qza
         self.rooted_tree_qza = rooted_tree_qza
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         self.run_all_beta_metrics_to_distance_matrix_tsvs()
         self.run_batch_embedding_processes()
@@ -40,7 +40,7 @@ class QiimeBetaDiversity(Processor):
         for Batch in [BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess]:
             Batch(self.settings).main(
                 distance_matrix_tsvs=self.distance_matrix_tsvs,
-                group_keywords=self.group_keywords)
+                sample_sheet=self.sample_sheet)
 
 
 #
@@ -217,10 +217,10 @@ class PCoAProcess(EmbeddingProcess):
     def main(
             self,
             tsv: str,
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.tsv = tsv
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         self.run_main_workflow()
         self.write_proportion_explained()
@@ -256,10 +256,10 @@ class NMDSProcess(EmbeddingProcess):
     def main(
             self,
             tsv: str,
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.tsv = tsv
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         self.run_main_workflow()
         self.write_stress()
@@ -288,10 +288,10 @@ class TSNEProcess(EmbeddingProcess):
     def main(
             self,
             tsv: str,
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.tsv = tsv
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
         self.run_main_workflow()
 
     def embedding(self):
@@ -307,23 +307,23 @@ class TSNEProcess(EmbeddingProcess):
 class BatchEmbeddingProcess(Processor):
 
     distance_matrix_tsvs: List[str]
-    group_keywords: List[str]
+    sample_sheet: str
 
     embedding: EmbeddingProcessTemplate
 
     def main(
             self,
             distance_matrix_tsvs: List[str],
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.distance_matrix_tsvs = distance_matrix_tsvs
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         for tsv in self.distance_matrix_tsvs:
             self.logger.debug(f'{self.embedding.NAME} for {tsv}')
             self.embedding.main(
                 tsv=tsv,
-                group_keywords=self.group_keywords)
+                sample_sheet=self.sample_sheet)
 
 
 class BatchPCoAProcess(BatchEmbeddingProcess):

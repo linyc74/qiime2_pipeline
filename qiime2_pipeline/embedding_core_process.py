@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn import manifold, decomposition
-from abc import ABC, abstractmethod
+from typing import Tuple, Union
 from matplotlib.axes import Axes
 from matplotlib import pyplot as plt
-from typing import List, Tuple, Union
+from abc import ABC, abstractmethod
 from .tools import edit_fpath
 from .template import Processor
 from .grouping import AddGroupColumn
@@ -196,7 +196,7 @@ class EmbeddingProcessTemplate(Processor, ABC):
     GROUP_COLUMN: str = AddGroupColumn.GROUP_COLUMN
 
     tsv: str
-    group_keywords: List[str]
+    sample_sheet: str
 
     df: pd.DataFrame
     sample_coordinate_df: pd.DataFrame
@@ -206,7 +206,7 @@ class EmbeddingProcessTemplate(Processor, ABC):
     def main(
             self,
             tsv: str,
-            group_keywords: List[str]):
+            sample_sheet: str):
         pass
 
     def run_main_workflow(self):
@@ -241,7 +241,7 @@ class EmbeddingProcessTemplate(Processor, ABC):
     def add_group_column(self):
         self.sample_coordinate_df = AddGroupColumn(self.settings).main(
             df=self.sample_coordinate_df,
-            group_keywords=self.group_keywords)
+            sample_sheet=self.sample_sheet)
 
     def write_sample_coordinate(self):
         tsv = self.__get_sample_coordinate_fpath(suffix='.tsv')
