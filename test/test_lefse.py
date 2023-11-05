@@ -22,7 +22,7 @@ class TestLefSe(TestCase):
         }
         LefSe(self.settings).main(
             taxon_table_tsv_dict=taxon_table_tsv_dict,
-            group_keywords=['H', 'O']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
 
 
@@ -38,7 +38,7 @@ class TestLefSeOneTaxonLevel(TestCase):
         LefSeOneTaxonLevel(self.settings).main(
             taxon_table_tsv=f'{self.indir}/genus-table.tsv',
             taxon_level='genus',
-            group_keywords=['H', 'O']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
         for file in [
             f'{self.outdir}/lefse/lefse-genus-result.txt',
@@ -82,7 +82,7 @@ class TestInsertGroupRow(TestCase):
     def test_main(self):
         actual = InsertGroupRow(self.settings).main(
             taxon_table_tsv=f'{self.indir}/genus-table.tsv',
-            group_keywords=['H']
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
         expected = f'{self.indir}/genus-table-grouped.tsv'
         self.assertFileEqual(expected, actual)

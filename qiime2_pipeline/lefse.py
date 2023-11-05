@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from typing import List, Dict
+from typing import Dict
 from .tools import edit_fpath
 from .template import Processor
 
@@ -8,22 +8,22 @@ from .template import Processor
 class LefSe(Processor):
 
     taxon_table_tsv_dict: Dict[str, str]
-    group_keywords: List[str]
+    sample_sheet: str
 
     def main(
             self,
             taxon_table_tsv_dict: Dict[str, str],
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.taxon_table_tsv_dict = taxon_table_tsv_dict
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         for level, tsv in self.taxon_table_tsv_dict.items():
             try:
                 LefSeOneTaxonLevel(self.settings).main(
                     taxon_table_tsv=tsv,
                     taxon_level=level,
-                    group_keywords=self.group_keywords)
+                    sample_sheet=self.sample_sheet)
             except Exception as e:
                 self.logger.warning(f'Failed to run LefSe on "{level}" taxon table, with Exception:\n{e}')
 
@@ -36,7 +36,7 @@ class LefSeOneTaxonLevel(Processor):
 
     taxon_table_tsv: str
     taxon_level: str
-    group_keywords: List[str]
+    sample_sheet: str
 
     dstdir: str
     lefse_input: str
@@ -49,11 +49,11 @@ class LefSeOneTaxonLevel(Processor):
             self,
             taxon_table_tsv: str,
             taxon_level: str,
-            group_keywords: List[str]):
+            sample_sheet: str):
 
         self.taxon_table_tsv = taxon_table_tsv
         self.taxon_level = taxon_level
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         self.make_dstdir()
         self.add_taxon_level_prefix()
@@ -74,7 +74,7 @@ class LefSeOneTaxonLevel(Processor):
     def insert_group_row(self):
         self.taxon_table_tsv = InsertGroupRow(self.settings).main(
             taxon_table_tsv=self.taxon_table_tsv,
-            group_keywords=self.group_keywords)
+            sample_sheet=self.sample_sheet)
 
     def format_input(self):
         self.lefse_input = f'{self.workdir}/lefse-{self.taxon_level}-input'
@@ -176,24 +176,27 @@ class AddTaxonLevelPrefix(Processor):
 
 class InsertGroupRow(Processor):
 
+    GROUP_COLUMN = 'Group'
     GROUP_INDEX = 'Group'
     NA_VALUE: str = 'None'
 
     taxon_table_tsv: str
-    group_keywords: List[str]
+    sample_sheet: str
 
     df: pd.DataFrame
+    sample_to_group: Dict[str, str]
     output_tsv: str
 
     def main(
             self,
             taxon_table_tsv: str,
-            group_keywords: List[str]) -> str:
+            sample_sheet: str) -> str:
 
         self.taxon_table_tsv = taxon_table_tsv
-        self.group_keywords = group_keywords
+        self.sample_sheet = sample_sheet
 
         self.read_taxon_table_tsv()
+        self.set_sample_to_group()
         self.add_group_row()
         self.move_group_row()
         self.write_output_tsv()
@@ -203,16 +206,20 @@ class InsertGroupRow(Processor):
     def read_taxon_table_tsv(self):
         self.df = pd.read_csv(self.taxon_table_tsv, sep='\t', index_col=0)
 
+    def set_sample_to_group(self):
+        sample_df = pd.read_csv(self.sample_sheet, index_col=0)
+        self.sample_to_group = {}
+        for sample, row in sample_df.iterrows():
+            group = row[self.GROUP_COLUMN]
+            if pd.isna(group):
+                self.sample_to_group[sample] = self.NA_VALUE
+            else:
+                self.sample_to_group[sample] = group.replace(' ', '_')  # lefse does not allow space in group name
+
     def add_group_row(self):
         self.df.loc[self.GROUP_INDEX] = [
-            self.__to_group(c) for c in self.df.columns
+            self.sample_to_group[sample] for sample in self.df.columns
         ]
-
-    def __to_group(self, sample_name: str) -> str:
-        for k in self.group_keywords:
-            if k in sample_name:
-                return k
-        return self.NA_VALUE
 
     def move_group_row(self):
         indexes = list(self.df.index)

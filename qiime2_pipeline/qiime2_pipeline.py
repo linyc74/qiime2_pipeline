@@ -190,11 +190,10 @@ class Qiime2Pipeline(Processor):
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             n_taxa=self.n_taxa_barplot)
 
-    # group_keywords
     def lefse(self):
         LefSe(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
-            group_keywords=self.group_keywords)
+            sample_sheet=self.sample_sheet)
 
     # group_keywords
     def differential_abundance(self):

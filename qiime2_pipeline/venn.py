@@ -84,7 +84,6 @@ class ProcessTsvPlotVenn(Processor):
         self.read_tsv()
         self.set_sample_to_group()
         self.init_group_to_features()
-        print(self.group_to_features)
         self.count_features_for_each_group()
         self.plot_venn()
 
