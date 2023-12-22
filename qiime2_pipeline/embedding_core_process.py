@@ -1,5 +1,4 @@
 import os
-import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn import manifold, decomposition
@@ -90,56 +89,6 @@ class PCACore(Core):
 
     def set_proportion_explained_serise(self):
         self.proportion_explained_series = pd.Series(self.embedding.explained_variance_ratio_)
-
-
-class NMDSCore(Core):
-
-    XY_COLUMNS = ('NMDS 1', 'NMDS 2')
-    METRIC = False  # i.e. non-metric MDS
-    N_INIT = 10  # number of independent fitting
-    EPS = 1e-3  # stress tolerance for convergence
-
-    embedding: manifold.MDS
-    stress: float
-
-    def main(
-            self,
-            df: pd.DataFrame,
-            data_structure: str) -> Tuple[pd.DataFrame, float]:
-
-        self.df = df
-        self.data_structure = data_structure
-
-        self.main_workflow()
-        self.normalize_stress()
-
-        return self.sample_coordinate_df, self.stress
-
-    def set_embedding(self):
-        dissimilarity = 'precomputed' \
-            if self.data_structure == 'distance_matrix' \
-            else 'euclidean'
-
-        self.embedding = manifold.MDS(
-            n_components=self.N_COMPONENTS,
-            metric=self.METRIC,
-            n_init=self.N_INIT,
-            max_iter=300,
-            verbose=0,
-            eps=self.EPS,
-            n_jobs=self.threads,
-            random_state=self.RANDOM_STATE,
-            dissimilarity=dissimilarity)
-
-    def normalize_stress(self):
-        """
-        Normalize with sum of squared distances
-        i.e. Kruskal Stress, or Stress_1
-        https://stackoverflow.com/questions/36428205/stress-attribute-sklearn-manifold-mds-python
-        """
-        dist_mat = self.embedding.dissimilarity_matrix_
-        squared_sum = np.sum(dist_mat ** 2) / 2  # diagonal symmetry, thus divide by 2
-        self.stress = np.sqrt(self.embedding.stress_ / squared_sum)
 
 
 class TSNECore(Core):

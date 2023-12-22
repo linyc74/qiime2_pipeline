@@ -1,5 +1,5 @@
 import pandas as pd
-from qiime2_pipeline.embedding_core_process import PCACore, NMDSCore, TSNECore
+from qiime2_pipeline.embedding_core_process import PCACore, TSNECore
 from .setup import TestCase
 
 
@@ -18,14 +18,6 @@ class TestCores(TestCase):
             data_structure='row_features'
         )
         expected = read_tsv(f'{self.indir}/pca_sample_coordinate_df.tsv')
-        self.assertDataFrameEqual(expected, sample_coordinate_df)
-
-    def test_nmds_core(self):
-        sample_coordinate_df, stress = NMDSCore(self.settings).main(
-            df=self.feature_table_df,
-            data_structure='row_features'
-        )
-        expected = read_tsv(f'{self.indir}/nmds_sample_coordinate_df.tsv')
         self.assertDataFrameEqual(expected, sample_coordinate_df)
 
     def test_tsne_core(self):
