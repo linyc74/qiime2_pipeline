@@ -3,7 +3,7 @@ from abc import ABC
 from .tools import edit_fpath
 from .template import Processor
 from .normalization import CountNormalization
-from .embedding_core_process import PCACore, NMDSCore, TSNECore, EmbeddingProcessTemplate
+from .embedding_core_process import PCACore, TSNECore, EmbeddingProcessTemplate
 
 
 class MyBetaDiversity(Processor):
