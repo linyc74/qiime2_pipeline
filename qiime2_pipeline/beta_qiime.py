@@ -7,7 +7,7 @@ from skbio.stats.ordination import pcoa
 from .tools import edit_fpath
 from .template import Processor, Settings
 from .exporting import ExportBetaDiversity
-from .embedding_core_process import EmbeddingProcessTemplate, NMDSCore, TSNECore
+from .embedding_core_process import EmbeddingProcessTemplate, TSNECore
 
 
 class QiimeBetaDiversity(Processor):
@@ -37,7 +37,7 @@ class QiimeBetaDiversity(Processor):
             rooted_tree_qza=self.rooted_tree_qza)
 
     def run_batch_embedding_processes(self):
-        for Batch in [BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess]:
+        for Batch in [BatchPCoAProcess, BatchTSNEProcess]:
             Batch(self.settings).main(
                 distance_matrix_tsvs=self.distance_matrix_tsvs,
                 sample_sheet=self.sample_sheet)
@@ -246,40 +246,6 @@ class PCoAProcess(EmbeddingProcess):
         )
 
 
-class NMDSProcess(EmbeddingProcess):
-
-    NAME = 'NMDS'
-    XY_COLUMNS = ('NMDS 1', 'NMDS 2')
-
-    stress: float
-
-    def main(
-            self,
-            tsv: str,
-            sample_sheet: str):
-
-        self.tsv = tsv
-        self.sample_sheet = sample_sheet
-
-        self.run_main_workflow()
-        self.write_stress()
-
-    def embedding(self):
-        self.sample_coordinate_df, self.stress = NMDSCore(self.settings).main(
-            df=self.df,
-            data_structure='distance_matrix'
-        )
-
-    def write_stress(self):
-        txt = edit_fpath(
-            fpath=self.tsv,
-            old_suffix='.tsv',
-            new_suffix='-nmds-stress.txt',
-            dstdir=self.dstdir)
-        with open(txt, 'w') as fh:
-            fh.write(str(self.stress))
-
-
 class TSNEProcess(EmbeddingProcess):
 
     NAME = 't-SNE'
@@ -331,13 +297,6 @@ class BatchPCoAProcess(BatchEmbeddingProcess):
     def __init__(self, settings: Settings):
         super().__init__(settings)
         self.embedding = PCoAProcess(self.settings)
-
-
-class BatchNMDSProcess(BatchEmbeddingProcess):
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-        self.embedding = NMDSProcess(self.settings)
 
 
 class BatchTSNEProcess(BatchEmbeddingProcess):

@@ -1,7 +1,7 @@
 from os.path import exists
 from .setup import TestCase
 from qiime2_pipeline.beta_qiime import QiimeBetaDiversity, RunAllBetaMetricsToDistanceMatrixTsvs, \
-    PCoAProcess, NMDSProcess, TSNEProcess, BatchPCoAProcess, BatchNMDSProcess, BatchTSNEProcess
+    PCoAProcess, TSNEProcess, BatchPCoAProcess, BatchTSNEProcess
 
 
 class TestQiimeBetaDiversity(TestCase):
@@ -9,8 +9,8 @@ class TestQiimeBetaDiversity(TestCase):
     def setUp(self):
         self.set_up(py_path=__file__)
 
-    def tearDown(self):
-        self.tear_down()
+    # def tearDown(self):
+    #     self.tear_down()
 
     def test_main(self):
         QiimeBetaDiversity(self.settings).main(
@@ -71,28 +71,6 @@ class TestPCoAProcess(TestCase):
             self.assertTrue(exists(f))
 
 
-class TestNMDSProcess(TestCase):
-
-    def setUp(self):
-        self.set_up(py_path=__file__)
-
-    def tearDown(self):
-        self.tear_down()
-
-    def test_main(self):
-        NMDSProcess(self.settings).main(
-            tsv=f'{self.indir}/distance-matrix.tsv',
-            sample_sheet=f'{self.indir}/sample-sheet.csv',
-        )
-        for f in [
-            f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.tsv',
-            f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.png',
-            f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.pdf',
-            f'{self.outdir}/beta-embedding/distance-matrix-nmds-stress.txt',
-        ]:
-            self.assertTrue(exists(f))
-
-
 class TestTSNEProcess(TestCase):
 
     def setUp(self):
@@ -135,28 +113,6 @@ class TestBatchPCoAProcess(TestCase):
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.png',
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.pdf',
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-proportion-explained.tsv',
-        ]:
-            self.assertTrue(exists(f))
-
-
-class TestBatchNMDSProcess(TestCase):
-
-    def setUp(self):
-        self.set_up(py_path=__file__)
-
-    def tearDown(self):
-        self.tear_down()
-
-    def test_main(self):
-        BatchNMDSProcess(self.settings).main(
-            distance_matrix_tsvs=[f'{self.indir}/distance-matrix.tsv'],
-            sample_sheet=f'{self.indir}/sample-sheet.csv',
-        )
-        for f in [
-            f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.tsv',
-            f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.png',
-            f'{self.outdir}/beta-embedding/distance-matrix-nmds-sample-coordinate.pdf',
-            f'{self.outdir}/beta-embedding/distance-matrix-nmds-stress.txt',
         ]:
             self.assertTrue(exists(f))
 
