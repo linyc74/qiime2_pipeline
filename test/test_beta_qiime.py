@@ -39,8 +39,6 @@ class TestRunAllBetaMetricsToTsvs(TestCase):
         expected = [
             f'{self.outdir}/beta-diversity/jaccard.tsv',
             f'{self.outdir}/beta-diversity/braycurtis.tsv',
-            f'{self.outdir}/beta-diversity/cosine.tsv',
-            f'{self.outdir}/beta-diversity/correlation.tsv',
         ]
         for e, a in zip(expected, actual):
             self.assertFileExists(expected=e, actual=a)

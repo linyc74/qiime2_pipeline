@@ -52,8 +52,6 @@ class RunAllBetaMetricsToDistanceMatrixTsvs(Processor):
         'jaccard',
         'euclidean',
         'braycurtis',
-        'cosine',
-        'correlation',
     ]
     PHYLOGENETIC_METRICS = [
         'weighted_unifrac',
