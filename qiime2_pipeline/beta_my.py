@@ -1,6 +1,5 @@
 import pandas as pd
 from abc import ABC
-from typing import List
 from .tools import edit_fpath
 from .template import Processor
 from .normalization import CountNormalization
@@ -20,7 +19,7 @@ class MyBetaDiversity(Processor):
         self.feature_table_tsv = feature_table_tsv
         self.sample_sheet = sample_sheet
 
-        for Process in [PCAProcess, NMDSProcess, TSNEProcess]:
+        for Process in [PCAProcess, TSNEProcess]:
             Process(self.settings).main(
                 tsv=self.feature_table_tsv,
                 sample_sheet=self.sample_sheet)
@@ -76,40 +75,6 @@ class PCAProcess(EmbeddingProcess):
             sep='\t',
             header=['Proportion Explained']
         )
-
-
-class NMDSProcess(EmbeddingProcess):
-
-    NAME = 'NMDS'
-    XY_COLUMNS = ('NMDS 1', 'NMDS 2')
-
-    stress: float
-
-    def main(
-            self,
-            tsv: str,
-            sample_sheet: str):
-
-        self.tsv = tsv
-        self.sample_sheet = sample_sheet
-
-        self.run_main_workflow()
-        self.write_stress()
-
-    def embedding(self):
-        self.sample_coordinate_df, self.stress = NMDSCore(self.settings).main(
-            df=self.df,
-            data_structure='row_features'
-        )
-
-    def write_stress(self):
-        txt = edit_fpath(
-            fpath=self.tsv,
-            old_suffix='.tsv',
-            new_suffix='-nmds-stress.txt',
-            dstdir=self.dstdir)
-        with open(txt, 'w') as fh:
-            fh.write(str(self.stress))
 
 
 class TSNEProcess(EmbeddingProcess):
