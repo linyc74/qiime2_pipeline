@@ -22,6 +22,7 @@ class TestPlotVennDiagrams(TestCase):
         PlotVennDiagrams(self.settings).main(
             tsvs=tsvs,
             sample_sheet=f'{self.indir}/sample-sheet.csv',
+            colormap='Set1',
         )
 
 
@@ -38,18 +39,21 @@ class TestProcessTsvPlotVenn(TestCase):
             ProcessTsvPlotVenn(self.settings).main(
                 tsv=f'{self.indir}/mock-feature-table.tsv',
                 sample_sheet=f'{self.indir}/mock-sample-sheet-1-group.csv',
+                colormap='Set1',
                 dstdir=self.outdir)
 
     def test_2_groups(self):
         ProcessTsvPlotVenn(self.settings).main(
             tsv=f'{self.indir}/mock-feature-table.tsv',
             sample_sheet=f'{self.indir}/mock-sample-sheet-2-groups.csv',
+            colormap='Set1',
             dstdir=self.outdir)
 
     def test_3_groups(self):
         ProcessTsvPlotVenn(self.settings).main(
             tsv=f'{self.indir}/mock-feature-table.tsv',
             sample_sheet=f'{self.indir}/mock-sample-sheet-3-groups.csv',
+            colormap='Set1',
             dstdir=self.outdir)
 
     def test_4_groups(self):
@@ -57,4 +61,5 @@ class TestProcessTsvPlotVenn(TestCase):
             ProcessTsvPlotVenn(self.settings).main(
                 tsv=f'{self.indir}/mock-feature-table.tsv',
                 sample_sheet=f'{self.indir}/mock-sample-sheet-4-groups.csv',
+                colormap='Set1',
                 dstdir=self.outdir)

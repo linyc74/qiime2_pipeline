@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib import colormaps
 from typing import List, Dict, Set
 from matplotlib_venn import venn2, venn3
 from .tools import edit_fpath
@@ -16,16 +17,19 @@ class PlotVennDiagrams(Processor):
 
     tsvs: List[str]
     sample_sheet: str
+    colormap: str
 
     dstdir: str
 
     def main(
             self,
             tsvs: List[str],
-            sample_sheet: str):
+            sample_sheet: str,
+            colormap: str):
 
         self.tsvs = tsvs
         self.sample_sheet = sample_sheet
+        self.colormap = colormap
 
         valid = self.check_number_of_groups()
         if not valid:
@@ -55,6 +59,7 @@ class PlotVennDiagrams(Processor):
             ProcessTsvPlotVenn(self.settings).main(
                 tsv=tsv,
                 sample_sheet=self.sample_sheet,
+                colormap=self.colormap,
                 dstdir=self.dstdir)
 
 
@@ -65,6 +70,7 @@ class ProcessTsvPlotVenn(Processor):
 
     tsv: str
     sample_sheet: str
+    colormap: str
     dstdir: str
 
     df: pd.DataFrame
@@ -75,10 +81,12 @@ class ProcessTsvPlotVenn(Processor):
             self,
             tsv: str,
             sample_sheet: str,
+            colormap: str,
             dstdir: str):
 
         self.tsv = tsv
         self.sample_sheet = sample_sheet
+        self.colormap = colormap
         self.dstdir = dstdir
 
         self.read_tsv()
@@ -121,7 +129,9 @@ class ProcessTsvPlotVenn(Processor):
         PlotVenn(self.settings).main(
             set_labels=groups,
             subsets=subsets,
-            output_prefix=output_prefix)
+            output_prefix=output_prefix,
+            colormap=self.colormap
+        )
 
 
 class PlotVenn(Processor):
@@ -132,16 +142,19 @@ class PlotVenn(Processor):
     set_labels: List[str]
     subsets: List[Set[str]]
     output_prefix: str
+    colormap: str
 
     def main(
             self,
             set_labels: List[str],
             subsets: List[Set[str]],
-            output_prefix: str):
+            output_prefix: str,
+            colormap: str):
 
         self.set_labels = set_labels
         self.subsets = subsets
         self.output_prefix = output_prefix
+        self.colormap = colormap
 
         self.assert_number_of_groups()
         self.init_figure()
@@ -155,10 +168,13 @@ class PlotVenn(Processor):
         plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
 
     def plot(self):
+        cmap = colormaps[self.colormap]
+        colors = [cmap(i) for i in range(len(self.subsets))]
+
         if len(self.subsets) == 2:
-            venn2(subsets=self.subsets, set_labels=self.set_labels)
+            venn2(subsets=self.subsets, set_labels=self.set_labels, set_colors=colors)
         else:
-            venn3(subsets=self.subsets, set_labels=self.set_labels)
+            venn3(subsets=self.subsets, set_labels=self.set_labels, set_colors=colors)
 
     def save_figure(self):
         for ext in ['pdf', 'png']:

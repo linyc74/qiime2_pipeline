@@ -186,7 +186,8 @@ class Qiime2Pipeline(Processor):
         tsvs = [self.labeled_feature_table_tsv] + [v for v in self.taxon_table_tsv_dict.values()]
         PlotVennDiagrams(self.settings).main(
             tsvs=tsvs,
-            sample_sheet=self.sample_sheet)
+            sample_sheet=self.sample_sheet,
+            colormap=self.colormap)
 
     def taxon_barplot(self):
         PlotTaxonBarplots(self.settings).main(
