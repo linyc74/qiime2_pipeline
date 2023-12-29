@@ -199,7 +199,8 @@ class Qiime2Pipeline(Processor):
     def differential_abundance(self):
         DifferentialAbundance(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
-            sample_sheet=self.sample_sheet)
+            sample_sheet=self.sample_sheet,
+            colormap=self.colormap)
 
     def collect_log_files(self):
         makedirs(f'{self.outdir}/log', exist_ok=True)
