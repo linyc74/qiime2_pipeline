@@ -17,6 +17,7 @@ class TestQiimeBetaDiversity(TestCase):
             feature_table_qza=f'{self.indir}/labeled-feature-table-normalized.qza',
             rooted_tree_qza=f'{self.indir}/mafft-aligned-sequences-masked.qza',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
+            colormap='Set1',
         )
 
 
@@ -59,6 +60,7 @@ class TestPCoAProcess(TestCase):
         PCoAProcess(self.settings).main(
             tsv=f'{self.indir}/distance-matrix.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
+            colormap='Set1',
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.tsv',
@@ -81,6 +83,7 @@ class TestTSNEProcess(TestCase):
         TSNEProcess(self.settings).main(
             tsv=f'{self.indir}/distance-matrix.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
+            colormap='Set1',
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.tsv',
@@ -105,6 +108,7 @@ class TestBatchPCoAProcess(TestCase):
         BatchPCoAProcess(self.settings).main(
             distance_matrix_tsvs=[f'{self.indir}/distance-matrix.tsv'],
             sample_sheet=f'{self.indir}/sample-sheet.csv',
+            colormap='Set1',
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.tsv',
@@ -127,6 +131,7 @@ class TestBatchTSNEProcess(TestCase):
         BatchTSNEProcess(self.settings).main(
             distance_matrix_tsvs=[f'{self.indir}/distance-matrix.tsv'],
             sample_sheet=f'{self.indir}/sample-sheet.csv',
+            colormap='Set1',
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.tsv',

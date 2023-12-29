@@ -163,12 +163,14 @@ class Qiime2Pipeline(Processor):
         self.distance_matrix_tsvs = QiimeBetaDiversity(self.settings).main(
             feature_table_qza=self.labeled_feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza,
-            sample_sheet=self.sample_sheet)
+            sample_sheet=self.sample_sheet,
+            colormap=self.colormap)
 
     def my_beta_diversity(self):
         MyBetaDiversity(self.settings).main(
             feature_table_tsv=self.labeled_feature_table_tsv,
-            sample_sheet=self.sample_sheet)
+            sample_sheet=self.sample_sheet,
+            colormap=self.colormap)
 
     def taxon_table(self):
         self.taxon_table_tsv_dict = TaxonTable(self.settings).main(

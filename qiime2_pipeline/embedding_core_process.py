@@ -146,6 +146,7 @@ class EmbeddingProcessTemplate(Processor, ABC):
 
     tsv: str
     sample_sheet: str
+    colormap: str
 
     df: pd.DataFrame
     sample_coordinate_df: pd.DataFrame
@@ -155,7 +156,8 @@ class EmbeddingProcessTemplate(Processor, ABC):
     def main(
             self,
             tsv: str,
-            sample_sheet: str):
+            sample_sheet: str,
+            colormap: str):
         pass
 
     def run_main_workflow(self):
@@ -203,6 +205,7 @@ class EmbeddingProcessTemplate(Processor, ABC):
             x_column=self.XY_COLUMNS[0],
             y_column=self.XY_COLUMNS[1],
             hue_column=self.GROUP_COLUMN,
+            colormap=self.colormap,
             output_prefix=output_prefix)
 
     def __get_sample_coordinate_fpath(self, suffix: str) -> str:
@@ -224,6 +227,7 @@ class ScatterPlot(Processor):
     x_column: str
     y_column: str
     group_column: str
+    colormap: str
     output_prefix: str
 
     ax: Axes
@@ -234,12 +238,14 @@ class ScatterPlot(Processor):
             x_column: str,
             y_column: str,
             hue_column: str,
+            colormap: str,
             output_prefix: str):
 
         self.sample_coordinate_df = sample_coordinate_df
         self.x_column = x_column
         self.y_column = y_column
         self.group_column = hue_column
+        self.colormap = colormap
         self.output_prefix = output_prefix
 
         self.init_figure()
@@ -255,7 +261,8 @@ class ScatterPlot(Processor):
             data=self.sample_coordinate_df,
             x=self.x_column,
             y=self.y_column,
-            hue=self.group_column)
+            hue=self.group_column,
+            palette=self.colormap)
 
     def label_points(self):
         df = self.sample_coordinate_df

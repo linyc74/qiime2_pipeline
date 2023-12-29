@@ -15,6 +15,7 @@ class QiimeBetaDiversity(Processor):
     feature_table_qza: str
     rooted_tree_qza: str
     sample_sheet: str
+    colormap: str
 
     distance_matrix_tsvs: List[str]
 
@@ -22,11 +23,13 @@ class QiimeBetaDiversity(Processor):
             self,
             feature_table_qza: str,
             rooted_tree_qza: str,
-            sample_sheet: str):
+            sample_sheet: str,
+            colormap: str):
 
         self.feature_table_qza = feature_table_qza
         self.rooted_tree_qza = rooted_tree_qza
         self.sample_sheet = sample_sheet
+        self.colormap = colormap
 
         self.run_all_beta_metrics_to_distance_matrix_tsvs()
         self.run_batch_embedding_processes()
@@ -40,7 +43,8 @@ class QiimeBetaDiversity(Processor):
         for Batch in [BatchPCoAProcess, BatchTSNEProcess]:
             Batch(self.settings).main(
                 distance_matrix_tsvs=self.distance_matrix_tsvs,
-                sample_sheet=self.sample_sheet)
+                sample_sheet=self.sample_sheet,
+                colormap=self.colormap)
 
 
 #
@@ -215,10 +219,12 @@ class PCoAProcess(EmbeddingProcess):
     def main(
             self,
             tsv: str,
-            sample_sheet: str):
+            sample_sheet: str,
+            colormap: str):
 
         self.tsv = tsv
         self.sample_sheet = sample_sheet
+        self.colormap = colormap
 
         self.run_main_workflow()
         self.write_proportion_explained()
@@ -252,10 +258,13 @@ class TSNEProcess(EmbeddingProcess):
     def main(
             self,
             tsv: str,
-            sample_sheet: str):
+            sample_sheet: str,
+            colormap: str):
 
         self.tsv = tsv
         self.sample_sheet = sample_sheet
+        self.colormap = colormap
+
         self.run_main_workflow()
 
     def embedding(self):
@@ -272,22 +281,26 @@ class BatchEmbeddingProcess(Processor):
 
     distance_matrix_tsvs: List[str]
     sample_sheet: str
+    colormap: str
 
     embedding: EmbeddingProcessTemplate
 
     def main(
             self,
             distance_matrix_tsvs: List[str],
-            sample_sheet: str):
+            sample_sheet: str,
+            colormap: str):
 
         self.distance_matrix_tsvs = distance_matrix_tsvs
         self.sample_sheet = sample_sheet
+        self.colormap = colormap
 
         for tsv in self.distance_matrix_tsvs:
             self.logger.debug(f'{self.embedding.NAME} for {tsv}')
             self.embedding.main(
                 tsv=tsv,
-                sample_sheet=self.sample_sheet)
+                sample_sheet=self.sample_sheet,
+                colormap=self.colormap)
 
 
 class BatchPCoAProcess(BatchEmbeddingProcess):

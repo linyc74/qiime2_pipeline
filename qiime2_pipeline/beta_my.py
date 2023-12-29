@@ -10,19 +10,23 @@ class MyBetaDiversity(Processor):
 
     feature_table_tsv: str
     sample_sheet: str
+    colormap: str
 
     def main(
             self,
             feature_table_tsv: str,
-            sample_sheet: str):
+            sample_sheet: str,
+            colormap: str):
 
         self.feature_table_tsv = feature_table_tsv
         self.sample_sheet = sample_sheet
+        self.colormap = colormap
 
         for Process in [PCAProcess, TSNEProcess]:
             Process(self.settings).main(
                 tsv=self.feature_table_tsv,
-                sample_sheet=self.sample_sheet)
+                sample_sheet=self.sample_sheet,
+                colormap=self.colormap)
 
 
 class EmbeddingProcess(EmbeddingProcessTemplate, ABC):
@@ -49,10 +53,12 @@ class PCAProcess(EmbeddingProcess):
     def main(
             self,
             tsv: str,
-            sample_sheet: str):
+            sample_sheet: str,
+            colormap: str):
 
         self.tsv = tsv
         self.sample_sheet = sample_sheet
+        self.colormap = colormap
 
         self.run_main_workflow()
         self.write_proportion_explained()
@@ -85,10 +91,12 @@ class TSNEProcess(EmbeddingProcess):
     def main(
             self,
             tsv: str,
-            sample_sheet: str):
+            sample_sheet: str,
+            colormap: str):
 
         self.tsv = tsv
         self.sample_sheet = sample_sheet
+        self.colormap = colormap
 
         self.run_main_workflow()
 
