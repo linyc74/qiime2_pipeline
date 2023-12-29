@@ -12,17 +12,19 @@ class TestLefSe(TestCase):
         self.tear_down()
 
     def test_main(self):
+        indir = f'{self.indir}/mock-taxon-table'
         taxon_table_tsv_dict = {
-            'phylum': f'{self.indir}/taxon-table/phylum-table.tsv',
-            'class': f'{self.indir}/taxon-table/class-table.tsv',
-            'order': f'{self.indir}/taxon-table/order-table.tsv',
-            'family': f'{self.indir}/taxon-table/family-table.tsv',
-            'genus': f'{self.indir}/taxon-table/genus-table.tsv',
-            'species': f'{self.indir}/taxon-table/species-table.tsv',
+            'phylum': f'{indir}/phylum-table.tsv',
+            'class': f'{indir}/class-table.tsv',
+            'order': f'{indir}/order-table.tsv',
+            'family': f'{indir}/family-table.tsv',
+            'genus': f'{indir}/genus-table.tsv',
+            'species': f'{indir}/species-table.tsv',
         }
         LefSe(self.settings).main(
             taxon_table_tsv_dict=taxon_table_tsv_dict,
-            sample_sheet=f'{self.indir}/sample-sheet.csv',
+            sample_sheet=f'{indir}/sample-sheet.csv',
+            colormap='Set1'
         )
 
 
@@ -36,9 +38,10 @@ class TestLefSeOneTaxonLevel(TestCase):
 
     def test_main(self):
         LefSeOneTaxonLevel(self.settings).main(
-            taxon_table_tsv=f'{self.indir}/genus-table.tsv',
+            taxon_table_tsv=f'{self.indir}/real-taxon-table/genus-table.tsv',
             taxon_level='genus',
-            sample_sheet=f'{self.indir}/sample-sheet.csv',
+            sample_sheet=f'{self.indir}/real-taxon-table/sample-sheet.csv',
+            colormap='Set1'
         )
         for file in [
             f'{self.outdir}/lefse/lefse-genus-result.txt',
@@ -58,9 +61,9 @@ class TestAddTaxonLevelPrefix(TestCase):
 
     def test_main(self):
         actual = AddTaxonLevelPrefix(self.settings).main(
-            taxon_table_tsv=f'{self.indir}/genus-table.tsv',
+            taxon_table_tsv=f'{self.indir}/mock-taxon-table/genus-table.tsv',
         )
-        expected = f'{self.indir}/genus-table-relabeled.tsv'
+        expected = f'{self.indir}/mock-taxon-table/genus-table-relabeled.tsv'
         self.assertFileEqual(expected, actual)
 
     def test_add_level_prefixes(self):
@@ -81,8 +84,8 @@ class TestInsertGroupRow(TestCase):
 
     def test_main(self):
         actual = InsertGroupRow(self.settings).main(
-            taxon_table_tsv=f'{self.indir}/genus-table.tsv',
-            sample_sheet=f'{self.indir}/sample-sheet.csv',
+            taxon_table_tsv=f'{self.indir}/mock-taxon-table/genus-table.tsv',
+            sample_sheet=f'{self.indir}/mock-taxon-table/sample-sheet.csv',
         )
-        expected = f'{self.indir}/genus-table-grouped.tsv'
+        expected = f'{self.indir}/mock-taxon-table/genus-table-grouped.tsv'
         self.assertFileEqual(expected, actual)

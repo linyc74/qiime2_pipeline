@@ -26,7 +26,8 @@ class TestQiime2Pipeline(TestCase):
             clip_r2_5_prime=0,
             max_expected_error_bases=2.0,
             heatmap_read_fraction=0.99,
-            n_taxa_barplot=20
+            n_taxa_barplot=20,
+            colormap='Set1'
         )
 
     def test_single_end(self):
@@ -45,5 +46,6 @@ class TestQiime2Pipeline(TestCase):
             clip_r2_5_prime=0,
             max_expected_error_bases=2.0,
             heatmap_read_fraction=0.99,
-            n_taxa_barplot=20
+            n_taxa_barplot=20,
+            colormap='Set1'
         )

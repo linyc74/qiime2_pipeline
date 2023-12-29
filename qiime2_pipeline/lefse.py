@@ -3,27 +3,33 @@ import pandas as pd
 from typing import Dict
 from .tools import edit_fpath
 from .template import Processor
+from .lefse_plot_res import LefSePlotRes
+from .lefse_plot_cladogram import LefSePlotCladogram
 
 
 class LefSe(Processor):
 
     taxon_table_tsv_dict: Dict[str, str]
     sample_sheet: str
+    colormap: str
 
     def main(
             self,
             taxon_table_tsv_dict: Dict[str, str],
-            sample_sheet: str):
+            sample_sheet: str,
+            colormap: str):
 
         self.taxon_table_tsv_dict = taxon_table_tsv_dict
         self.sample_sheet = sample_sheet
+        self.colormap = colormap
 
         for level, tsv in self.taxon_table_tsv_dict.items():
             try:
                 LefSeOneTaxonLevel(self.settings).main(
                     taxon_table_tsv=tsv,
                     taxon_level=level,
-                    sample_sheet=self.sample_sheet)
+                    sample_sheet=self.sample_sheet,
+                    colormap=self.colormap)
             except Exception as e:
                 self.logger.warning(f'Failed to run LefSe on "{level}" taxon table, with Exception:\n{e}')
 
@@ -31,12 +37,11 @@ class LefSe(Processor):
 class LefSeOneTaxonLevel(Processor):
 
     DSTDIR_NAME = 'lefse'
-    DPI = 600
-    FIGURE_WIDTH = 8
 
     taxon_table_tsv: str
     taxon_level: str
     sample_sheet: str
+    colormap: str
 
     dstdir: str
     lefse_input: str
@@ -49,11 +54,13 @@ class LefSeOneTaxonLevel(Processor):
             self,
             taxon_table_tsv: str,
             taxon_level: str,
-            sample_sheet: str):
+            sample_sheet: str,
+            colormap: str):
 
         self.taxon_table_tsv = taxon_table_tsv
         self.taxon_level = taxon_level
         self.sample_sheet = sample_sheet
+        self.colormap = colormap
 
         self.make_dstdir()
         self.add_taxon_level_prefix()
@@ -103,29 +110,18 @@ class LefSeOneTaxonLevel(Processor):
 
     def plot_feature(self):
         self.feature_png = f'{self.dstdir}/lefse-{self.taxon_level}-features.png'
-        cmd = self.CMD_LINEBREAK.join([
-            'lefse_plot_res.py',
-            f'--dpi {self.DPI}',
-            f'--width {self.FIGURE_WIDTH}',
-            self.lefse_result,
-            self.feature_png,
-            f'1>> {self.lefse_log}',
-            f'2>> {self.lefse_log}'
-        ])
-        self.call(cmd)
+        LefSePlotRes().main(
+            input_file=self.lefse_result,
+            output_file=self.feature_png,
+            colormap=self.colormap)
 
     def plot_cladogram(self):
         self.cladogram_png = f'{self.dstdir}/lefse-{self.taxon_level}-cladogram.png'
-        cmd = self.CMD_LINEBREAK.join([
-            'lefse_plot_cladogram.py',
-            f'--dpi {self.DPI}',
-            '--format png',
-            self.lefse_result,
-            self.cladogram_png,
-            f'1>> {self.lefse_log}',
-            f'2>> {self.lefse_log}'
-        ])
-        self.call(cmd)
+
+        LefSePlotCladogram().main(
+            input_file=self.lefse_result,
+            output_file=self.cladogram_png,
+            colormap=self.colormap)
 
 
 class AddTaxonLevelPrefix(Processor):

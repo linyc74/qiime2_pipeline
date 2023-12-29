@@ -35,6 +35,7 @@ class Qiime2Pipeline(Processor):
     max_expected_error_bases: float
     heatmap_read_fraction: float
     n_taxa_barplot: int
+    colormap: str
 
     feature_table_qza: str
     feature_sequence_qza: str
@@ -62,7 +63,8 @@ class Qiime2Pipeline(Processor):
             clip_r2_5_prime: int,
             max_expected_error_bases: float,
             heatmap_read_fraction: float,
-            n_taxa_barplot: int):
+            n_taxa_barplot: int,
+            colormap: str):
 
         self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
@@ -79,6 +81,7 @@ class Qiime2Pipeline(Processor):
         self.max_expected_error_bases = max_expected_error_bases
         self.heatmap_read_fraction = heatmap_read_fraction
         self.n_taxa_barplot = n_taxa_barplot
+        self.colormap = colormap
 
         self.raw_read_counts()
 
@@ -190,7 +193,8 @@ class Qiime2Pipeline(Processor):
     def lefse(self):
         LefSe(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
-            sample_sheet=self.sample_sheet)
+            sample_sheet=self.sample_sheet,
+            colormap=self.colormap)
 
     def differential_abundance(self):
         DifferentialAbundance(self.settings).main(

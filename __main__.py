@@ -150,6 +150,15 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--colormap'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'Set1',
+            'help': 'matplotlib colormap for plotting (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['-t', '--threads'],
         'properties': {
             'type': int,
@@ -229,6 +238,7 @@ class EntryPoint:
             max_expected_error_bases=args.max_expected_error_bases,
             heatmap_read_fraction=args.heatmap_read_fraction,
             n_taxa_barplot=args.n_taxa_barplot,
+            colormap=args.colormap,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)

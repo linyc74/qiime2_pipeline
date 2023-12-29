@@ -23,6 +23,7 @@ class Main:
     max_expected_error_bases: float
     heatmap_read_fraction: float
     n_taxa_barplot: int
+    colormap: str
 
     settings: Settings
 
@@ -43,6 +44,7 @@ class Main:
             max_expected_error_bases: float,
             heatmap_read_fraction: float,
             n_taxa_barplot: int,
+            colormap: str,
             outdir: str,
             threads: int,
             debug: bool):
@@ -62,6 +64,7 @@ class Main:
         self.max_expected_error_bases = max_expected_error_bases
         self.heatmap_read_fraction = heatmap_read_fraction
         self.n_taxa_barplot = n_taxa_barplot
+        self.colormap = colormap
 
         self.settings = Settings(
             workdir=get_temp_path(prefix='./qiime2_pipeline_workdir_'),
@@ -94,7 +97,8 @@ class Main:
             clip_r2_5_prime=self.clip_r2_5_prime,
             max_expected_error_bases=self.max_expected_error_bases,
             heatmap_read_fraction=self.heatmap_read_fraction,
-            n_taxa_barplot=self.n_taxa_barplot)
+            n_taxa_barplot=self.n_taxa_barplot,
+            colormap=self.colormap)
 
     def remove_workdir(self):
         if not self.settings.debug:
