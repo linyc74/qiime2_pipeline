@@ -14,6 +14,5 @@ class TestLefSePlotCladogram(TestCase):
         LefSePlotCladogram().main(
             input_file=f'{self.indir}/lefse-genus-result.txt',
             output_file=f'{self.outdir}/lefse-genus-result.png',
-            colormap='Set1',
-            invert_colors=True,
+            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0)]
         )

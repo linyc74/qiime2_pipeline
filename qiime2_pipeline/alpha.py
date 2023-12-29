@@ -24,8 +24,7 @@ class AlphaDiversity(Processor):
     feature_table_qza: str
     sample_sheet: str
     alpha_metrics: List[str]
-    colormap: str
-    invert_colors: bool
+    colors: list
 
     df: pd.DataFrame
 
@@ -34,14 +33,12 @@ class AlphaDiversity(Processor):
             feature_table_qza: str,
             sample_sheet: str,
             alpha_metrics: List[str],
-            colormap: str,
-            invert_colors: bool):
+            colors: list):
 
         self.feature_table_qza = feature_table_qza
         self.sample_sheet = sample_sheet
         self.alpha_metrics = self.ALPHA_METRICS if alpha_metrics == [] else alpha_metrics
-        self.colormap = colormap
-        self.invert_colors = invert_colors
+        self.colors = colors
 
         self.df = pd.DataFrame()
         for metric in self.alpha_metrics:
@@ -77,8 +74,7 @@ class AlphaDiversity(Processor):
         PlotAlphaDiversity(self.settings).main(
             df=self.df,
             dstdir=f'{self.outdir}/{self.ALPHA_DIVERSITY_DIRNAME}',
-            colormap=self.colormap,
-            invert_colors=self.invert_colors)
+            colors=self.colors)
 
 
 class RunOneAlphaMetric(Processor):
@@ -151,35 +147,23 @@ class PlotAlphaDiversity(Processor):
 
     df: pd.DataFrame
     dstdir: str
-    colormap: str
-    invert_colors: bool
-
     colors: list
+
     alpha_metrics: List[str]
 
     def main(
             self,
             df: pd.DataFrame,
             dstdir: str,
-            colormap: str,
-            invert_colors: bool):
+            colors: list):
 
         self.df = df
         self.dstdir = dstdir
-        self.colormap = colormap
-        self.invert_colors = invert_colors
+        self.colors = colors
 
-        self.set_colors()
         self.set_alpha_metrics()
         for metric in self.alpha_metrics:
             self.plot_one(metric=metric)
-
-    def set_colors(self):
-        n_groups = len(self.df[self.GROUP].unique())
-        cmap = plt.colormaps[self.colormap]
-        self.colors = [cmap(i) for i in range(n_groups)]
-        if self.invert_colors:
-            self.colors = self.colors[::-1]
 
     def set_alpha_metrics(self):
         self.alpha_metrics = [

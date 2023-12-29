@@ -17,8 +17,7 @@ class TestQiimeBetaDiversity(TestCase):
             feature_table_qza=f'{self.indir}/labeled-feature-table-normalized.qza',
             rooted_tree_qza=f'{self.indir}/mafft-aligned-sequences-masked.qza',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
-            colormap='Set1',
-            invert_colors=True,
+            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0),  'green'],
         )
 
 
@@ -61,8 +60,7 @@ class TestPCoAProcess(TestCase):
         PCoAProcess(self.settings).main(
             tsv=f'{self.indir}/distance-matrix.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
-            colormap='Set1',
-            invert_colors=True,
+            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0),  'green'],
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.tsv',
@@ -85,8 +83,7 @@ class TestTSNEProcess(TestCase):
         TSNEProcess(self.settings).main(
             tsv=f'{self.indir}/distance-matrix.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
-            colormap='Set1',
-            invert_colors=True,
+            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0),  'green'],
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.tsv',
@@ -111,8 +108,7 @@ class TestBatchPCoAProcess(TestCase):
         BatchPCoAProcess(self.settings).main(
             distance_matrix_tsvs=[f'{self.indir}/distance-matrix.tsv'],
             sample_sheet=f'{self.indir}/sample-sheet.csv',
-            colormap='Set1',
-            invert_colors=True,
+            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0),  'green'],
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.tsv',
@@ -135,8 +131,7 @@ class TestBatchTSNEProcess(TestCase):
         BatchTSNEProcess(self.settings).main(
             distance_matrix_tsvs=[f'{self.indir}/distance-matrix.tsv'],
             sample_sheet=f'{self.indir}/sample-sheet.csv',
-            colormap='Set1',
-            invert_colors=True,
+            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0),  'green'],
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.tsv',

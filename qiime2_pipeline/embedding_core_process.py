@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from typing import Tuple, Union, List
 from .tools import edit_fpath
 from .template import Processor
-from .grouping import AddGroupColumn
+from .grouping import GROUP_COLUMN, AddGroupColumn
 
 
 class Core(Processor, ABC):
@@ -142,12 +142,11 @@ class EmbeddingProcessTemplate(Processor, ABC):
     NAME: str
     XY_COLUMNS: Tuple[str, str]
     DSTDIR_NAME: str
-    GROUP_COLUMN: str = AddGroupColumn.GROUP_COLUMN
+    GROUP_COLUMN: str = GROUP_COLUMN
 
     tsv: str
     sample_sheet: str
-    colormap: str
-    invert_colors: bool
+    colors: list
 
     df: pd.DataFrame
     sample_coordinate_df: pd.DataFrame
@@ -158,8 +157,7 @@ class EmbeddingProcessTemplate(Processor, ABC):
             self,
             tsv: str,
             sample_sheet: str,
-            colormap: str,
-            invert_colors: bool):
+            colors: list):
         pass
 
     def run_main_workflow(self):
@@ -207,8 +205,7 @@ class EmbeddingProcessTemplate(Processor, ABC):
             x_column=self.XY_COLUMNS[0],
             y_column=self.XY_COLUMNS[1],
             hue_column=self.GROUP_COLUMN,
-            colormap=self.colormap,
-            invert_colors=self.invert_colors,
+            colors=self.colors,
             output_prefix=output_prefix)
 
     def __get_sample_coordinate_fpath(self, suffix: str) -> str:
@@ -230,11 +227,9 @@ class ScatterPlot(Processor):
     x_column: str
     y_column: str
     group_column: str
-    colormap: str
-    invert_colors: bool
+    colors: list
     output_prefix: str
 
-    colors: list
     ax: Axes
 
     def main(
@@ -243,30 +238,20 @@ class ScatterPlot(Processor):
             x_column: str,
             y_column: str,
             hue_column: str,
-            colormap: str,
-            invert_colors: bool,
+            colors: list,
             output_prefix: str):
 
         self.sample_coordinate_df = sample_coordinate_df
         self.x_column = x_column
         self.y_column = y_column
         self.group_column = hue_column
-        self.colormap = colormap
-        self.invert_colors = invert_colors
+        self.colors = colors
         self.output_prefix = output_prefix
 
-        self.set_colors()
         self.init_figure()
         self.scatterplot()
         self.label_points()
         self.save_figure()
-
-    def set_colors(self):
-        n_groups = len(self.sample_coordinate_df[self.group_column].unique())
-        cmap = plt.colormaps[self.colormap]
-        self.colors = [cmap(i) for i in range(n_groups)]
-        if self.invert_colors:
-            self.colors = self.colors[::-1]
 
     def init_figure(self):
         plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)

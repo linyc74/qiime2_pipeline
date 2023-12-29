@@ -1,10 +1,13 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 from .template import Processor
+
+
+GROUP_COLUMN = 'Group'
 
 
 class AddGroupColumn(Processor):
 
-    GROUP_COLUMN: str = 'Group'
     NA_VALUE: str = 'None'  # Don't use 'NA', which would make dtype = `float` but not `str`, tricky for testing
 
     df: pd.DataFrame
@@ -29,17 +32,43 @@ class AddGroupColumn(Processor):
     def read_sample_sheet(self):
         self.sample_df = pd.read_csv(self.sample_sheet, index_col=0)
         assert 'Group' in self.sample_df.columns, \
-            f'No "{self.GROUP_COLUMN}" column in {self.sample_sheet}'
+            f'No "{GROUP_COLUMN}" column in {self.sample_sheet}'
 
     def add_group_column(self):
         self.df = self.df.merge(
-            right=self.sample_df[self.GROUP_COLUMN],
+            right=self.sample_df[GROUP_COLUMN],
             how='left',
             left_index=True,
             right_index=True)
-        self.df[self.GROUP_COLUMN] = self.df[self.GROUP_COLUMN].fillna(self.NA_VALUE)
+        self.df[GROUP_COLUMN] = self.df[GROUP_COLUMN].fillna(self.NA_VALUE)
 
     def reorder_columns(self):
         cols = list(self.df.columns)
         cols = [cols[-1]] + cols[:-1]
         self.df = self.df[cols]
+
+
+class GetColors(Processor):
+
+    sample_sheet: str
+    colormap: str
+    invert_colors: bool
+
+    def main(
+            self,
+            sample_sheet: str,
+            colormap: str,
+            invert_colors: bool) -> list:
+
+        self.sample_sheet = sample_sheet
+        self.colormap = colormap
+        self.invert_colors = invert_colors
+
+        df = pd.read_csv(self.sample_sheet, index_col=0)
+        n_groups = len(df[GROUP_COLUMN].unique())
+        cmap = plt.colormaps[self.colormap]
+        colors = [cmap(i) for i in range(n_groups)]
+        if self.invert_colors:
+            colors = colors[::-1]
+
+        return colors

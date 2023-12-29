@@ -1,6 +1,6 @@
 import pandas as pd
 from .setup import TestCase
-from qiime2_pipeline.grouping import AddGroupColumn
+from qiime2_pipeline.grouping import AddGroupColumn, GetColors
 
 
 class TestAddGroupColumn(TestCase):
@@ -18,3 +18,21 @@ class TestAddGroupColumn(TestCase):
         )
         expected = pd.read_csv(f'{self.indir}/outdf.csv', index_col=0)
         self.assertDataFrameEqual(expected, actual)
+
+
+class TestGetColors(TestCase):
+
+    def setUp(self):
+        self.set_up(py_path=__file__)
+
+    def tearDown(self):
+        self.tear_down()
+
+    def test_main(self):
+        actual = GetColors(self.settings).main(
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
+            colormap='Set1',
+            invert_colors=True
+        )
+        expected = [(0.21568627450980393, 0.49411764705882355, 0.7215686274509804, 1.0), (0.8941176470588236, 0.10196078431372549, 0.10980392156862745, 1.0)]
+        self.assertListEqual(expected, actual)

@@ -21,8 +21,7 @@ class TestAlphaDiversity(TestCase):
                 'shannon',
                 'simpson'
             ],
-            colormap='Set1',
-            invert_colors=True,
+            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0)]
         )
         for file in [
             f'{self.outdir}/alpha-diversity/alpha-diversity.csv',

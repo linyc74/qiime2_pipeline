@@ -43,8 +43,7 @@ class LefSePlotCladogram:
 
     input_file: str
     output_file: str
-    colormap: str
-    invert_colors: bool
+    colors: list
 
     params: Dict[str, Any]
     n_classes: int
@@ -53,16 +52,13 @@ class LefSePlotCladogram:
             self,
             input_file: str,
             output_file: str,
-            colormap: str,
-            invert_colors: bool):
+            colors: list):
 
         self.input_file = input_file
         self.output_file = output_file
-        self.colormap = colormap
-        self.invert_colors = invert_colors
+        self.colors = colors
 
         self.set_params()
-        self.set_n_classes()
         self.set_global_plotting_scheme()
         self.extract_data_and_plot()
 
@@ -71,18 +67,11 @@ class LefSePlotCladogram:
         self.params['input_file'] = self.input_file
         self.params['output_file'] = self.output_file
 
-    def set_n_classes(self):
-        df = pd.read_csv(self.input_file, sep='\t', header=None)
-        self.n_classes = len(df[2].dropna().unique())
-
     def set_global_plotting_scheme(self):
         matplotlib.use('Agg')
 
         global COLORS
-        cmap = plt.colormaps[self.colormap]
-        COLORS = [cmap(i) for i in range(self.n_classes)]
-        if self.invert_colors:
-            COLORS = COLORS[::-1]
+        COLORS = self.colors
 
     def extract_data_and_plot(self):
         self.params['fore_color'] = 'w' if self.params['back_color'] == 'k' else 'k'

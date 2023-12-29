@@ -3,6 +3,7 @@ from typing import List, Optional, Dict
 from .lefse import LefSe
 from .taxonomy import Taxonomy
 from .template import Processor
+from .grouping import GetColors
 from .phylogeny import Phylogeny
 from .heatmap import PlotHeatmaps
 from .alpha import AlphaDiversity
@@ -47,6 +48,7 @@ class Qiime2Pipeline(Processor):
     rooted_tree_qza: str
     distance_matrix_tsvs: List[str]
     taxon_table_tsv_dict: Dict[str, str]
+    colors: list
 
     def main(
             self,
@@ -87,6 +89,7 @@ class Qiime2Pipeline(Processor):
         self.invert_colors = invert_colors
 
         self.raw_read_counts()
+        self.set_colors()
 
         self.generate_asv()
         self.otu_clustering()
@@ -116,6 +119,12 @@ class Qiime2Pipeline(Processor):
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix)
+
+    def set_colors(self):
+        self.colors = GetColors(self.settings).main(
+            sample_sheet=self.sample_sheet,
+            colormap=self.colormap,
+            invert_colors=self.invert_colors)
 
     def generate_asv(self):
         self.feature_table_qza, self.feature_sequence_qza = GenerateASV(self.settings).main(
@@ -160,23 +169,20 @@ class Qiime2Pipeline(Processor):
             feature_table_qza=self.labeled_feature_table_qza,
             sample_sheet=self.sample_sheet,
             alpha_metrics=self.alpha_metrics,
-            colormap=self.colormap,
-            invert_colors=self.invert_colors)
+            colors=self.colors)
 
     def qiime_beta_diversity(self):
         self.distance_matrix_tsvs = QiimeBetaDiversity(self.settings).main(
             feature_table_qza=self.labeled_feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza,
             sample_sheet=self.sample_sheet,
-            colormap=self.colormap,
-            invert_colors=self.invert_colors)
+            colors=self.colors)
 
     def my_beta_diversity(self):
         MyBetaDiversity(self.settings).main(
             feature_table_tsv=self.labeled_feature_table_tsv,
             sample_sheet=self.sample_sheet,
-            colormap=self.colormap,
-            invert_colors=self.invert_colors)
+            colors=self.colors)
 
     def taxon_table(self):
         self.taxon_table_tsv_dict = TaxonTable(self.settings).main(
@@ -193,8 +199,7 @@ class Qiime2Pipeline(Processor):
         PlotVennDiagrams(self.settings).main(
             tsvs=tsvs,
             sample_sheet=self.sample_sheet,
-            colormap=self.colormap,
-            invert_colors=self.invert_colors)
+            colors=self.colors)
 
     def taxon_barplot(self):
         PlotTaxonBarplots(self.settings).main(
@@ -205,15 +210,13 @@ class Qiime2Pipeline(Processor):
         LefSe(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             sample_sheet=self.sample_sheet,
-            colormap=self.colormap,
-            invert_colors=self.invert_colors)
+            colors=self.colors)
 
     def differential_abundance(self):
         DifferentialAbundance(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             sample_sheet=self.sample_sheet,
-            colormap=self.colormap,
-            invert_colors=self.invert_colors)
+            colors=self.colors)
 
     def collect_log_files(self):
         makedirs(f'{self.outdir}/log', exist_ok=True)

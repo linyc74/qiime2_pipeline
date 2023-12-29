@@ -17,8 +17,7 @@ class PlotVennDiagrams(Processor):
 
     tsvs: List[str]
     sample_sheet: str
-    colormap: str
-    invert_colors: bool
+    colors: list
 
     dstdir: str
 
@@ -26,13 +25,11 @@ class PlotVennDiagrams(Processor):
             self,
             tsvs: List[str],
             sample_sheet: str,
-            colormap: str,
-            invert_colors: bool):
+            colors: list):
 
         self.tsvs = tsvs
         self.sample_sheet = sample_sheet
-        self.colormap = colormap
-        self.invert_colors = invert_colors
+        self.colors = colors
 
         valid = self.check_number_of_groups()
         if not valid:
@@ -62,8 +59,7 @@ class PlotVennDiagrams(Processor):
             ProcessTsvPlotVenn(self.settings).main(
                 tsv=tsv,
                 sample_sheet=self.sample_sheet,
-                colormap=self.colormap,
-                invert_colors=self.invert_colors,
+                colors=self.colors,
                 dstdir=self.dstdir)
 
 
@@ -74,8 +70,7 @@ class ProcessTsvPlotVenn(Processor):
 
     tsv: str
     sample_sheet: str
-    colormap: str
-    invert_colors: bool
+    color: list
     dstdir: str
 
     df: pd.DataFrame
@@ -86,14 +81,12 @@ class ProcessTsvPlotVenn(Processor):
             self,
             tsv: str,
             sample_sheet: str,
-            colormap: str,
-            invert_colors: bool,
+            colors: list,
             dstdir: str):
 
         self.tsv = tsv
         self.sample_sheet = sample_sheet
-        self.colormap = colormap
-        self.invert_colors = invert_colors
+        self.colors = colors
         self.dstdir = dstdir
 
         self.read_tsv()
@@ -137,8 +130,7 @@ class ProcessTsvPlotVenn(Processor):
             set_labels=groups,
             subsets=subsets,
             output_prefix=output_prefix,
-            colormap=self.colormap,
-            invert_colors=self.invert_colors
+            colors=self.colors,
         )
 
 
@@ -150,22 +142,19 @@ class PlotVenn(Processor):
     set_labels: List[str]
     subsets: List[Set[str]]
     output_prefix: str
-    colormap: str
-    invert_colors: bool
+    colors: list
 
     def main(
             self,
             set_labels: List[str],
             subsets: List[Set[str]],
             output_prefix: str,
-            colormap: str,
-            invert_colors: bool):
+            colors: list):
 
         self.set_labels = set_labels
         self.subsets = subsets
         self.output_prefix = output_prefix
-        self.colormap = colormap
-        self.invert_colors = invert_colors
+        self.colors = colors
 
         self.assert_number_of_groups()
         self.init_figure()
@@ -179,15 +168,11 @@ class PlotVenn(Processor):
         plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
 
     def plot(self):
-        cmap = colormaps[self.colormap]
-        colors = [cmap(i) for i in range(len(self.subsets))]
-        if self.invert_colors:
-            colors = colors[::-1]
 
         if len(self.subsets) == 2:
-            venn2(subsets=self.subsets, set_labels=self.set_labels, set_colors=colors)
+            venn2(subsets=self.subsets, set_labels=self.set_labels, set_colors=self.colors)
         else:
-            venn3(subsets=self.subsets, set_labels=self.set_labels, set_colors=colors)
+            venn3(subsets=self.subsets, set_labels=self.set_labels, set_colors=self.colors)
 
     def save_figure(self):
         for ext in ['pdf', 'png']:
