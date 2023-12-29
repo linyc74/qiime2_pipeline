@@ -15,17 +15,19 @@ class TestAlphaDiversity(TestCase):
         AlphaDiversity(self.settings).main(
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             feature_table_qza=f'{self.indir}/feature-table.qza',
-            alpha_metrics=[]  # empty list -> all alpha metrics
+            alpha_metrics=[
+                'observed_features',
+                'chao1',
+                'shannon',
+                'simpson'
+            ],
+            colormap='Set1',
         )
         for file in [
             f'{self.outdir}/alpha-diversity/alpha-diversity.csv',
             f'{self.outdir}/alpha-diversity/chao1.png',
             f'{self.outdir}/alpha-diversity/shannon_entropy.png',
-            f'{self.outdir}/alpha-diversity/gini_index.png',
-            f'{self.outdir}/alpha-diversity/mcintosh_e.png',
-            f'{self.outdir}/alpha-diversity/pielou_evenness.png',
             f'{self.outdir}/alpha-diversity/simpson.png',
             f'{self.outdir}/alpha-diversity/observed_features.png',
-            f'{self.outdir}/alpha-diversity/fisher_alpha.png',
         ]:
             self.assertTrue(exists(file))

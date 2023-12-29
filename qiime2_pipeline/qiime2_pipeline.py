@@ -156,7 +156,8 @@ class Qiime2Pipeline(Processor):
         AlphaDiversity(self.settings).main(
             feature_table_qza=self.labeled_feature_table_qza,
             sample_sheet=self.sample_sheet,
-            alpha_metrics=self.alpha_metrics)
+            alpha_metrics=self.alpha_metrics,
+            colormap=self.colormap)
 
     def qiime_beta_diversity(self):
         self.distance_matrix_tsvs = QiimeBetaDiversity(self.settings).main(

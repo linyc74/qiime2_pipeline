@@ -24,6 +24,7 @@ class AlphaDiversity(Processor):
     feature_table_qza: str
     sample_sheet: str
     alpha_metrics: List[str]
+    colormap: str
 
     df: pd.DataFrame
 
@@ -31,11 +32,13 @@ class AlphaDiversity(Processor):
             self,
             feature_table_qza: str,
             sample_sheet: str,
-            alpha_metrics: List[str]):
+            alpha_metrics: List[str],
+            colormap: str):
 
         self.feature_table_qza = feature_table_qza
         self.sample_sheet = sample_sheet
         self.alpha_metrics = self.ALPHA_METRICS if alpha_metrics == [] else alpha_metrics
+        self.colormap = colormap
 
         self.df = pd.DataFrame()
         for metric in self.alpha_metrics:
@@ -70,8 +73,8 @@ class AlphaDiversity(Processor):
     def plot(self):
         PlotAlphaDiversity(self.settings).main(
             df=self.df,
-            dstdir=f'{self.outdir}/{self.ALPHA_DIVERSITY_DIRNAME}'
-        )
+            dstdir=f'{self.outdir}/{self.ALPHA_DIVERSITY_DIRNAME}',
+            colormap=self.colormap)
 
 
 class RunOneAlphaMetric(Processor):
@@ -138,18 +141,20 @@ class ReadAlphaDiversityQza(Processor):
 class PlotAlphaDiversity(Processor):
 
     GROUP = 'Group'
-    FIGSIZE = (6, 6)
+    FIGSIZE = (10 / 2.54, 10 / 2.54)
     BOX_WIDTH = 0.5
     DPI = 600
 
     df: pd.DataFrame
     dstdir: str
+    colormap: str
 
     alpha_metrics: List[str]
 
-    def main(self, df: pd.DataFrame, dstdir: str):
+    def main(self, df: pd.DataFrame, dstdir: str, colormap: str):
         self.df = df
         self.dstdir = dstdir
+        self.colormap = colormap
 
         self.set_alpha_metrics()
         for metric in self.alpha_metrics:
@@ -166,6 +171,7 @@ class PlotAlphaDiversity(Processor):
             data=self.df,
             x=self.GROUP,
             y=metric,
+            palette=self.colormap,
             width=self.BOX_WIDTH
         )
         for ext in ['pdf', 'png']:
