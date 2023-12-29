@@ -2,10 +2,10 @@ import os
 import pandas as pd
 import seaborn as sns
 from sklearn import manifold, decomposition
-from typing import Tuple, Union
 from matplotlib.axes import Axes
 from matplotlib import pyplot as plt
 from abc import ABC, abstractmethod
+from typing import Tuple, Union, List
 from .tools import edit_fpath
 from .template import Processor
 from .grouping import AddGroupColumn
@@ -13,7 +13,7 @@ from .grouping import AddGroupColumn
 
 class Core(Processor, ABC):
 
-    XY_COLUMNS: Tuple[float, float]
+    XY_COLUMNS: List[str]
     DATA_STRUCTURES = [
         'distance_matrix',
         'row_features',
@@ -59,7 +59,7 @@ class Core(Processor, ABC):
 
 class PCACore(Core):
 
-    XY_COLUMNS = ('PC 1', 'PC 2')
+    XY_COLUMNS = ['PC 1', 'PC 2']
 
     embedding: decomposition.PCA
     proportion_explained_series: pd.Series
@@ -93,7 +93,7 @@ class PCACore(Core):
 
 class TSNECore(Core):
 
-    XY_COLUMNS = ('t-SNE 1', 't-SNE 2')
+    XY_COLUMNS = ['t-SNE 1', 't-SNE 2']
     PERPLEXITY = 5.0
 
     embedding: manifold.TSNE
@@ -147,6 +147,7 @@ class EmbeddingProcessTemplate(Processor, ABC):
     tsv: str
     sample_sheet: str
     colormap: str
+    invert_colors: bool
 
     df: pd.DataFrame
     sample_coordinate_df: pd.DataFrame
@@ -157,7 +158,8 @@ class EmbeddingProcessTemplate(Processor, ABC):
             self,
             tsv: str,
             sample_sheet: str,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
         pass
 
     def run_main_workflow(self):
@@ -206,6 +208,7 @@ class EmbeddingProcessTemplate(Processor, ABC):
             y_column=self.XY_COLUMNS[1],
             hue_column=self.GROUP_COLUMN,
             colormap=self.colormap,
+            invert_colors=self.invert_colors,
             output_prefix=output_prefix)
 
     def __get_sample_coordinate_fpath(self, suffix: str) -> str:
@@ -228,8 +231,10 @@ class ScatterPlot(Processor):
     y_column: str
     group_column: str
     colormap: str
+    invert_colors: bool
     output_prefix: str
 
+    colors: list
     ax: Axes
 
     def main(
@@ -239,6 +244,7 @@ class ScatterPlot(Processor):
             y_column: str,
             hue_column: str,
             colormap: str,
+            invert_colors: bool,
             output_prefix: str):
 
         self.sample_coordinate_df = sample_coordinate_df
@@ -246,12 +252,21 @@ class ScatterPlot(Processor):
         self.y_column = y_column
         self.group_column = hue_column
         self.colormap = colormap
+        self.invert_colors = invert_colors
         self.output_prefix = output_prefix
 
+        self.set_colors()
         self.init_figure()
         self.scatterplot()
         self.label_points()
         self.save_figure()
+
+    def set_colors(self):
+        n_groups = len(self.sample_coordinate_df[self.group_column].unique())
+        cmap = plt.colormaps[self.colormap]
+        self.colors = [cmap(i) for i in range(n_groups)]
+        if self.invert_colors:
+            self.colors = self.colors[::-1]
 
     def init_figure(self):
         plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
@@ -262,7 +277,7 @@ class ScatterPlot(Processor):
             x=self.x_column,
             y=self.y_column,
             hue=self.group_column,
-            palette=self.colormap)
+            palette=self.colors)
 
     def label_points(self):
         df = self.sample_coordinate_df

@@ -12,16 +12,19 @@ class LefSe(Processor):
     taxon_table_tsv_dict: Dict[str, str]
     sample_sheet: str
     colormap: str
+    invert_colors: bool
 
     def main(
             self,
             taxon_table_tsv_dict: Dict[str, str],
             sample_sheet: str,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
 
         self.taxon_table_tsv_dict = taxon_table_tsv_dict
         self.sample_sheet = sample_sheet
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         for level, tsv in self.taxon_table_tsv_dict.items():
             try:
@@ -29,7 +32,8 @@ class LefSe(Processor):
                     taxon_table_tsv=tsv,
                     taxon_level=level,
                     sample_sheet=self.sample_sheet,
-                    colormap=self.colormap)
+                    colormap=self.colormap,
+                    invert_colors=self.invert_colors)
             except Exception as e:
                 self.logger.warning(f'Failed to run LefSe on "{level}" taxon table, with Exception:\n{e}')
 
@@ -42,6 +46,7 @@ class LefSeOneTaxonLevel(Processor):
     taxon_level: str
     sample_sheet: str
     colormap: str
+    invert_colors: bool
 
     dstdir: str
     lefse_input: str
@@ -55,12 +60,14 @@ class LefSeOneTaxonLevel(Processor):
             taxon_table_tsv: str,
             taxon_level: str,
             sample_sheet: str,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
 
         self.taxon_table_tsv = taxon_table_tsv
         self.taxon_level = taxon_level
         self.sample_sheet = sample_sheet
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         self.make_dstdir()
         self.add_taxon_level_prefix()
@@ -113,7 +120,8 @@ class LefSeOneTaxonLevel(Processor):
         LefSePlotRes().main(
             input_file=self.lefse_result,
             output_file=self.feature_png,
-            colormap=self.colormap)
+            colormap=self.colormap,
+            invert_colors=self.invert_colors)
 
     def plot_cladogram(self):
         self.cladogram_png = f'{self.dstdir}/lefse-{self.taxon_level}-cladogram.png'
@@ -121,7 +129,8 @@ class LefSeOneTaxonLevel(Processor):
         LefSePlotCladogram().main(
             input_file=self.lefse_result,
             output_file=self.cladogram_png,
-            colormap=self.colormap)
+            colormap=self.colormap,
+            invert_colors=self.invert_colors)
 
 
 class AddTaxonLevelPrefix(Processor):

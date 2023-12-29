@@ -36,6 +36,7 @@ class Qiime2Pipeline(Processor):
     heatmap_read_fraction: float
     n_taxa_barplot: int
     colormap: str
+    invert_colors: bool
 
     feature_table_qza: str
     feature_sequence_qza: str
@@ -64,7 +65,8 @@ class Qiime2Pipeline(Processor):
             max_expected_error_bases: float,
             heatmap_read_fraction: float,
             n_taxa_barplot: int,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
 
         self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
@@ -82,6 +84,7 @@ class Qiime2Pipeline(Processor):
         self.heatmap_read_fraction = heatmap_read_fraction
         self.n_taxa_barplot = n_taxa_barplot
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         self.raw_read_counts()
 
@@ -157,20 +160,23 @@ class Qiime2Pipeline(Processor):
             feature_table_qza=self.labeled_feature_table_qza,
             sample_sheet=self.sample_sheet,
             alpha_metrics=self.alpha_metrics,
-            colormap=self.colormap)
+            colormap=self.colormap,
+            invert_colors=self.invert_colors)
 
     def qiime_beta_diversity(self):
         self.distance_matrix_tsvs = QiimeBetaDiversity(self.settings).main(
             feature_table_qza=self.labeled_feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza,
             sample_sheet=self.sample_sheet,
-            colormap=self.colormap)
+            colormap=self.colormap,
+            invert_colors=self.invert_colors)
 
     def my_beta_diversity(self):
         MyBetaDiversity(self.settings).main(
             feature_table_tsv=self.labeled_feature_table_tsv,
             sample_sheet=self.sample_sheet,
-            colormap=self.colormap)
+            colormap=self.colormap,
+            invert_colors=self.invert_colors)
 
     def taxon_table(self):
         self.taxon_table_tsv_dict = TaxonTable(self.settings).main(
@@ -187,7 +193,8 @@ class Qiime2Pipeline(Processor):
         PlotVennDiagrams(self.settings).main(
             tsvs=tsvs,
             sample_sheet=self.sample_sheet,
-            colormap=self.colormap)
+            colormap=self.colormap,
+            invert_colors=self.invert_colors)
 
     def taxon_barplot(self):
         PlotTaxonBarplots(self.settings).main(
@@ -198,13 +205,15 @@ class Qiime2Pipeline(Processor):
         LefSe(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             sample_sheet=self.sample_sheet,
-            colormap=self.colormap)
+            colormap=self.colormap,
+            invert_colors=self.invert_colors)
 
     def differential_abundance(self):
         DifferentialAbundance(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             sample_sheet=self.sample_sheet,
-            colormap=self.colormap)
+            colormap=self.colormap,
+            invert_colors=self.invert_colors)
 
     def collect_log_files(self):
         makedirs(f'{self.outdir}/log', exist_ok=True)

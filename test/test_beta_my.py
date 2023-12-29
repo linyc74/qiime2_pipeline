@@ -16,6 +16,7 @@ class TestMyBetaDiversity(TestCase):
             feature_table_tsv=f'{self.indir}/feature-table.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colormap='Set1',
+            invert_colors=True,
         )
         for file in [
             f'{self.outdir}/feature-embedding/feature-table-pca-sample-coordinate.tsv',
@@ -44,6 +45,7 @@ class TestPCAProcess(TestCase):
             tsv=f'{self.indir}/feature-table.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colormap='Set1',
+            invert_colors=True,
         )
         for f in [
             f'{self.outdir}/feature-embedding/feature-table-pca-sample-coordinate.tsv',
@@ -67,6 +69,7 @@ class TestTSNEProcess(TestCase):
             tsv=f'{self.indir}/feature-table.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colormap='Set1',
+            invert_colors=True,
         )
         for f in [
             f'{self.outdir}/feature-embedding/feature-table-tsne-sample-coordinate.tsv',

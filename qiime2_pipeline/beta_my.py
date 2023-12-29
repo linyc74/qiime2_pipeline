@@ -11,22 +11,26 @@ class MyBetaDiversity(Processor):
     feature_table_tsv: str
     sample_sheet: str
     colormap: str
+    invert_colors: bool
 
     def main(
             self,
             feature_table_tsv: str,
             sample_sheet: str,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
 
         self.feature_table_tsv = feature_table_tsv
         self.sample_sheet = sample_sheet
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         for Process in [PCAProcess, TSNEProcess]:
             Process(self.settings).main(
                 tsv=self.feature_table_tsv,
                 sample_sheet=self.sample_sheet,
-                colormap=self.colormap)
+                colormap=self.colormap,
+                invert_colors=self.invert_colors)
 
 
 class EmbeddingProcess(EmbeddingProcessTemplate, ABC):
@@ -46,7 +50,7 @@ class EmbeddingProcess(EmbeddingProcessTemplate, ABC):
 class PCAProcess(EmbeddingProcess):
 
     NAME = 'PCA'
-    XY_COLUMNS = ('PC 1', 'PC 2')
+    XY_COLUMNS = ['PC 1', 'PC 2']
 
     proportion_explained_series: pd.Series
 
@@ -54,11 +58,13 @@ class PCAProcess(EmbeddingProcess):
             self,
             tsv: str,
             sample_sheet: str,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
 
         self.tsv = tsv
         self.sample_sheet = sample_sheet
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         self.run_main_workflow()
         self.write_proportion_explained()
@@ -86,17 +92,19 @@ class PCAProcess(EmbeddingProcess):
 class TSNEProcess(EmbeddingProcess):
 
     NAME = 't-SNE'
-    XY_COLUMNS = ('t-SNE 1', 't-SNE 2')
+    XY_COLUMNS = ['t-SNE 1', 't-SNE 2']
 
     def main(
             self,
             tsv: str,
             sample_sheet: str,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
 
         self.tsv = tsv
         self.sample_sheet = sample_sheet
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         self.run_main_workflow()
 

@@ -24,6 +24,7 @@ class Main:
     heatmap_read_fraction: float
     n_taxa_barplot: int
     colormap: str
+    invert_colors: bool
 
     settings: Settings
 
@@ -45,6 +46,7 @@ class Main:
             heatmap_read_fraction: float,
             n_taxa_barplot: int,
             colormap: str,
+            invert_colors: bool,
             outdir: str,
             threads: int,
             debug: bool):
@@ -65,6 +67,7 @@ class Main:
         self.heatmap_read_fraction = heatmap_read_fraction
         self.n_taxa_barplot = n_taxa_barplot
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         self.settings = Settings(
             workdir=get_temp_path(prefix='./qiime2_pipeline_workdir_'),
@@ -98,7 +101,8 @@ class Main:
             max_expected_error_bases=self.max_expected_error_bases,
             heatmap_read_fraction=self.heatmap_read_fraction,
             n_taxa_barplot=self.n_taxa_barplot,
-            colormap=self.colormap)
+            colormap=self.colormap,
+            invert_colors=self.invert_colors)
 
     def remove_workdir(self):
         if not self.settings.debug:

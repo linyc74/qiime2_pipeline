@@ -20,6 +20,7 @@ class TestDifferentialAbundance(TestCase):
             taxon_table_tsv_dict=taxon_table_tsv_dict,
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colormap='Set1',
+            invert_colors=True,
         )
 
 
@@ -37,6 +38,7 @@ class TestOneTaxonLevelDifferentialAbundance(TestCase):
             taxon_tsv=f'{self.indir}/genus-table.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colormap='Set1',
+            invert_colors=True,
         )
 
     def test_error_separator(self):
@@ -45,4 +47,5 @@ class TestOneTaxonLevelDifferentialAbundance(TestCase):
             taxon_tsv=f'{self.indir}/error-separator-table.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colormap='Set1',
+            invert_colors=True,
         )

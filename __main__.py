@@ -159,6 +159,13 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--invert-colors'],
+        'properties': {
+            'action': 'store_true',
+            'help': 'invert the order of colors',
+        }
+    },
+    {
         'keys': ['-t', '--threads'],
         'properties': {
             'type': int,
@@ -239,6 +246,7 @@ class EntryPoint:
             heatmap_read_fraction=args.heatmap_read_fraction,
             n_taxa_barplot=args.n_taxa_barplot,
             colormap=args.colormap,
+            invert_colors=args.invert_colors,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)

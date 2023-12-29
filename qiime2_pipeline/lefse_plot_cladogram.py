@@ -2,6 +2,7 @@
 This script is a modified version of the lefse_plot_cladogram.py script from the LEfSe package (https://github.com/SegataLab/lefse/tree/master/lefse).
 """
 import string
+import pandas as pd
 from pylab import *
 from lefse.lefse import *
 from typing import Dict, Any
@@ -43,20 +44,25 @@ class LefSePlotCladogram:
     input_file: str
     output_file: str
     colormap: str
+    invert_colors: bool
 
     params: Dict[str, Any]
+    n_classes: int
 
     def main(
             self,
             input_file: str,
             output_file: str,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
 
         self.input_file = input_file
         self.output_file = output_file
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         self.set_params()
+        self.set_n_classes()
         self.set_global_plotting_scheme()
         self.extract_data_and_plot()
 
@@ -65,13 +71,18 @@ class LefSePlotCladogram:
         self.params['input_file'] = self.input_file
         self.params['output_file'] = self.output_file
 
+    def set_n_classes(self):
+        df = pd.read_csv(self.input_file, sep='\t', header=None)
+        self.n_classes = len(df[2].dropna().unique())
+
     def set_global_plotting_scheme(self):
         matplotlib.use('Agg')
 
         global COLORS
-        cmap = cm.get_cmap(self.colormap)
-        n_colors = 10  # should be more than enough for the number of groups
-        COLORS = [cmap(i) for i in range(n_colors)]
+        cmap = plt.colormaps[self.colormap]
+        COLORS = [cmap(i) for i in range(self.n_classes)]
+        if self.invert_colors:
+            COLORS = COLORS[::-1]
 
     def extract_data_and_plot(self):
         self.params['fore_color'] = 'w' if self.params['back_color'] == 'k' else 'k'

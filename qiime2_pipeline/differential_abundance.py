@@ -28,23 +28,27 @@ class DifferentialAbundance(Processor):
     taxon_table_tsv_dict: Dict[str, str]
     sample_sheet: str
     colormap: str
+    invert_colors: bool
 
     def main(
             self,
             taxon_table_tsv_dict: Dict[str, str],
             sample_sheet: str,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
 
         self.taxon_table_tsv_dict = taxon_table_tsv_dict
         self.sample_sheet = sample_sheet
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         for taxon_level, taxon_tsv in self.taxon_table_tsv_dict.items():
             OneTaxonLevelDifferentialAbundance(self.settings).main(
                 taxon_level=taxon_level,
                 taxon_tsv=taxon_tsv,
                 sample_sheet=self.sample_sheet,
-                colormap=self.colormap)
+                colormap=self.colormap,
+                invert_colors=self.invert_colors)
 
         self.zip_dstdir()
 
@@ -59,6 +63,7 @@ class OneTaxonLevelDifferentialAbundance(Processor):
     taxon_tsv: str
     sample_sheet: str
     colormap: str
+    invert_colors: bool
 
     taxon_df: pd.DataFrame
 
@@ -67,12 +72,14 @@ class OneTaxonLevelDifferentialAbundance(Processor):
             taxon_level: str,
             taxon_tsv: str,
             sample_sheet: str,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
 
         self.taxon_level = taxon_level
         self.taxon_tsv = taxon_tsv
         self.sample_sheet = sample_sheet
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         self.read_taxon_tsv()
         self.prepare_taxon_df()
@@ -104,6 +111,7 @@ class OneTaxonLevelDifferentialAbundance(Processor):
                 statistic, pvalue = MannwhitneyuTestAndBoxplot(self.settings).main(
                     df=self.taxon_df,
                     colormap=self.colormap,
+                    invert_colors=self.invert_colors,
                     group_1=group_1,
                     group_2=group_2,
                     taxon=taxon,
@@ -218,6 +226,7 @@ class MannwhitneyuTestAndBoxplot(Processor):
 
     df: pd.DataFrame
     colormap: str
+    invert_colors: bool
     group_1: str
     group_2: str
     taxon: str
@@ -230,6 +239,7 @@ class MannwhitneyuTestAndBoxplot(Processor):
             self,
             df: pd.DataFrame,
             colormap: str,
+            invert_colors: bool,
             group_1: str,
             group_2: str,
             taxon: str,
@@ -237,6 +247,7 @@ class MannwhitneyuTestAndBoxplot(Processor):
 
         self.df = df
         self.colormap = colormap
+        self.invert_colors = invert_colors
         self.group_1 = group_1
         self.group_2 = group_2
         self.taxon = taxon
@@ -265,6 +276,7 @@ class MannwhitneyuTestAndBoxplot(Processor):
             x=GROUP_COLUMN,
             y=self.taxon,
             colormap=self.colormap,
+            invert_colors=self.invert_colors,
             title=f'p = {self.pvalue:.4f}',
             dstdir=self.dstdir)
 
@@ -275,9 +287,11 @@ class Boxplot(Processor):
     x: str
     y: str
     colormap: str
+    invert_colors: bool
     title: str
     dstdir: str
 
+    colors: list
     ax: matplotlib.axes.Axes
 
     def main(
@@ -286,6 +300,7 @@ class Boxplot(Processor):
             x: str,
             y: str,
             colormap: str,
+            invert_colors: bool,
             title: str,
             dstdir: str):
 
@@ -293,13 +308,22 @@ class Boxplot(Processor):
         self.x = x
         self.y = y
         self.colormap = colormap
+        self.invert_colors = invert_colors
         self.title = title
         self.dstdir = dstdir
 
+        self.set_colors()
         self.init()
         self.plot()
         self.config()
         self.save()
+
+    def set_colors(self):
+        n_groups = len(self.data[self.x].unique())
+        cmap = plt.colormaps[self.colormap]
+        self.colors = [cmap(i) for i in range(n_groups)]
+        if self.invert_colors:
+            self.colors = self.colors[::-1]
 
     def init(self):
         plt.figure(figsize=FIGSIZE)
@@ -311,7 +335,7 @@ class Boxplot(Processor):
             x=self.x,
             y=self.y,
             hue=self.x,
-            palette=self.colormap,
+            palette=self.colors,
             width=BOX_WIDTH,
             dodge=False,  # to align the boxes on the x axis
         )
@@ -320,7 +344,7 @@ class Boxplot(Processor):
             x=self.x,
             y=self.y,
             hue=self.x,
-            palette=self.colormap,
+            palette=self.colors,
             linewidth=MARKER_LINEWIDTH,
         )
 

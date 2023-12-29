@@ -24,7 +24,8 @@ class TestLefSe(TestCase):
         LefSe(self.settings).main(
             taxon_table_tsv_dict=taxon_table_tsv_dict,
             sample_sheet=f'{indir}/sample-sheet.csv',
-            colormap='Set1'
+            colormap='Set1',
+            invert_colors=True,
         )
 
 
@@ -41,7 +42,8 @@ class TestLefSeOneTaxonLevel(TestCase):
             taxon_table_tsv=f'{self.indir}/real-taxon-table/genus-table.tsv',
             taxon_level='genus',
             sample_sheet=f'{self.indir}/real-taxon-table/sample-sheet.csv',
-            colormap='Set1'
+            colormap='Set1',
+            invert_colors=True,
         )
         for file in [
             f'{self.outdir}/lefse/lefse-genus-result.txt',

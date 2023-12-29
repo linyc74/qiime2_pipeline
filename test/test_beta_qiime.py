@@ -18,6 +18,7 @@ class TestQiimeBetaDiversity(TestCase):
             rooted_tree_qza=f'{self.indir}/mafft-aligned-sequences-masked.qza',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colormap='Set1',
+            invert_colors=True,
         )
 
 
@@ -61,6 +62,7 @@ class TestPCoAProcess(TestCase):
             tsv=f'{self.indir}/distance-matrix.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colormap='Set1',
+            invert_colors=True,
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.tsv',
@@ -84,6 +86,7 @@ class TestTSNEProcess(TestCase):
             tsv=f'{self.indir}/distance-matrix.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colormap='Set1',
+            invert_colors=True,
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.tsv',
@@ -109,6 +112,7 @@ class TestBatchPCoAProcess(TestCase):
             distance_matrix_tsvs=[f'{self.indir}/distance-matrix.tsv'],
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colormap='Set1',
+            invert_colors=True,
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-pcoa-sample-coordinate.tsv',
@@ -132,6 +136,7 @@ class TestBatchTSNEProcess(TestCase):
             distance_matrix_tsvs=[f'{self.indir}/distance-matrix.tsv'],
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colormap='Set1',
+            invert_colors=True,
         )
         for f in [
             f'{self.outdir}/beta-embedding/distance-matrix-tsne-sample-coordinate.tsv',

@@ -16,6 +16,7 @@ class QiimeBetaDiversity(Processor):
     rooted_tree_qza: str
     sample_sheet: str
     colormap: str
+    invert_colors: bool
 
     distance_matrix_tsvs: List[str]
 
@@ -24,12 +25,14 @@ class QiimeBetaDiversity(Processor):
             feature_table_qza: str,
             rooted_tree_qza: str,
             sample_sheet: str,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
 
         self.feature_table_qza = feature_table_qza
         self.rooted_tree_qza = rooted_tree_qza
         self.sample_sheet = sample_sheet
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         self.run_all_beta_metrics_to_distance_matrix_tsvs()
         self.run_batch_embedding_processes()
@@ -44,7 +47,8 @@ class QiimeBetaDiversity(Processor):
             Batch(self.settings).main(
                 distance_matrix_tsvs=self.distance_matrix_tsvs,
                 sample_sheet=self.sample_sheet,
-                colormap=self.colormap)
+                colormap=self.colormap,
+                invert_colors=self.invert_colors)
 
 
 #
@@ -212,7 +216,7 @@ class EmbeddingProcess(EmbeddingProcessTemplate, ABC):
 class PCoAProcess(EmbeddingProcess):
 
     NAME = 'PCoA'
-    XY_COLUMNS = ('PC1', 'PC2')
+    XY_COLUMNS = ['PC1', 'PC2']
 
     proportion_explained_serise: pd.Series
 
@@ -220,11 +224,13 @@ class PCoAProcess(EmbeddingProcess):
             self,
             tsv: str,
             sample_sheet: str,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
 
         self.tsv = tsv
         self.sample_sheet = sample_sheet
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         self.run_main_workflow()
         self.write_proportion_explained()
@@ -253,17 +259,19 @@ class PCoAProcess(EmbeddingProcess):
 class TSNEProcess(EmbeddingProcess):
 
     NAME = 't-SNE'
-    XY_COLUMNS = ('t-SNE 1', 't-SNE 2')
+    XY_COLUMNS = ['t-SNE 1', 't-SNE 2']
 
     def main(
             self,
             tsv: str,
             sample_sheet: str,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
 
         self.tsv = tsv
         self.sample_sheet = sample_sheet
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         self.run_main_workflow()
 
@@ -282,6 +290,7 @@ class BatchEmbeddingProcess(Processor):
     distance_matrix_tsvs: List[str]
     sample_sheet: str
     colormap: str
+    invert_colors: bool
 
     embedding: EmbeddingProcessTemplate
 
@@ -289,18 +298,21 @@ class BatchEmbeddingProcess(Processor):
             self,
             distance_matrix_tsvs: List[str],
             sample_sheet: str,
-            colormap: str):
+            colormap: str,
+            invert_colors: bool):
 
         self.distance_matrix_tsvs = distance_matrix_tsvs
         self.sample_sheet = sample_sheet
         self.colormap = colormap
+        self.invert_colors = invert_colors
 
         for tsv in self.distance_matrix_tsvs:
             self.logger.debug(f'{self.embedding.NAME} for {tsv}')
             self.embedding.main(
                 tsv=tsv,
                 sample_sheet=self.sample_sheet,
-                colormap=self.colormap)
+                colormap=self.colormap,
+                invert_colors=self.invert_colors)
 
 
 class BatchPCoAProcess(BatchEmbeddingProcess):
