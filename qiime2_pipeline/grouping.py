@@ -31,7 +31,7 @@ class AddGroupColumn(Processor):
 
     def read_sample_sheet(self):
         self.sample_df = pd.read_csv(self.sample_sheet, index_col=0)
-        assert 'Group' in self.sample_df.columns, \
+        assert GROUP_COLUMN in self.sample_df.columns, \
             f'No "{GROUP_COLUMN}" column in {self.sample_sheet}'
 
     def add_group_column(self):

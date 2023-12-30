@@ -4,7 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import List
 from .template import Processor
-from .grouping import AddGroupColumn
+from .grouping import AddGroupColumn, GROUP_COLUMN
 
 
 class AlphaDiversity(Processor):
@@ -140,7 +140,6 @@ class ReadAlphaDiversityQza(Processor):
 
 class PlotAlphaDiversity(Processor):
 
-    GROUP = 'Group'
     FIGSIZE = (10 / 2.54, 10 / 2.54)
     BOX_WIDTH = 0.5
     DPI = 600
@@ -167,7 +166,7 @@ class PlotAlphaDiversity(Processor):
 
     def set_alpha_metrics(self):
         self.alpha_metrics = [
-            c for c in self.df.columns if c != self.GROUP
+            c for c in self.df.columns if c != GROUP_COLUMN
         ]
 
     def plot_one(self, metric: str):
@@ -175,7 +174,7 @@ class PlotAlphaDiversity(Processor):
         plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
         sns.boxplot(
             data=self.df,
-            x=self.GROUP,
+            x=GROUP_COLUMN,
             y=metric,
             palette=self.colors,
             width=self.BOX_WIDTH

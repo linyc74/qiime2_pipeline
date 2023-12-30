@@ -1,8 +1,9 @@
 import os
 import pandas as pd
-from typing import Dict
+from typing import Dict, Hashable
 from .tools import edit_fpath
 from .template import Processor
+from .grouping import GROUP_COLUMN
 from .lefse_plot_res import LefSePlotRes
 from .lefse_plot_cladogram import LefSePlotCladogram
 
@@ -172,7 +173,6 @@ class AddTaxonLevelPrefix(Processor):
 
 class InsertGroupRow(Processor):
 
-    GROUP_COLUMN = 'Group'
     GROUP_INDEX = 'Group'
     NA_VALUE: str = 'None'
 
@@ -180,7 +180,7 @@ class InsertGroupRow(Processor):
     sample_sheet: str
 
     df: pd.DataFrame
-    sample_to_group: Dict[str, str]
+    sample_to_group: Dict[Hashable, str]
     output_tsv: str
 
     def main(
@@ -206,7 +206,7 @@ class InsertGroupRow(Processor):
         sample_df = pd.read_csv(self.sample_sheet, index_col=0)
         self.sample_to_group = {}
         for sample, row in sample_df.iterrows():
-            group = row[self.GROUP_COLUMN]
+            group = row[GROUP_COLUMN]
             if pd.isna(group):
                 self.sample_to_group[sample] = self.NA_VALUE
             else:

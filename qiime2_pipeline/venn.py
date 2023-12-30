@@ -1,14 +1,11 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib import colormaps
 from typing import List, Dict, Set
 from matplotlib_venn import venn2, venn3
 from .tools import edit_fpath
 from .template import Processor
-
-
-GROUP_COLUMN = 'Group'
+from .grouping import GROUP_COLUMN
 
 
 class PlotVennDiagrams(Processor):
