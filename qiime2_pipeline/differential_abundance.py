@@ -12,7 +12,7 @@ from .normalization import CountNormalization
 
 
 DSTDIR_NAME = 'differential-abundance'
-FIGSIZE = (5 / 2.54, 6 / 2.54)
+FIGSIZE = (6 / 2.54, 7 / 2.54)
 DPI = 600
 FONT_SIZE = 7
 BOX_WIDTH = 0.5
