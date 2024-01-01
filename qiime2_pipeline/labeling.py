@@ -112,10 +112,25 @@ class GetFeatureIDToLabelDict(Processor):
         for i, row in self.df.iterrows():
             id_ = row['Feature ID']
             taxon = row['Taxon']
+            taxon = add_genus_prefix_to_unidentified_species(taxon)
             label = f'{self.label_prefix}{i + 1:04d}; {taxon}'
             self.output_dict[id_] = label
 
         return self.output_dict
+
+
+def add_genus_prefix_to_unidentified_species(taxon: str) -> str:
+    if '; s__' not in taxon:
+        return taxon  # species name is not available
+
+    species = taxon.split('; s__')[-1]
+    genus = taxon.split('; g__')[-1].split('; s__')[0]
+
+    if genus.lower() in species.lower():
+        return taxon
+
+    prefix = taxon.split('; s__')[0]
+    return f'{prefix}; s__{genus}_{species}'
 
 
 class LabelFeatureSequence(Processor):
@@ -224,5 +239,5 @@ class WriteTaxonomyCondifenceTable(Processor):
         self.df = self.df[['Feature Label', 'Confidence']]
 
     def save_output_tsv(self):
-        output_tsv = f'{self.outdir}/taxonomy-condifence.tsv'
+        output_tsv = f'{self.outdir}/taxonomy-confidence.tsv'
         self.df.to_csv(output_tsv, sep='\t', index=False)

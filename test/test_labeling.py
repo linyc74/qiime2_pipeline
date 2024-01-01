@@ -1,5 +1,5 @@
 from .setup import TestCase
-from qiime2_pipeline.labeling import FeatureLabeling
+from qiime2_pipeline.labeling import FeatureLabeling, add_genus_prefix_to_unidentified_species
 
 
 class TestFeatureLabeling(TestCase):
@@ -23,3 +23,23 @@ class TestFeatureLabeling(TestCase):
             (f'{self.workdir}/labeled-feature-sequence.qza', sequence_qza),
         ]:
             self.assertFileExists(expected, actual)
+
+
+class TestAddGenusPrefixToUnidentifiedSpecies(TestCase):
+
+    def test_no_species_name(self):
+        taxon = 'd__Bacteria'
+        actual = add_genus_prefix_to_unidentified_species(taxon=taxon)
+        self.assertEqual(taxon, actual)
+
+    def test_proper_species_name(self):
+        # species name contains genus name
+        taxon = 'd__Bacteria; p__Fusobacteriota; c__Fusobacteriia; o__Fusobacteriales; f__Fusobacteriaceae; g__Fusobacterium; s__Fusobacterium_nucleatum'
+        actual = add_genus_prefix_to_unidentified_species(taxon=taxon)
+        self.assertEqual(taxon, actual)
+
+    def test_species_name_without_genus(self):
+        taxon = 'd__Bacteria; p__Fusobacteriota; c__Fusobacteriia; o__Fusobacteriales; f__Fusobacteriaceae; g__Fusobacterium; s__uncultured_bacterium'
+        actual = add_genus_prefix_to_unidentified_species(taxon=taxon)
+        expected = 'd__Bacteria; p__Fusobacteriota; c__Fusobacteriia; o__Fusobacteriales; f__Fusobacteriaceae; g__Fusobacterium; s__Fusobacterium_uncultured_bacterium'
+        self.assertEqual(expected, actual)
