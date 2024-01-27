@@ -159,8 +159,8 @@ class Clustermap(Processor):
     COLORMAP = 'PuBu'
     Y_LABEL_CHAR_WIDTH = 0.08
     X_LABEL_CHAR_WIDTH = 0.08
-    CELL_WIDTH = 0.3
-    CELL_HEIGHT = 0.3
+    CELL_WIDTH = 0.25
+    CELL_HEIGHT = 0.25
     DENDROGRAM_RATIO = (0.1, 0.1)
     COLORBAR_WIDTH = 0.01
     COLORBAR_HORIZONTAL_POSITION = 1.
@@ -175,14 +175,19 @@ class Clustermap(Processor):
     grid: sns.matrix.ClusterGrid
 
     def main(self, data: pd.DataFrame, output_prefix: str):
-        self.data = data
+        self.data = data.copy()
         self.output_prefix = output_prefix
 
+        self.shorten_taxon_names_for_publication()
         self.set_figsize()
         self.clustermap()
         self.config_clustermap()
         self.save_fig()
         self.save_csv()
+
+    def shorten_taxon_names_for_publication(self):
+        if self.settings.for_publication:
+            self.data.index = self.data.index.str.split('|').str[-1]
 
     def set_figsize(self):
         self.__set_x_y_label_padding()
