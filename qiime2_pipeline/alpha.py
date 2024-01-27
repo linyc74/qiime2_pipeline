@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from typing import List
+from typing import List, Tuple
 from .template import Processor
 from .grouping import AddGroupColumn, GROUP_COLUMN
 
@@ -71,7 +71,7 @@ class AlphaDiversity(Processor):
         self.df.to_csv(f'{dstdir}/alpha-diversity.csv', index=True)
 
     def plot(self):
-        PlotAlphaDiversity(self.settings).main(
+        Plot(self.settings).main(
             df=self.df,
             dstdir=f'{self.outdir}/{self.ALPHA_DIVERSITY_DIRNAME}',
             colors=self.colors)
@@ -138,15 +138,17 @@ class ReadAlphaDiversityQza(Processor):
         self.call(cmd)
 
 
-class PlotAlphaDiversity(Processor):
-
-    FIGSIZE = (10 / 2.54, 10 / 2.54)
-    BOX_WIDTH = 0.5
-    DPI = 600
+class Plot(Processor):
 
     df: pd.DataFrame
     dstdir: str
     colors: list
+
+    figsize: Tuple[float, float]
+    box_width: float
+    dpi: int
+    line_width: float
+    fontsize: int
 
     alpha_metrics: List[str]
 
@@ -160,9 +162,24 @@ class PlotAlphaDiversity(Processor):
         self.dstdir = dstdir
         self.colors = colors
 
+        self.set_parameters()
         self.set_alpha_metrics()
         for metric in self.alpha_metrics:
             self.plot_one(metric=metric)
+
+    def set_parameters(self):
+        if self.settings.for_publication:
+            self.figsize = (4 / 2.54, 4 / 2.54)
+            self.box_width = 0.35
+            self.dpi = 600
+            self.line_width = 0.5
+            self.fontsize = 7
+        else:
+            self.figsize = (10 / 2.54, 10 / 2.54)
+            self.box_width = 0.5
+            self.dpi = 300
+            self.line_width = 1.0
+            self.fontsize = 12
 
     def set_alpha_metrics(self):
         self.alpha_metrics = [
@@ -171,14 +188,25 @@ class PlotAlphaDiversity(Processor):
 
     def plot_one(self, metric: str):
 
-        plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
+        plt.rcParams['font.size'] = self.fontsize
+        plt.rcParams['axes.linewidth'] = self.line_width
+
+        plt.figure(figsize=self.figsize, dpi=self.dpi)
+
         sns.boxplot(
             data=self.df,
             x=GROUP_COLUMN,
             y=metric,
             palette=self.colors,
-            width=self.BOX_WIDTH
+            width=self.box_width,
+            linewidth=self.line_width
         )
+
+        plt.ylabel(metric.replace('_', ' ').title())  # e.g. 'observed_features' -> 'Observed Features'
+
+        plt.tight_layout()
+
         for ext in ['pdf', 'png']:
-            plt.savefig(f'{self.dstdir}/{metric}.{ext}', dpi=self.DPI)
+            plt.savefig(f'{self.dstdir}/{metric}.{ext}', dpi=self.dpi)
+
         plt.close()
