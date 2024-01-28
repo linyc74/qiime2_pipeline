@@ -43,7 +43,7 @@ class TestPCAProcess(TestCase):
         PCAProcess(self.settings).main(
             tsv=f'{self.indir}/feature-table.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
-            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0)],
+            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0), (0.1, 0.9, 0.3, 1.0)],
         )
         for f in [
             f'{self.outdir}/feature-embedding/feature-table-pca-sample-coordinate.tsv',

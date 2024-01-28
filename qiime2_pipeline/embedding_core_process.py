@@ -220,15 +220,19 @@ class EmbeddingProcessTemplate(Processor, ABC):
 
 class ScatterPlot(Processor):
 
-    FIGSIZE = (8, 8)
-    DPI = 600
-
     sample_coordinate_df: pd.DataFrame
     x_column: str
     y_column: str
     group_column: str
     colors: list
     output_prefix: str
+
+    figsize: Tuple[float, float]
+    point_size: float
+    marker_edge_color: str
+    line_width: float
+    fontsize: int
+    dpi: int
 
     ax: Axes
 
@@ -248,32 +252,63 @@ class ScatterPlot(Processor):
         self.colors = colors
         self.output_prefix = output_prefix
 
+        self.set_parameters()
         self.init_figure()
         self.scatterplot()
         self.label_points()
         self.save_figure()
 
+    def set_parameters(self):
+        if self.settings.for_publication:
+            self.figsize = (9 / 2.54, 6 / 2.54)
+            self.point_size = 20.
+            self.marker_edge_color = 'white'
+            self.line_width = 0.5
+            self.fontsize = 7
+            self.dpi = 600
+        else:
+            self.figsize = (16.5 / 2.54, 12 / 2.54)
+            self.point_size = 30.
+            self.marker_edge_color = 'white'
+            self.line_width = 1.0
+            self.fontsize = 10
+            self.dpi = 300
+
     def init_figure(self):
-        plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
+        plt.rcParams['font.size'] = self.fontsize
+        plt.rcParams['axes.linewidth'] = self.line_width
+        plt.figure(figsize=self.figsize, dpi=self.dpi)
 
     def scatterplot(self):
         self.ax = sns.scatterplot(
             data=self.sample_coordinate_df,
             x=self.x_column,
             y=self.y_column,
+            s=self.point_size,
+            edgecolor='white',
             hue=self.group_column,
-            palette=self.colors)
+            palette=self.colors
+        )
+        plt.gca().xaxis.set_tick_params(width=self.line_width)
+        plt.gca().yaxis.set_tick_params(width=self.line_width)
+        legend = plt.legend(bbox_to_anchor=(1, 1))
+        legend.set_frame_on(False)
 
     def label_points(self):
+        if self.settings.for_publication:
+            return
         df = self.sample_coordinate_df
         for sample_name in df.index:
             self.ax.text(
                 x=df.loc[sample_name, self.x_column],
                 y=df.loc[sample_name, self.y_column],
-                s=sample_name
+                s=sample_name,
+                alpha=0.25,
+                fontsize=6
             )
 
     def save_figure(self):
+        plt.tight_layout()
         for ext in ['pdf', 'png']:
-            plt.savefig(f'{self.output_prefix}.{ext}', dpi=self.DPI)
+            plt.savefig(f'{self.output_prefix}.{ext}', dpi=self.dpi)
         plt.close()
