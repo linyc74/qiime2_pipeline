@@ -7,6 +7,7 @@ from typing import Tuple, List
 from .tools import edit_fpath
 from .template import Processor
 from .normalization import CountNormalization
+from .grouping import TagGroupNameOnSampleColumns
 
 
 class PlotHeatmaps(Processor):
@@ -15,16 +16,19 @@ class PlotHeatmaps(Processor):
 
     tsvs: List[str]
     heatmap_read_fraction: float
+    sample_sheet: str
 
     dstdir: str
 
     def main(
             self,
             tsvs: List[str],
-            heatmap_read_fraction: float):
+            heatmap_read_fraction: float,
+            sample_sheet: str):
 
         self.tsvs = tsvs
         self.heatmap_read_fraction = heatmap_read_fraction
+        self.sample_sheet = sample_sheet
 
         self.make_dstdir()
         for tsv in self.tsvs:
@@ -38,6 +42,7 @@ class PlotHeatmaps(Processor):
         PlotOneHeatmap(self.settings).main(
             tsv=tsv,
             heatmap_read_fraction=self.heatmap_read_fraction,
+            sample_sheet=self.sample_sheet,
             dstdir=self.dstdir)
 
 
@@ -48,6 +53,7 @@ class PlotOneHeatmap(Processor):
 
     tsv: str
     heatmap_read_fraction: float
+    sample_sheet: str
     dstdir: str
 
     df: pd.DataFrame
@@ -56,10 +62,12 @@ class PlotOneHeatmap(Processor):
             self,
             tsv: str,
             heatmap_read_fraction: float,
+            sample_sheet: str,
             dstdir: str):
 
         self.tsv = tsv
         self.heatmap_read_fraction = heatmap_read_fraction
+        self.sample_sheet = sample_sheet
         self.dstdir = dstdir
 
         self.read_tsv()
@@ -90,6 +98,7 @@ class PlotOneHeatmap(Processor):
 
         Clustermap(self.settings).main(
             data=self.df,
+            sample_sheet=self.sample_sheet,
             output_prefix=output_prefix)
 
 
@@ -167,6 +176,7 @@ class Clustermap(Processor):
     DPI = 600
 
     data: pd.DataFrame
+    sample_sheet: str
     output_prefix: str
 
     x_label_padding: float
@@ -174,16 +184,28 @@ class Clustermap(Processor):
     figsize: Tuple[float, float]
     grid: sns.matrix.ClusterGrid
 
-    def main(self, data: pd.DataFrame, output_prefix: str):
+    def main(
+            self,
+            data: pd.DataFrame,
+            sample_sheet: str,
+            output_prefix: str):
+
         self.data = data.copy()
+        self.sample_sheet = sample_sheet
         self.output_prefix = output_prefix
 
+        self.tag_group_name_on_sample_columns()
         self.shorten_taxon_names_for_publication()
         self.set_figsize()
         self.clustermap()
         self.config_clustermap()
         self.save_fig()
         self.save_csv()
+
+    def tag_group_name_on_sample_columns(self):
+        self.data = TagGroupNameOnSampleColumns(self.settings).main(
+            df=self.data,
+            sample_sheet=self.sample_sheet)
 
     def shorten_taxon_names_for_publication(self):
         if self.settings.for_publication:

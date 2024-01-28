@@ -22,7 +22,8 @@ class TestPlotHeatmaps(TestCase):
         ]
         PlotHeatmaps(self.settings).main(
             tsvs=tsvs,
-            heatmap_read_fraction=0.9
+            heatmap_read_fraction=0.9,
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
 
 
@@ -47,6 +48,7 @@ class TestClustermap(TestCase):
 
     def setUp(self):
         self.set_up(py_path=__file__)
+        self.settings.for_publication = True
 
     def tearDown(self):
         self.tear_down()
@@ -54,5 +56,6 @@ class TestClustermap(TestCase):
     def test_main(self):
         Clustermap(self.settings).main(
             data=pd.read_csv(f'{self.indir}/clustermap.tsv', sep='\t', index_col=0),
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
             output_prefix=f'{self.outdir}/clustermap'
         )
