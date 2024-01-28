@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from typing import Tuple, Dict
 from .template import Processor
 from .normalization import CountNormalization
+from .grouping import TagGroupNameOnSampleColumns
 
 
 class PlotTaxonBarplots(Processor):
@@ -14,16 +15,19 @@ class PlotTaxonBarplots(Processor):
 
     taxon_table_tsv_dict: Dict[str, str]
     n_taxa: int
+    sample_sheet: str
 
     dstdir: str
 
     def main(
             self,
             taxon_table_tsv_dict: Dict[str, str],
-            n_taxa: int):
+            n_taxa: int,
+            sample_sheet: str):
 
         self.taxon_table_tsv_dict = taxon_table_tsv_dict
         self.n_taxa = n_taxa
+        self.sample_sheet = sample_sheet
 
         self.make_dstdir()
         for level, tsv in self.taxon_table_tsv_dict.items():
@@ -42,7 +46,8 @@ class PlotTaxonBarplots(Processor):
             taxon_level=level,
             taxon_table_tsv=tsv,
             n_taxa=self.n_taxa,
-            dstdir=self.dstdir)
+            dstdir=self.dstdir,
+            sample_sheet=self.sample_sheet)
 
 
 class PlotOneTaxonBarplot(Processor):
@@ -51,6 +56,7 @@ class PlotOneTaxonBarplot(Processor):
     taxon_table_tsv: str
     n_taxa: int
     dstdir: str
+    sample_sheet: str
 
     df: pd.DataFrame
 
@@ -59,12 +65,14 @@ class PlotOneTaxonBarplot(Processor):
             taxon_level: str,
             taxon_table_tsv: str,
             n_taxa: int,
-            dstdir: str):
+            dstdir: str,
+            sample_sheet: str):
 
         self.taxon_level = taxon_level
         self.taxon_table_tsv = taxon_table_tsv
         self.n_taxa = n_taxa
         self.dstdir = dstdir
+        self.sample_sheet = sample_sheet
 
         self.read_tsv()
         self.pool_minor_taxa()
@@ -94,7 +102,8 @@ class PlotOneTaxonBarplot(Processor):
         PercentageBarplot(self.settings).main(
             data=self.df,
             title=self.taxon_level,
-            output_prefix=f'{self.dstdir}/{self.taxon_level}-barplot'
+            output_prefix=f'{self.dstdir}/{self.taxon_level}-barplot',
+            sample_sheet=self.sample_sheet
         )
 
 
@@ -176,6 +185,7 @@ class PercentageBarplot(Processor):
     data: pd.DataFrame
     title: str
     output_prefix: str
+    sample_sheet: str
 
     figsize: Tuple[float, float]
     figure: plt.Figure
@@ -184,17 +194,25 @@ class PercentageBarplot(Processor):
             self,
             data: pd.DataFrame,
             title: str,
-            output_prefix: str):
+            output_prefix: str,
+            sample_sheet: str):
 
         self.data = data.copy()
         self.title = title
         self.output_prefix = output_prefix
+        self.sample_sheet = sample_sheet
 
+        self.tag_group_name_on_sample_columns()
         self.shorten_taxon_names_for_publication()
         self.set_figsize()
         self.init_figure()
         self.plot()
         self.config_and_save()
+
+    def tag_group_name_on_sample_columns(self):
+        self.data = TagGroupNameOnSampleColumns(self.settings).main(
+            df=self.data,
+            sample_sheet=self.sample_sheet)
 
     def shorten_taxon_names_for_publication(self):
         if self.settings.for_publication:

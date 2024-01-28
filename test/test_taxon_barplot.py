@@ -7,7 +7,6 @@ class TestPlotTaxonBarplots(TestCase):
 
     def setUp(self):
         self.set_up(py_path=__file__)
-        self.settings.for_publication = True
 
     def tearDown(self):
         self.tear_down()
@@ -24,7 +23,8 @@ class TestPlotTaxonBarplots(TestCase):
 
         PlotTaxonBarplots(self.settings).main(
             taxon_table_tsv_dict=taxon_table_tsv_dict,
-            n_taxa=20
+            n_taxa=20,
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
 
         for level in [
