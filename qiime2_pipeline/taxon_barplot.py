@@ -144,10 +144,16 @@ class PercentageBarplot(Processor):
 
     Y_LABEL = 'Percentage'
     X_LABEL = 'Sample'
-    X_LABEL_CHAR_WIDTH = 0.08
-    LEGEND_CHAR_WIDTH = 0.08
-    BAR_WIDTH = 0.3
-    FEATURE_HEIGHT = 0.3
+    X_LABEL_CHAR_WIDTH = 0.08 / 2.54
+    LEGEND_CHAR_WIDTH = 0.08 / 2.54
+    BAR_WIDTH = 0.5 / 2.54
+    FEATURE_HEIGHT = 0.4 / 2.54
+    FONTSIZE = 6
+    TITLE_FONTSIZE = 9
+    X_LABEL_FONTSIZE = 9
+    Y_LABEL_FONTSIZE = 9
+    LINE_WIDTH = 0.5
+    DPI = 600
     COLORS = [
         'lavenderblush',
         'midnightblue',
@@ -166,7 +172,6 @@ class PercentageBarplot(Processor):
         'orangered',
         'darkgreen',
     ]
-    DPI = 600
 
     data: pd.DataFrame
     title: str
@@ -181,14 +186,19 @@ class PercentageBarplot(Processor):
             title: str,
             output_prefix: str):
 
-        self.data = data
+        self.data = data.copy()
         self.title = title
         self.output_prefix = output_prefix
 
+        self.shorten_taxon_names_for_publication()
         self.set_figsize()
         self.init_figure()
         self.plot()
         self.config_and_save()
+
+    def shorten_taxon_names_for_publication(self):
+        if self.settings.for_publication:
+            self.data.index = self.data.index.str.split('|').str[-1]
 
     def set_figsize(self):
         self.__set_paddings()
@@ -204,37 +214,50 @@ class PercentageBarplot(Processor):
         self.horizontal_padding = max_legend_length * self.LEGEND_CHAR_WIDTH
 
     def init_figure(self):
+        plt.rcParams['font.size'] = self.FONTSIZE
+        plt.rcParams['axes.linewidth'] = self.LINE_WIDTH
         self.figure = plt.figure(figsize=self.figsize, dpi=self.DPI)
 
     def plot(self):
         random.seed(1)  # reproducible color
         bottom = np.zeros(shape=len(self.data.columns))
-        for i, feature in enumerate(self.data.index):
-            color = self.COLORS[i] \
-                if i < len(self.COLORS) \
+        for row in range(len(self.data.index)):
+            color = self.COLORS[row] \
+                if row < len(self.COLORS) \
                 else get_random_color()
             plt.bar(
                 x=self.data.columns,
-                height=self.data.loc[feature],
+                height=self.data.iloc[row, :],
                 bottom=bottom,
                 color=color,
-                width=0.85,
-                edgecolor='black'
+                width=0.8,
+                edgecolor='black',
+                linewidth=0.25
             )
-            bottom += self.data.loc[feature]
+            bottom += self.data.iloc[row, :]
 
     def config_and_save(self):
+        plt.title(self.title, fontsize=self.TITLE_FONTSIZE)
+
+        plt.xlabel(self.X_LABEL, fontsize=self.X_LABEL_FONTSIZE)
+        plt.ylabel(self.Y_LABEL, fontsize=self.Y_LABEL_FONTSIZE)
+
         plt.xlim(left=-1, right=len(self.data.columns))
+        plt.ylim(bottom=0, top=100)
+
         plt.xticks(rotation=90)
-        plt.title(self.title)
-        plt.xlabel(self.X_LABEL)
-        plt.ylabel(self.Y_LABEL)
-        plt.legend(self.data.index, bbox_to_anchor=(1, 1))
+        plt.gca().xaxis.set_tick_params(width=self.LINE_WIDTH)
+        plt.gca().yaxis.set_tick_params(width=self.LINE_WIDTH)
+
+        legend = plt.legend(self.data.index, bbox_to_anchor=(1, 1))
+        legend.set_frame_on(False)
+
         plt.tight_layout()
+
         for ext in ['pdf', 'png']:
             plt.savefig(f'{self.output_prefix}.{ext}', dpi=self.DPI)
         plt.close()
 
 
-def get_random_color() -> Tuple[float]:
+def get_random_color() -> Tuple[float, float, float]:
     return tuple(random.randrange(150, 256) / 256 for _ in range(3))
