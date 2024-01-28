@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from typing import Tuple, Dict
 from .template import Processor
 from .normalization import CountNormalization
-from .grouping import TagGroupNameOnSampleColumns
+from .grouping import TagGroupNamesOnSampleColumns
 
 
 class PlotTaxonBarplots(Processor):
@@ -202,15 +202,15 @@ class PercentageBarplot(Processor):
         self.output_prefix = output_prefix
         self.sample_sheet = sample_sheet
 
-        self.tag_group_name_on_sample_columns()
+        self.tag_group_names_on_sample_columns()
         self.shorten_taxon_names_for_publication()
         self.set_figsize()
         self.init_figure()
         self.plot()
         self.config_and_save()
 
-    def tag_group_name_on_sample_columns(self):
-        self.data = TagGroupNameOnSampleColumns(self.settings).main(
+    def tag_group_names_on_sample_columns(self):
+        self.data = TagGroupNamesOnSampleColumns(self.settings).main(
             df=self.data,
             sample_sheet=self.sample_sheet)
 

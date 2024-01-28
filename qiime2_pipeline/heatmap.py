@@ -7,7 +7,7 @@ from typing import Tuple, List
 from .tools import edit_fpath
 from .template import Processor
 from .normalization import CountNormalization
-from .grouping import TagGroupNameOnSampleColumns
+from .grouping import TagGroupNamesOnSampleColumns
 
 
 class PlotHeatmaps(Processor):
@@ -194,7 +194,7 @@ class Clustermap(Processor):
         self.sample_sheet = sample_sheet
         self.output_prefix = output_prefix
 
-        self.tag_group_name_on_sample_columns()
+        self.tag_group_names_on_sample_columns()
         self.shorten_taxon_names_for_publication()
         self.set_figsize()
         self.clustermap()
@@ -202,8 +202,8 @@ class Clustermap(Processor):
         self.save_fig()
         self.save_csv()
 
-    def tag_group_name_on_sample_columns(self):
-        self.data = TagGroupNameOnSampleColumns(self.settings).main(
+    def tag_group_names_on_sample_columns(self):
+        self.data = TagGroupNamesOnSampleColumns(self.settings).main(
             df=self.data,
             sample_sheet=self.sample_sheet)
 

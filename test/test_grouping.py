@@ -1,6 +1,6 @@
 import pandas as pd
 from .setup import TestCase
-from qiime2_pipeline.grouping import AddGroupColumn, TagGroupNameOnSampleColumns, GetColors
+from qiime2_pipeline.grouping import AddGroupColumn, TagGroupNamesOnSampleColumns, GetColors
 
 
 class TestAddGroupColumn(TestCase):
@@ -29,7 +29,7 @@ class TestTagGroupNameOnSampleColumns(TestCase):
         self.tear_down()
 
     def test_main(self):
-        actual = TagGroupNameOnSampleColumns(self.settings).main(
+        actual = TagGroupNamesOnSampleColumns(self.settings).main(
             df=pd.read_csv(f'{self.indir}/phylum-table.tsv', index_col=0, sep='\t'),
             sample_sheet=f'{self.indir}/sample-sheet.csv'
         )

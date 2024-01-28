@@ -48,7 +48,7 @@ class AddGroupColumn(Processor):
         self.df = self.df[cols]
 
 
-class TagGroupNameOnSampleColumns(Processor):
+class TagGroupNamesOnSampleColumns(Processor):
 
     df: pd.DataFrame
     sample_sheet: str
