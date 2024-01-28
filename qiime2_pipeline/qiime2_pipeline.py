@@ -192,7 +192,8 @@ class Qiime2Pipeline(Processor):
         tsvs = [self.labeled_feature_table_tsv] + [v for v in self.taxon_table_tsv_dict.values()]
         PlotHeatmaps(self.settings).main(
             tsvs=tsvs,
-            heatmap_read_fraction=self.heatmap_read_fraction)
+            heatmap_read_fraction=self.heatmap_read_fraction,
+            sample_sheet=self.sample_sheet)
 
     def plot_venn_diagrams(self):
         tsvs = [self.labeled_feature_table_tsv] + [v for v in self.taxon_table_tsv_dict.values()]
@@ -204,7 +205,8 @@ class Qiime2Pipeline(Processor):
     def taxon_barplot(self):
         PlotTaxonBarplots(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
-            n_taxa=self.n_taxa_barplot)
+            n_taxa=self.n_taxa_barplot,
+            sample_sheet=self.sample_sheet)
 
     def lefse(self):
         LefSe(self.settings).main(

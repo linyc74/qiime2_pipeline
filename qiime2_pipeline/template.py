@@ -19,7 +19,7 @@ class Settings:
             threads: int,
             debug: bool,
             mock: bool,
-            for_publication: bool = False):
+            for_publication: bool):
 
         self.workdir = workdir
         self.outdir = outdir

@@ -25,6 +25,7 @@ class Main:
     n_taxa_barplot: int
     colormap: str
     invert_colors: bool
+    publication_figure: bool
 
     settings: Settings
 
@@ -47,6 +48,7 @@ class Main:
             n_taxa_barplot: int,
             colormap: str,
             invert_colors: bool,
+            publication_figure: bool,
             outdir: str,
             threads: int,
             debug: bool):
@@ -68,13 +70,15 @@ class Main:
         self.n_taxa_barplot = n_taxa_barplot
         self.colormap = colormap
         self.invert_colors = invert_colors
+        self.publication_figure = publication_figure
 
         self.settings = Settings(
             workdir=get_temp_path(prefix='./qiime2_pipeline_workdir_'),
             outdir=outdir,
             threads=int(threads),
             debug=debug,
-            mock=False)
+            mock=False,
+            for_publication=self.publication_figure)
 
         self.makedirs()
         self.run_pipeline()

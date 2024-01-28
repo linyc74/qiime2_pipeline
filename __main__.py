@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.1.1-beta'
+__VERSION__ = '2.2.0-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -166,6 +166,13 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--publication-figure'],
+        'properties': {
+            'action': 'store_true',
+            'help': 'plot figures in the form and quality for paper publication',
+        }
+    },
+    {
         'keys': ['-t', '--threads'],
         'properties': {
             'type': int,
@@ -247,6 +254,7 @@ class EntryPoint:
             n_taxa_barplot=args.n_taxa_barplot,
             colormap=args.colormap,
             invert_colors=args.invert_colors,
+            publication_figure=args.publication_figure,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)
