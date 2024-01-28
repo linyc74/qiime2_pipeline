@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-from typing import List, Dict, Set
+from typing import List, Dict, Set, Tuple
 from matplotlib_venn import venn2, venn3
 from .tools import edit_fpath
 from .template import Processor
@@ -133,13 +133,15 @@ class ProcessTsvPlotVenn(Processor):
 
 class PlotVenn(Processor):
 
-    FIGSIZE = (8, 6)
-    DPI = 600
-
     set_labels: List[str]
     subsets: List[Set[str]]
     output_prefix: str
     colors: list
+
+    figsize: Tuple[float, float]
+    box_width: float
+    dpi: int
+    fontsize: int
 
     def main(
             self,
@@ -154,6 +156,7 @@ class PlotVenn(Processor):
         self.colors = colors
 
         self.assert_number_of_groups()
+        self.set_parameters()
         self.init_figure()
         self.plot()
         self.save_figure()
@@ -161,8 +164,19 @@ class PlotVenn(Processor):
     def assert_number_of_groups(self):
         assert len(self.set_labels) in [2, 3]
 
+    def set_parameters(self):
+        if self.settings.for_publication:
+            self.figsize = (5 / 2.54, 4 / 2.54)
+            self.dpi = 600
+            self.fontsize = 7
+        else:
+            self.figsize = (8, 6)
+            self.dpi = 300
+            self.fontsize = 12
+
     def init_figure(self):
-        plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
+        plt.rcParams['font.size'] = self.fontsize
+        plt.figure(figsize=self.figsize, dpi=self.dpi)
 
     def plot(self):
 
@@ -173,5 +187,5 @@ class PlotVenn(Processor):
 
     def save_figure(self):
         for ext in ['pdf', 'png']:
-            plt.savefig(f'{self.output_prefix}.{ext}', dpi=self.DPI)
+            plt.savefig(f'{self.output_prefix}.{ext}', dpi=self.dpi)
         plt.close()
