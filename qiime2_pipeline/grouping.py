@@ -48,6 +48,38 @@ class AddGroupColumn(Processor):
         self.df = self.df[cols]
 
 
+class TagGroupNameOnSampleColumns(Processor):
+
+    df: pd.DataFrame
+    sample_sheet: str
+
+    sample_df: pd.DataFrame
+
+    def main(
+            self,
+            df: pd.DataFrame,
+            sample_sheet: str) -> pd.DataFrame:
+
+        self.df = df.copy(deep=True)
+        self.sample_sheet = sample_sheet
+
+        self.read_sample_sheet()
+        self.rename_columns()
+
+        return self.df
+
+    def read_sample_sheet(self):
+        self.sample_df = pd.read_csv(self.sample_sheet, index_col=0)
+        assert GROUP_COLUMN in self.sample_df.columns, \
+            f'No "{GROUP_COLUMN}" column in {self.sample_sheet}'
+
+    def rename_columns(self):
+        for col in self.df.columns:
+            if col in self.sample_df.index:
+                group = self.sample_df.loc[col, GROUP_COLUMN]
+                self.df = self.df.rename(columns={col: f'[{group}] {col}'})
+
+
 class GetColors(Processor):
 
     sample_sheet: str

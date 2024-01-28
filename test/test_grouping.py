@@ -1,6 +1,6 @@
 import pandas as pd
 from .setup import TestCase
-from qiime2_pipeline.grouping import AddGroupColumn, GetColors
+from qiime2_pipeline.grouping import AddGroupColumn, TagGroupNameOnSampleColumns, GetColors
 
 
 class TestAddGroupColumn(TestCase):
@@ -17,6 +17,23 @@ class TestAddGroupColumn(TestCase):
             sample_sheet=f'{self.indir}/sample-sheet.csv'
         )
         expected = pd.read_csv(f'{self.indir}/outdf.csv', index_col=0)
+        self.assertDataFrameEqual(expected, actual)
+
+
+class TestTagGroupNameOnSampleColumns(TestCase):
+
+    def setUp(self):
+        self.set_up(py_path=__file__)
+
+    def tearDown(self):
+        self.tear_down()
+
+    def test_main(self):
+        actual = TagGroupNameOnSampleColumns(self.settings).main(
+            df=pd.read_csv(f'{self.indir}/phylum-table.tsv', index_col=0, sep='\t'),
+            sample_sheet=f'{self.indir}/sample-sheet.csv'
+        )
+        expected = pd.read_csv(f'{self.indir}/phylum-table-tagged.tsv', index_col=0, sep='\t')
         self.assertDataFrameEqual(expected, actual)
 
 
