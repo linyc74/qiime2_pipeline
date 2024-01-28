@@ -12,14 +12,6 @@ from .normalization import CountNormalization
 
 
 DSTDIR_NAME = 'differential-abundance'
-FIGSIZE = (6 / 2.54, 7 / 2.54)
-DPI = 600
-FONT_SIZE = 7
-BOX_WIDTH = 0.5
-XLABEL = None
-YLABEL = 'Relative abundance (%)'
-MARKER_LINEWIDTH = 0.5
-YLIM = None
 
 
 class DifferentialAbundance(Processor):
@@ -264,11 +256,22 @@ class MannwhitneyuTestAndBoxplot(Processor):
             x=GROUP_COLUMN,
             y=self.taxon,
             colors=self.colors,
-            title=f'p = {self.pvalue:.4f}',
+            title=f'{self.taxon}\np = {self.pvalue:.4f}',
             dstdir=self.dstdir)
 
 
 class Boxplot(Processor):
+
+    FIGSIZE = (4 / 2.54, 5 / 2.54)
+    DPI = 600
+    FONT_SIZE = 6
+    BOX_WIDTH = 0.5
+    XLABEL = None
+    YLABEL = 'Relative abundance (%)'
+    LINEWIDTH = 0.5
+    BOX_lINEWIDTH = 0.5
+    MARKER_LINEWIDTH = 0.25
+    YLIM = None
 
     data: pd.DataFrame
     x: str
@@ -301,8 +304,9 @@ class Boxplot(Processor):
         self.save()
 
     def init(self):
-        plt.figure(figsize=FIGSIZE)
-        plt.rc('font', size=FONT_SIZE)
+        plt.rcParams['font.size'] = self.FONT_SIZE
+        plt.rcParams['axes.linewidth'] = self.LINEWIDTH
+        plt.figure(figsize=self.FIGSIZE)
 
     def plot(self):
         self.ax = sns.boxplot(
@@ -311,7 +315,8 @@ class Boxplot(Processor):
             y=self.y,
             hue=self.x,
             palette=self.colors,
-            width=BOX_WIDTH,
+            width=self.BOX_WIDTH,
+            linewidth=self.BOX_lINEWIDTH,
             dodge=False,  # to align the boxes on the x axis
         )
         self.ax = sns.stripplot(
@@ -320,16 +325,18 @@ class Boxplot(Processor):
             y=self.y,
             hue=self.x,
             palette=self.colors,
-            linewidth=MARKER_LINEWIDTH,
+            linewidth=self.MARKER_LINEWIDTH,
         )
 
     def config(self):
         self.ax.set_title(self.title)
-        self.ax.set(xlabel=XLABEL, ylabel=YLABEL)
-        plt.ylim(YLIM)
+        self.ax.set(xlabel=self.XLABEL, ylabel=self.YLABEL)
+        plt.gca().xaxis.set_tick_params(width=self.LINEWIDTH)
+        plt.gca().yaxis.set_tick_params(width=self.LINEWIDTH)
+        plt.ylim(self.YLIM)
         plt.legend().remove()
 
     def save(self):
         plt.tight_layout()
-        plt.savefig(f'{self.dstdir}/{self.y}.png', dpi=DPI)
+        plt.savefig(f'{self.dstdir}/{self.y}.png', dpi=self.DPI)
         plt.close()
