@@ -291,7 +291,7 @@ class ScatterPlot(Processor):
         )
         plt.gca().xaxis.set_tick_params(width=self.line_width)
         plt.gca().yaxis.set_tick_params(width=self.line_width)
-        legend = plt.legend(bbox_to_anchor=(1, 1))
+        legend = plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
         legend.set_frame_on(False)
 
     def label_points(self):

@@ -1,5 +1,5 @@
 import pandas as pd
-from qiime2_pipeline.embedding_core_process import PCACore, TSNECore
+from qiime2_pipeline.embedding_core_process import PCACore, TSNECore, ScatterPlot
 from .setup import TestCase
 
 
@@ -31,6 +31,24 @@ class TestCores(TestCase):
         expected = f'{self.indir}/tsne_sample_coordinate_df.tsv'
         sample_coordinate_df.to_csv(actual, sep='\t')
         self.assertFileEqual(expected, actual)
+
+
+class TestScatterPlot(TestCase):
+
+    def setUp(self):
+        self.set_up(py_path=__file__)
+
+    def tearDown(self):
+        self.tear_down()
+
+    def test_main(self):
+        ScatterPlot(self.settings).main(
+            sample_coordinate_df=read_tsv(f'{self.indir}/braycurtis-pcoa-sample-coordinate.tsv'),
+            x_column='PC1',
+            y_column='PC2',
+            hue_column='Group',
+            colors=['#1f77b4', '#ff7f0e', '#2ca02c'],
+            output_prefix=f'{self.outdir}/scatterplot')
 
 
 def read_tsv(tsv: str) -> pd.DataFrame:

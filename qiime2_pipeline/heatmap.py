@@ -166,13 +166,15 @@ class Clustermap(Processor):
 
     CLUSTER_COLUMNS = True
     COLORMAP = 'PuBu'
-    Y_LABEL_CHAR_WIDTH = 0.08
-    X_LABEL_CHAR_WIDTH = 0.08
-    CELL_WIDTH = 0.25
-    CELL_HEIGHT = 0.25
-    DENDROGRAM_RATIO = (0.1, 0.1)
+    Y_LABEL_CHAR_WIDTH = 0.14 / 2.54
+    X_LABEL_CHAR_WIDTH = 0.14 / 2.54
+    CELL_WIDTH = 0.4 / 2.54
+    CELL_HEIGHT = 0.4 / 2.54
+    DENDROGRAM_RATIO = (0.06, 0.06)
     COLORBAR_WIDTH = 0.01
     COLORBAR_HORIZONTAL_POSITION = 1.
+    FONTSIZE = 7
+    LINE_WIDTH = 0.5
     DPI = 600
 
     data: pd.DataFrame
@@ -225,6 +227,8 @@ class Clustermap(Processor):
         self.y_label_padding = max_y_label_length * self.Y_LABEL_CHAR_WIDTH
 
     def clustermap(self):
+        plt.rcParams['font.size'] = self.FONTSIZE
+        plt.rcParams['axes.linewidth'] = self.LINE_WIDTH
         self.grid = sns.clustermap(
             data=self.data,
             cmap=self.COLORMAP,
@@ -233,7 +237,7 @@ class Clustermap(Processor):
             yticklabels=True,  # include every y label
             col_cluster=self.CLUSTER_COLUMNS,
             dendrogram_ratio=self.DENDROGRAM_RATIO,
-            linewidth=0.5)
+            linewidth=0.25)
         self.__set_plotted_data()
 
     def __set_plotted_data(self):
@@ -263,7 +267,7 @@ class Clustermap(Processor):
             right=True,
             labelleft=False,
             labelright=True,
-            labelrotation=0
+            labelrotation=0,
         )
 
     def __set_colorbar(self):
@@ -280,6 +284,7 @@ class Clustermap(Processor):
         # must use grid.savefig(), but not plt.savefig()
         # plt.savefig() crops out the colorbar
 
+        plt.tight_layout()
         dpi = self.__downsize_dpi_if_too_large()
         for ext in ['pdf', 'png']:
             self.grid.savefig(f'{self.output_prefix}.{ext}', dpi=dpi)
