@@ -153,6 +153,8 @@ class PercentageBarplot(Processor):
 
     Y_LABEL = 'Percentage'
     X_LABEL = 'Sample'
+    CONSTANT_HORIZONTAL_PADDING = 2.0
+    CONSTANT_VERTICAL_PADDING = 1.0
     X_LABEL_CHAR_WIDTH = 0.08 / 2.54
     LEGEND_CHAR_WIDTH = 0.08 / 2.54
     BAR_WIDTH = 0.5 / 2.54
@@ -220,8 +222,8 @@ class PercentageBarplot(Processor):
 
     def set_figsize(self):
         self.__set_paddings()
-        w = (len(self.data.columns) * self.BAR_WIDTH) + self.horizontal_padding
-        h = (len(self.data.index) * self.FEATURE_HEIGHT) + self.vertical_padding
+        w = (len(self.data.columns) * self.BAR_WIDTH) + self.horizontal_padding + self.CONSTANT_HORIZONTAL_PADDING
+        h = (len(self.data.index) * self.FEATURE_HEIGHT) + self.vertical_padding + self.CONSTANT_VERTICAL_PADDING
         self.figsize = (w, h)
 
     def __set_paddings(self):

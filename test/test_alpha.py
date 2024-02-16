@@ -1,13 +1,14 @@
+import pandas as pd
 from os.path import exists
 from .setup import TestCase
-from qiime2_pipeline.alpha import AlphaDiversity
+from qiime2_pipeline.alpha import AlphaDiversity, Plot
 
 
 class TestAlphaDiversity(TestCase):
 
     def setUp(self):
         self.set_up(py_path=__file__)
-        self.settings.for_publication = True
+        self.settings.for_publication = False
 
     def tearDown(self):
         self.tear_down()
@@ -32,3 +33,10 @@ class TestAlphaDiversity(TestCase):
             f'{self.outdir}/alpha-diversity/observed_features.png',
         ]:
             self.assertTrue(exists(file))
+
+    def test_plot(self):
+        Plot(self.settings).main(
+            df=pd.read_csv(f'{self.indir}/alpha-diversity.csv', index_col=0),
+            dstdir=self.outdir,
+            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0)]
+        )
