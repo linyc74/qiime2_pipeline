@@ -1,6 +1,7 @@
 from os import makedirs
 from typing import List, Optional, Dict
 from .lefse import LefSe
+from .tools import edit_fpath
 from .taxonomy import Taxonomy
 from .template import Processor
 from .grouping import GetColors
@@ -88,6 +89,8 @@ class Qiime2Pipeline(Processor):
         self.colormap = colormap
         self.invert_colors = invert_colors
 
+        self.copy_sample_sheet()
+
         self.raw_read_counts()
         self.set_colors()
 
@@ -112,6 +115,13 @@ class Qiime2Pipeline(Processor):
         self.differential_abundance()
 
         self.collect_log_files()
+
+    def copy_sample_sheet(self):
+        # to avoid the user from modifying or deleting the original sample sheet
+        self.call(f'cp {self.sample_sheet} {self.workdir}/')
+        self.sample_sheet = edit_fpath(
+            fpath=self.sample_sheet,
+            dstdir=self.workdir)
 
     def raw_read_counts(self):
         RawReadCounts(self.settings).main(
