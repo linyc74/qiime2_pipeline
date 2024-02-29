@@ -204,12 +204,17 @@ class PercentageBarplot(Processor):
         self.output_prefix = output_prefix
         self.sample_sheet = sample_sheet
 
+        self.reorder_sample_columns()
         self.tag_group_names_on_sample_columns()
         self.shorten_taxon_names_for_publication()
         self.set_figsize()
         self.init_figure()
         self.plot()
         self.config_and_save()
+
+    def reorder_sample_columns(self):
+        samples = pd.read_csv(self.sample_sheet, index_col=0).index
+        self.data = self.data[samples]
 
     def tag_group_names_on_sample_columns(self):
         self.data = TagGroupNamesOnSampleColumns(self.settings).main(
