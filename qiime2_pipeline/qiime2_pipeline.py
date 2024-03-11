@@ -47,7 +47,6 @@ class Qiime2Pipeline(Processor):
     labeled_feature_table_qza: str
     labeled_feature_sequence_qza: str
     rooted_tree_qza: str
-    distance_matrix_tsvs: List[str]
     taxon_table_tsv_dict: Dict[str, str]
     colors: list
 
@@ -99,15 +98,14 @@ class Qiime2Pipeline(Processor):
 
         self.taxonomic_classification()
         self.feature_labeling()
+        self.taxon_table()
 
         self.phylogenetic_tree()
 
         self.alpha_diversity()
 
-        self.qiime_beta_diversity()
-        self.my_beta_diversity()
+        self.beta_diversity()
 
-        self.taxon_table()
         self.plot_heatmaps()
         self.plot_venn_diagrams()
         self.taxon_barplot()
@@ -170,6 +168,10 @@ class Qiime2Pipeline(Processor):
                 feature_sequence_qza=self.feature_sequence_qza,
                 skip_otu=self.skip_otu)
 
+    def taxon_table(self):
+        self.taxon_table_tsv_dict = TaxonTable(self.settings).main(
+            labeled_feature_table_tsv=self.labeled_feature_table_tsv)
+
     def phylogenetic_tree(self):
         self.rooted_tree_qza = Phylogeny(self.settings).main(
             seq_qza=self.labeled_feature_sequence_qza)
@@ -181,22 +183,17 @@ class Qiime2Pipeline(Processor):
             alpha_metrics=self.alpha_metrics,
             colors=self.colors)
 
-    def qiime_beta_diversity(self):
-        self.distance_matrix_tsvs = QiimeBetaDiversity(self.settings).main(
+    def beta_diversity(self):
+        QiimeBetaDiversity(self.settings).main(
             feature_table_qza=self.labeled_feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza,
             sample_sheet=self.sample_sheet,
             colors=self.colors)
 
-    def my_beta_diversity(self):
         MyBetaDiversity(self.settings).main(
             feature_table_tsv=self.labeled_feature_table_tsv,
             sample_sheet=self.sample_sheet,
             colors=self.colors)
-
-    def taxon_table(self):
-        self.taxon_table_tsv_dict = TaxonTable(self.settings).main(
-            labeled_feature_table_tsv=self.labeled_feature_table_tsv)
 
     def plot_heatmaps(self):
         tsvs = [self.labeled_feature_table_tsv] + [v for v in self.taxon_table_tsv_dict.values()]
