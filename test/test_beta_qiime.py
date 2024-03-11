@@ -14,7 +14,7 @@ class TestQiimeBetaDiversity(TestCase):
 
     def test_main(self):
         QiimeBetaDiversity(self.settings).main(
-            feature_table_qza=f'{self.indir}/labeled-feature-table-normalized.qza',
+            feature_table_tsv=f'{self.indir}/feature-table.tsv',
             rooted_tree_qza=f'{self.indir}/mafft-aligned-sequences-masked.qza',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0),  'green'],

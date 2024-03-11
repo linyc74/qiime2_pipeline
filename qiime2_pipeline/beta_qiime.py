@@ -6,40 +6,40 @@ from skbio import DistanceMatrix
 from skbio.stats.ordination import pcoa
 from .tools import edit_fpath
 from .template import Processor, Settings
+from .importing import ImportFeatureTable
 from .exporting import ExportBetaDiversity
 from .embedding_core_process import EmbeddingProcessTemplate, TSNECore
 
 
 class QiimeBetaDiversity(Processor):
 
-    feature_table_qza: str
+    feature_table_tsv: str
     rooted_tree_qza: str
     sample_sheet: str
     colors: list
 
+    feature_table_qza: str
     distance_matrix_tsvs: List[str]
 
     def main(
             self,
-            feature_table_qza: str,
+            feature_table_tsv: str,
             rooted_tree_qza: str,
             sample_sheet: str,
             colors: list):
 
-        self.feature_table_qza = feature_table_qza
+        self.feature_table_tsv = feature_table_tsv
         self.rooted_tree_qza = rooted_tree_qza
         self.sample_sheet = sample_sheet
         self.colors = colors
 
-        self.run_all_beta_metrics_to_distance_matrix_tsvs()
-        self.run_batch_embedding_processes()
+        self.feature_table_qza = ImportFeatureTable(self.settings).main(
+            feature_table_tsv=self.feature_table_tsv)
 
-    def run_all_beta_metrics_to_distance_matrix_tsvs(self):
         self.distance_matrix_tsvs = RunAllBetaMetricsToDistanceMatrixTsvs(self.settings).main(
             feature_table_qza=self.feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza)
 
-    def run_batch_embedding_processes(self):
         for Batch in [BatchPCoAProcess, BatchTSNEProcess]:
             Batch(self.settings).main(
                 distance_matrix_tsvs=self.distance_matrix_tsvs,
