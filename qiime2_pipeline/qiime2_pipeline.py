@@ -37,6 +37,7 @@ class Qiime2Pipeline(Processor):
     max_expected_error_bases: float
     heatmap_read_fraction: float
     n_taxa_barplot: int
+    beta_diversity_feature_level: str
     colormap: str
     invert_colors: bool
 
@@ -67,6 +68,7 @@ class Qiime2Pipeline(Processor):
             max_expected_error_bases: float,
             heatmap_read_fraction: float,
             n_taxa_barplot: int,
+            beta_diversity_feature_level: str,
             colormap: str,
             invert_colors: bool):
 
@@ -85,6 +87,7 @@ class Qiime2Pipeline(Processor):
         self.max_expected_error_bases = max_expected_error_bases
         self.heatmap_read_fraction = heatmap_read_fraction
         self.n_taxa_barplot = n_taxa_barplot
+        self.beta_diversity_feature_level = beta_diversity_feature_level
         self.colormap = colormap
         self.invert_colors = invert_colors
 
@@ -184,14 +187,17 @@ class Qiime2Pipeline(Processor):
             colors=self.colors)
 
     def beta_diversity(self):
+        feature_table_tsv = self.labeled_feature_table_tsv if self.beta_diversity_feature_level == 'feature' \
+            else self.taxon_table_tsv_dict[self.beta_diversity_feature_level]
+
         QiimeBetaDiversity(self.settings).main(
-            feature_table_tsv=self.labeled_feature_table_tsv,
+            feature_table_tsv=feature_table_tsv,
             rooted_tree_qza=self.rooted_tree_qza,
             sample_sheet=self.sample_sheet,
             colors=self.colors)
 
         MyBetaDiversity(self.settings).main(
-            feature_table_tsv=self.labeled_feature_table_tsv,
+            feature_table_tsv=feature_table_tsv,
             sample_sheet=self.sample_sheet,
             colors=self.colors)
 

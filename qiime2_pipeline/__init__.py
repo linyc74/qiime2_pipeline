@@ -23,6 +23,7 @@ class Main:
     max_expected_error_bases: float
     heatmap_read_fraction: float
     n_taxa_barplot: int
+    beta_diversity_feature_level: str
     colormap: str
     invert_colors: bool
     publication_figure: bool
@@ -46,6 +47,7 @@ class Main:
             max_expected_error_bases: float,
             heatmap_read_fraction: float,
             n_taxa_barplot: int,
+            beta_diversity_feature_level: str,
             colormap: str,
             invert_colors: bool,
             publication_figure: bool,
@@ -68,6 +70,7 @@ class Main:
         self.max_expected_error_bases = max_expected_error_bases
         self.heatmap_read_fraction = heatmap_read_fraction
         self.n_taxa_barplot = n_taxa_barplot
+        self.beta_diversity_feature_level = beta_diversity_feature_level
         self.colormap = colormap
         self.invert_colors = invert_colors
         self.publication_figure = publication_figure
@@ -105,6 +108,7 @@ class Main:
             max_expected_error_bases=self.max_expected_error_bases,
             heatmap_read_fraction=self.heatmap_read_fraction,
             n_taxa_barplot=self.n_taxa_barplot,
+            beta_diversity_feature_level=self.beta_diversity_feature_level,
             colormap=self.colormap,
             invert_colors=self.invert_colors)
 

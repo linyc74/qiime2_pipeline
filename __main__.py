@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.2.4-beta'
+__VERSION__ = '2.3.0-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -150,6 +150,16 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--beta-diversity-feature-level'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'feature',
+            'choices': ['feature', 'species', 'genus', 'family', 'order', 'class', 'phylum'],
+            'help': 'the level of features to be used for beta diversity (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['--colormap'],
         'properties': {
             'type': str,
@@ -252,6 +262,7 @@ class EntryPoint:
             max_expected_error_bases=args.max_expected_error_bases,
             heatmap_read_fraction=args.heatmap_read_fraction,
             n_taxa_barplot=args.n_taxa_barplot,
+            beta_diversity_feature_level=args.beta_diversity_feature_level,
             colormap=args.colormap,
             invert_colors=args.invert_colors,
             publication_figure=args.publication_figure,
