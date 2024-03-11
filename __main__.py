@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.3.0-beta'
+__VERSION__ = '2.3.0'
 
 
 PROG = 'python qiime2_pipeline'
@@ -66,6 +66,7 @@ OPTIONAL = [
             'type': str,
             'required': False,
             'default': 'merge',
+            'choices': ['merge', 'pool'],
             'help': 'mode to combine paired end reads: "merge" or "pool" (default: %(default)s)',
         }
     },
