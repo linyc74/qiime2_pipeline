@@ -169,6 +169,7 @@ class Qiime2Pipeline(Processor):
                 taxonomy_qza=self.taxonomy_qza,
                 feature_table_qza=self.feature_table_qza,
                 feature_sequence_qza=self.feature_sequence_qza,
+                sample_sheet=self.sample_sheet,
                 skip_otu=self.skip_otu)
 
     def taxon_table(self):

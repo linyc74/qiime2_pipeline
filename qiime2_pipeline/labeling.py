@@ -14,6 +14,7 @@ class FeatureLabeling(Processor):
     taxonomy_qza: str
     feature_table_qza: str
     feature_sequence_qza: str
+    sample_sheet: str
     skip_otu: bool
 
     taxonomy_tsv: str
@@ -33,11 +34,13 @@ class FeatureLabeling(Processor):
             taxonomy_qza: str,
             feature_table_qza: str,
             feature_sequence_qza: str,
+            sample_sheet: str,
             skip_otu: bool) -> Tuple[str, str, str]:
 
         self.taxonomy_qza = taxonomy_qza
         self.feature_table_qza = feature_table_qza
         self.feature_sequence_qza = feature_sequence_qza
+        self.sample_sheet = sample_sheet
         self.skip_otu = skip_otu
 
         self.decompress()
@@ -75,7 +78,8 @@ class FeatureLabeling(Processor):
     def label_feature_table(self):
         self.labeled_feature_table_tsv = LabelFeatureTable(self.settings).main(
             feature_table_tsv=self.feature_table_tsv,
-            feature_id_to_label=self.feature_id_to_label)
+            feature_id_to_label=self.feature_id_to_label,
+            sample_sheet=self.sample_sheet)
 
     def write_taxonomy_condifence_table(self):
         WriteTaxonomyCondifenceTable(self.settings).main(
@@ -163,6 +167,7 @@ class LabelFeatureTable(Processor):
 
     feature_table_tsv: str
     feature_id_to_label: Dict[str, str]
+    sample_sheet: str
 
     df: pd.DataFrame
     output_tsv: str
@@ -170,12 +175,15 @@ class LabelFeatureTable(Processor):
     def main(
             self,
             feature_table_tsv: str,
-            feature_id_to_label: Dict[str, str]) -> str:
+            feature_id_to_label: Dict[str, str],
+            sample_sheet: str) -> str:
 
         self.feature_table_tsv = feature_table_tsv
         self.feature_id_to_label = feature_id_to_label
+        self.sample_sheet = sample_sheet
 
         self.read_feature_table_tsv()
+        self.reorder_sample_columns()
         self.convert_feature_id_to_label()
         self.save_output_tsv()
 
@@ -185,25 +193,26 @@ class LabelFeatureTable(Processor):
         self.df = pd.read_csv(
             self.feature_table_tsv,
             sep='\t',
+            index_col=0,
             skiprows=1  # exclude 1st line from qza (# Constructed from biom file)
         )
+        self.df.index.name = ''
+
+    def reorder_sample_columns(self):
+        samples = pd.read_csv(self.sample_sheet, index_col=0).index
+        self.df = self.df[samples]
 
     def convert_feature_id_to_label(self):
-        self.df['#OTU ID'] = [
-            self.feature_id_to_label[id_]
-            for id_ in self.df['#OTU ID']
+        self.df.index = [
+            self.feature_id_to_label[idx] for idx in self.df.index
         ]
-        self.df.rename(
-            columns={'#OTU ID': ''},
-            inplace=True
-        )
 
     def save_output_tsv(self):
         self.output_tsv = f'{self.outdir}/labeled-feature-table.tsv'
         self.df.to_csv(
             self.output_tsv,
             sep='\t',
-            index=False)
+            index=True)
 
 
 class WriteTaxonomyCondifenceTable(Processor):

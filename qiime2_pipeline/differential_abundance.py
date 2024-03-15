@@ -65,6 +65,7 @@ class OneTaxonLevelDifferentialAbundance(Processor):
         self.sample_sheet = sample_sheet
         self.colors = colors
 
+        self.logger.info(f'Processing "{self.taxon_tsv}" at {self.taxon_level} level')
         self.read_taxon_tsv()
         self.prepare_taxon_df()
         self.mannwhitneyu_tests_and_boxplots()

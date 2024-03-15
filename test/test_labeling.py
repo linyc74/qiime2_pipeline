@@ -15,6 +15,7 @@ class TestFeatureLabeling(TestCase):
             taxonomy_qza=f'{self.indir}/taxonomy.qza',
             feature_table_qza=f'{self.indir}/dada2-feature-table.qza',
             feature_sequence_qza=f'{self.indir}/dada2-feature-sequence.qza',
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
             skip_otu=True)
 
         for expected, actual in [
