@@ -155,19 +155,22 @@ class BatchTrimGalorePairedEnd(Processor):
         fq1 = f'{self.fq_dir}/{name}{self.fq1_suffix}'
         fq2 = f'{self.fq_dir}/{name}{self.fq2_suffix}'
 
-        fq1, fq2 = self.trim_galore(
+        trimmed_fq1_gz, trimmed_fq2_gz = self.trim_galore(
             fq1=fq1,
             fq2=fq2,
             clip_r1_5_prime=self.clip_r1_5_prime,
             clip_r2_5_prime=self.clip_r2_5_prime
         )
 
-        os.rename(
-            fq1, f'{self.out_fq_dir}/{name}{self.fq1_suffix}'
-        )
-        os.rename(
-            fq2, f'{self.out_fq_dir}/{name}{self.fq2_suffix}'
-        )
+        for fq_gz, suffix in [
+            (trimmed_fq1_gz, self.fq1_suffix),
+            (trimmed_fq2_gz, self.fq2_suffix)
+        ]:
+            dst = f'{self.out_fq_dir}/{name}{suffix}'
+            if suffix.endswith('.gz'):
+                self.call(f'mv {fq_gz} {dst}')
+            else:  # suffix is not .gz, so the dst file needs to be uncompressed
+                self.call(f'gunzip {fq_gz} && mv {fq_gz[:-3]} {dst}')
 
 
 class TrimGaloreSingleEnd(Processor):
