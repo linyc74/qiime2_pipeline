@@ -2,7 +2,7 @@ from typing import Tuple
 from .template import Processor
 
 
-class Dada2(Processor):
+class Dada2Base(Processor):
 
     TRIM_LEFT = 0  # number of 5' bases to be clipped
     TRUNCATE_LENGTH = 0  # min read length
@@ -52,7 +52,7 @@ class Dada2(Processor):
         self.call(f'mv {out}/stats.tsv {self.outdir}/dada2-stats.tsv')
 
 
-class Dada2SingleEnd(Dada2):
+class Dada2SingleEnd(Dada2Base):
 
     def execute(self):
         log = f'{self.outdir}/qiime-dada2-denoise-single.log'
@@ -72,7 +72,7 @@ class Dada2SingleEnd(Dada2):
         self.call(cmd)
 
 
-class Dada2PairedEnd(Dada2):
+class Dada2PairedEnd(Dada2Base):
 
     MIN_OVERLAP = 12
 

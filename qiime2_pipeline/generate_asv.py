@@ -1,6 +1,7 @@
-from typing import Tuple, Optional
+import os
+import pandas as pd
+from typing import Tuple, Optional, List
 from .template import Processor
-from .pool import BatchPool
 from .denoise import Dada2SingleEnd, Dada2PairedEnd
 from .importing import ImportSingleEndFastq, ImportPairedEndFastq
 from .trimming import BatchTrimGalorePairedEnd, BatchTrimGaloreSingleEnd
@@ -210,3 +211,48 @@ class GenerateASVPairedEnd(Processor):
         self.feature_table_qza, self.feature_sequence_qza = Dada2SingleEnd(self.settings).main(
             demultiplexed_seq_qza=single_end_seq_qza,
             max_expected_error_bases=self.max_expected_error_bases)
+
+
+class BatchPool(Processor):
+
+    OUT_FQ_DIRNAME = 'pool_fastqs'
+    OUT_FQ_SUFFIX = '.fastq.gz'
+
+    sample_sheet: str
+    fq_dir: str
+    fq1_suffix: str
+    fq2_suffix: str
+
+    sample_names: List[str]
+    out_fq_dir: str
+
+    def main(
+            self,
+            sample_sheet: str,
+            fq_dir: str,
+            fq1_suffix: str,
+            fq2_suffix: str) -> Tuple[str, str]:
+
+        self.sample_sheet = sample_sheet
+        self.fq_dir = fq_dir
+        self.fq1_suffix = fq1_suffix
+        self.fq2_suffix = fq2_suffix
+
+        self.set_sample_names()
+        self.make_out_fq_dir()
+        for name in self.sample_names:
+            self.process_one_pair(name=name)
+
+        return self.out_fq_dir, self.OUT_FQ_SUFFIX
+
+    def set_sample_names(self):
+        self.sample_names = pd.read_csv(self.sample_sheet, index_col=0).index.tolist()
+
+    def make_out_fq_dir(self):
+        self.out_fq_dir = f'{self.workdir}/{self.OUT_FQ_DIRNAME}'
+        os.makedirs(self.out_fq_dir, exist_ok=True)
+
+    def process_one_pair(self, name: str):
+        fq1 = f'{self.fq_dir}/{name}{self.fq1_suffix}'
+        fq2 = f'{self.fq_dir}/{name}{self.fq2_suffix}'
+        self.call(f'cat {fq1} {fq2} > {self.out_fq_dir}/{name}{self.OUT_FQ_SUFFIX}')

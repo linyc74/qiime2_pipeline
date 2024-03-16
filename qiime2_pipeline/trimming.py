@@ -139,7 +139,7 @@ class BatchTrimGalorePairedEnd(Processor):
         self.clip_r2_5_prime = clip_r2_5_prime
 
         self.set_sample_names()
-        self.set_out_fq_dir()
+        self.make_out_fq_dir()
         for name in self.sample_names:
             self.process_one_pair(name)
 
@@ -148,7 +148,7 @@ class BatchTrimGalorePairedEnd(Processor):
     def set_sample_names(self):
         self.sample_names = pd.read_csv(self.sample_sheet, index_col=0).index.tolist()
 
-    def set_out_fq_dir(self):
+    def make_out_fq_dir(self):
         self.out_fq_dir = f'{self.workdir}/trimmed_fastqs'
         os.makedirs(self.out_fq_dir, exist_ok=True)
 
@@ -276,7 +276,7 @@ class BatchTrimGaloreSingleEnd(Processor):
         self.clip_5_prime = clip_5_prime
 
         self.set_sample_names()
-        self.set_out_fq_dir()
+        self.make_out_fq_dir()
         for name in self.sample_names:
             self.process_one_fq(name)
 
@@ -285,7 +285,7 @@ class BatchTrimGaloreSingleEnd(Processor):
     def set_sample_names(self):
         self.sample_names = pd.read_csv(self.sample_sheet, index_col=0).index.tolist()
 
-    def set_out_fq_dir(self):
+    def make_out_fq_dir(self):
         self.out_fq_dir = f'{self.workdir}/trimmed_fastqs'
         os.makedirs(self.out_fq_dir, exist_ok=True)
 
