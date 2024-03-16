@@ -34,7 +34,7 @@ class TestBatchTrimGalorePairedEnd(TestCase):
         self.tear_down()
 
     def test_main(self):
-        actual = BatchTrimGalorePairedEnd(self.settings).main(
+        fq_dir, fq1_suffix, fq2_suffix = BatchTrimGalorePairedEnd(self.settings).main(
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             fq_dir=f'{self.indir}/fq_dir',
             fq1_suffix='_L001_R1_001.fastq.gz',
@@ -43,7 +43,9 @@ class TestBatchTrimGalorePairedEnd(TestCase):
             clip_r2_5_prime=0,
         )
         expected = f'{self.workdir}/trimmed_fastqs'
-        self.assertFileExists(expected, actual)
+        self.assertFileExists(expected, fq_dir)
+        self.assertEqual('_R1.fastq.gz', fq1_suffix)
+        self.assertEqual('_R2.fastq.gz', fq2_suffix)
 
 
 class TestTrimGaloreSingleEnd(TestCase):
@@ -71,10 +73,11 @@ class TestBatchTrimGaloreSingleEnd(TestCase):
         self.tear_down()
 
     def test_main(self):
-        actual = BatchTrimGaloreSingleEnd(self.settings).main(
+        fq_dir, fq_suffix = BatchTrimGaloreSingleEnd(self.settings).main(
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             fq_dir=f'{self.indir}/fq_dir',
             fq_suffix='_L001_R2_001.fastq.gz',
             clip_5_prime=17)
         expected = f'{self.workdir}/trimmed_fastqs'
-        self.assertFileExists(expected, actual)
+        self.assertFileExists(expected, fq_dir)
+        self.assertEqual('.fastq.gz', fq_suffix)

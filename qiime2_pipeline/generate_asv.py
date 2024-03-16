@@ -8,9 +8,6 @@ from .trimming import BatchTrimGalorePairedEnd, BatchTrimGaloreSingleEnd
 
 class GenerateASV(Processor):
 
-    MERGE = 'merge'
-    POOL = 'pool'
-
     sample_sheet: str
     fq_dir: str
     fq1_suffix: str
@@ -59,21 +56,14 @@ class GenerateASV(Processor):
             max_expected_error_bases=self.max_expected_error_bases)
 
     def generate_asv_paired_end(self):
-        assert self.paired_end_mode in [self.MERGE, self.POOL], \
-            f'"{self.paired_end_mode}" is not a valid mode for GenerateASV'
-
-        if self.paired_end_mode == self.MERGE:
-            method = GenerateASVMergePairedEnd(self.settings).main
-        else:
-            method = GenerateASVPoolPairedEnd(self.settings).main
-
-        self.feature_table_qza, self.feature_sequence_qza = method(
+        self.feature_table_qza, self.feature_sequence_qza = GenerateASVPairedEnd(self.settings).main(
             sample_sheet=self.sample_sheet,
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix,
             clip_r1_5_prime=self.clip_r1_5_prime,
             clip_r2_5_prime=self.clip_r2_5_prime,
+            paired_end_mode=self.paired_end_mode,
             max_expected_error_bases=self.max_expected_error_bases)
 
 
@@ -85,8 +75,6 @@ class GenerateASVSingleEnd(Processor):
     clip_5_prime: int
     max_expected_error_bases: float
 
-    trimmed_fq_dir: str
-    single_end_seq_qza: str
     feature_sequence_qza: str
     feature_table_qza: str
 
@@ -104,32 +92,31 @@ class GenerateASVSingleEnd(Processor):
         self.clip_5_prime = clip_5_prime
         self.max_expected_error_bases = max_expected_error_bases
 
-        self.trimming()
-        self.importing()
-        self.denoise()
-
-        return self.feature_table_qza, self.feature_sequence_qza
-
-    def trimming(self):
-        self.trimmed_fq_dir = BatchTrimGaloreSingleEnd(self.settings).main(
+        # 1 trimming
+        trimmed_fq_dir, trimmed_fq_suffix = BatchTrimGaloreSingleEnd(self.settings).main(
             sample_sheet=self.sample_sheet,
             fq_dir=self.fq_dir,
             fq_suffix=self.fq_suffix,
             clip_5_prime=self.clip_5_prime)
 
-    def importing(self):
-        self.single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
+        # 2 importing
+        single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
             sample_sheet=self.sample_sheet,
-            fq_dir=self.trimmed_fq_dir,
-            fq_suffix=self.fq_suffix)
+            fq_dir=trimmed_fq_dir,
+            fq_suffix=trimmed_fq_suffix)
 
-    def denoise(self):
+        # 3 denoise
         self.feature_table_qza, self.feature_sequence_qza = Dada2SingleEnd(self.settings).main(
-            demultiplexed_seq_qza=self.single_end_seq_qza,
+            demultiplexed_seq_qza=single_end_seq_qza,
             max_expected_error_bases=self.max_expected_error_bases)
+
+        return self.feature_table_qza, self.feature_sequence_qza
 
 
 class GenerateASVPairedEnd(Processor):
+
+    MERGE = 'merge'
+    POOL = 'pool'
 
     sample_sheet: str
     fq_dir: str
@@ -137,9 +124,9 @@ class GenerateASVPairedEnd(Processor):
     fq2_suffix: str
     clip_r1_5_prime: int
     clip_r2_5_prime: int
+    paired_end_mode: str
     max_expected_error_bases: float
 
-    trimmed_fq_dir: str
     feature_sequence_qza: str
     feature_table_qza: str
 
@@ -151,6 +138,7 @@ class GenerateASVPairedEnd(Processor):
             fq2_suffix: str,
             clip_r1_5_prime: int,
             clip_r2_5_prime: int,
+            paired_end_mode: str,
             max_expected_error_bases: float) -> Tuple[str, str]:
 
         self.sample_sheet = sample_sheet
@@ -159,17 +147,22 @@ class GenerateASVPairedEnd(Processor):
         self.fq2_suffix = fq2_suffix
         self.clip_r1_5_prime = clip_r1_5_prime
         self.clip_r2_5_prime = clip_r2_5_prime
+        self.paired_end_mode = paired_end_mode
         self.max_expected_error_bases = max_expected_error_bases
 
-        self.workflow()
+        assert self.paired_end_mode in [self.MERGE, self.POOL], f'"{self.paired_end_mode}" is not a valid mode for GenerateASV'
+
+        if self.paired_end_mode == self.MERGE:
+            self.run_merge_mode()
+        else:
+            self.run_pool_mode()
 
         return self.feature_table_qza, self.feature_sequence_qza
 
-    def workflow(self):
-        pass
-
-    def trimming(self):
-        self.trimmed_fq_dir = BatchTrimGalorePairedEnd(self.settings).main(
+    def run_merge_mode(self):
+        # 1 trimming
+        trimmed_fq_dir, trimmed_fq1_suffix, trimmed_fq2_suffix = BatchTrimGalorePairedEnd(
+            self.settings).main(
             sample_sheet=self.sample_sheet,
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
@@ -177,61 +170,43 @@ class GenerateASVPairedEnd(Processor):
             clip_r1_5_prime=self.clip_r1_5_prime,
             clip_r2_5_prime=self.clip_r2_5_prime)
 
-
-class GenerateASVMergePairedEnd(GenerateASVPairedEnd):
-
-    paired_end_seq_qza: str
-
-    def workflow(self):
-
-        self.trimming()
-        self.importing()
-        self.denoise()
-
-        return self.feature_table_qza, self.feature_sequence_qza
-
-    def importing(self):
-        self.paired_end_seq_qza = ImportPairedEndFastq(self.settings).main(
+        # 2 importing
+        paired_end_seq_qza = ImportPairedEndFastq(self.settings).main(
             sample_sheet=self.sample_sheet,
-            fq_dir=self.trimmed_fq_dir,
-            fq1_suffix=self.fq1_suffix,
-            fq2_suffix=self.fq2_suffix)
+            fq_dir=trimmed_fq_dir,
+            fq1_suffix=trimmed_fq1_suffix,
+            fq2_suffix=trimmed_fq2_suffix)
 
-    def denoise(self):
+        # 3 denoise
         self.feature_table_qza, self.feature_sequence_qza = Dada2PairedEnd(self.settings).main(
-            demultiplexed_seq_qza=self.paired_end_seq_qza,
+            demultiplexed_seq_qza=paired_end_seq_qza,
             max_expected_error_bases=self.max_expected_error_bases)
 
-
-class GenerateASVPoolPairedEnd(GenerateASVPairedEnd):
-
-    pooled_fq_dir: str
-    fq_suffix: str
-    single_end_seq_qza: str
-
-    def workflow(self):
-
-        self.trimming()
-        self.pool()
-        self.importing()
-        self.denoise()
-
-        return self.feature_table_qza, self.feature_sequence_qza
-
-    def pool(self):
-        self.pooled_fq_dir, self.fq_suffix = BatchPool(self.settings).main(
+    def run_pool_mode(self):
+        # 1 trimming
+        trimmed_fq_dir, trimmed_fq1_suffix, trimmed_fq2_suffix = BatchTrimGalorePairedEnd(
+            self.settings).main(
             sample_sheet=self.sample_sheet,
-            fq_dir=self.trimmed_fq_dir,
+            fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
-            fq2_suffix=self.fq2_suffix)
+            fq2_suffix=self.fq2_suffix,
+            clip_r1_5_prime=self.clip_r1_5_prime,
+            clip_r2_5_prime=self.clip_r2_5_prime)
 
-    def importing(self):
-        self.single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
+        # 2 pooling
+        pooled_fq_dir, pooled_fq_suffix = BatchPool(self.settings).main(
             sample_sheet=self.sample_sheet,
-            fq_dir=self.pooled_fq_dir,
-            fq_suffix=self.fq_suffix)
+            fq_dir=trimmed_fq_dir,
+            fq1_suffix=trimmed_fq1_suffix,
+            fq2_suffix=trimmed_fq2_suffix)
 
-    def denoise(self):
+        # 3 importing
+        single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
+            sample_sheet=self.sample_sheet,
+            fq_dir=pooled_fq_dir,
+            fq_suffix=pooled_fq_suffix)
+
+        # 4 denoise
         self.feature_table_qza, self.feature_sequence_qza = Dada2SingleEnd(self.settings).main(
-            demultiplexed_seq_qza=self.single_end_seq_qza,
+            demultiplexed_seq_qza=single_end_seq_qza,
             max_expected_error_bases=self.max_expected_error_bases)

@@ -2,8 +2,6 @@ import os
 import pandas as pd
 from os.path import basename
 from typing import Tuple, List
-
-
 from .template import Processor, Settings
 
 
@@ -107,6 +105,9 @@ class TrimGalorePairedEnd(Processor):
 
 class BatchTrimGalorePairedEnd(Processor):
 
+    TRIMMED_FQ1_SUFFIX = '_R1.fastq.gz'
+    TRIMMED_FQ2_SUFFIX = '_R2.fastq.gz'
+
     sample_sheet: str
     fq_dir: str
     fq1_suffix: str
@@ -128,7 +129,7 @@ class BatchTrimGalorePairedEnd(Processor):
             fq1_suffix: str,
             fq2_suffix: str,
             clip_r1_5_prime: int,
-            clip_r2_5_prime: int) -> str:
+            clip_r2_5_prime: int) -> Tuple[str, str, str]:
 
         self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
@@ -142,7 +143,7 @@ class BatchTrimGalorePairedEnd(Processor):
         for name in self.sample_names:
             self.process_one_pair(name)
 
-        return self.out_fq_dir
+        return self.out_fq_dir, self.TRIMMED_FQ1_SUFFIX, self.TRIMMED_FQ2_SUFFIX
 
     def set_sample_names(self):
         self.sample_names = pd.read_csv(self.sample_sheet, index_col=0).index.tolist()
@@ -163,14 +164,11 @@ class BatchTrimGalorePairedEnd(Processor):
         )
 
         for fq_gz, suffix in [
-            (trimmed_fq1_gz, self.fq1_suffix),
-            (trimmed_fq2_gz, self.fq2_suffix)
+            (trimmed_fq1_gz, self.TRIMMED_FQ1_SUFFIX),
+            (trimmed_fq2_gz, self.TRIMMED_FQ2_SUFFIX)
         ]:
             dst = f'{self.out_fq_dir}/{name}{suffix}'
-            if suffix.endswith('.gz'):
-                self.call(f'mv {fq_gz} {dst}')
-            else:  # suffix is not .gz, so the dst file needs to be uncompressed
-                self.call(f'gunzip {fq_gz} && mv {fq_gz[:-3]} {dst}')
+            self.call(f'mv {fq_gz} {dst}')
 
 
 class TrimGaloreSingleEnd(Processor):
@@ -251,6 +249,8 @@ class TrimGaloreSingleEnd(Processor):
 
 class BatchTrimGaloreSingleEnd(Processor):
 
+    TRIMMED_FQ_SUFFIX = '.fastq.gz'
+
     sample_sheet: str
     fq_dir: str
     fq_suffix: str
@@ -268,7 +268,7 @@ class BatchTrimGaloreSingleEnd(Processor):
             sample_sheet: str,
             fq_dir: str,
             fq_suffix: str,
-            clip_5_prime: int) -> str:
+            clip_5_prime: int) -> Tuple[str, str]:
 
         self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
@@ -280,7 +280,7 @@ class BatchTrimGaloreSingleEnd(Processor):
         for name in self.sample_names:
             self.process_one_fq(name)
 
-        return self.out_fq_dir
+        return self.out_fq_dir, self.TRIMMED_FQ_SUFFIX
 
     def set_sample_names(self):
         self.sample_names = pd.read_csv(self.sample_sheet, index_col=0).index.tolist()
@@ -294,6 +294,4 @@ class BatchTrimGaloreSingleEnd(Processor):
 
         fq = self.trim_galore(fq=fq, clip_5_prime=self.clip_5_prime)
 
-        os.rename(
-            fq, f'{self.out_fq_dir}/{name}{self.fq_suffix}'
-        )
+        self.call(f'mv {fq} {self.out_fq_dir}/{name}{self.TRIMMED_FQ_SUFFIX}')
