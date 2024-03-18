@@ -27,6 +27,7 @@ class Main:
     colormap: str
     invert_colors: bool
     publication_figure: bool
+    skip_differential_abundance: bool
 
     settings: Settings
 
@@ -51,6 +52,7 @@ class Main:
             colormap: str,
             invert_colors: bool,
             publication_figure: bool,
+            skip_differential_abundance: bool,
             outdir: str,
             threads: int,
             debug: bool):
@@ -74,6 +76,7 @@ class Main:
         self.colormap = colormap
         self.invert_colors = invert_colors
         self.publication_figure = publication_figure
+        self.skip_differential_abundance = skip_differential_abundance
 
         self.settings = Settings(
             workdir=get_temp_path(prefix='./qiime2_pipeline_workdir_'),
@@ -110,7 +113,8 @@ class Main:
             n_taxa_barplot=self.n_taxa_barplot,
             beta_diversity_feature_level=self.beta_diversity_feature_level,
             colormap=self.colormap,
-            invert_colors=self.invert_colors)
+            invert_colors=self.invert_colors,
+            skip_differential_abundance=self.skip_differential_abundance)
 
     def remove_workdir(self):
         if not self.settings.debug:

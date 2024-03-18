@@ -166,7 +166,7 @@ OPTIONAL = [
             'type': str,
             'required': False,
             'default': 'Set1',
-            'help': 'matplotlib colormap for plotting (default: %(default)s)',
+            'help': 'matplotlib colormap for plotting, or comma-separated color names, e.g. "darkred,lightgreen,skyblue" (default: %(default)s)',
         }
     },
     {
@@ -181,6 +181,13 @@ OPTIONAL = [
         'properties': {
             'action': 'store_true',
             'help': 'plot figures in the form and quality for paper publication',
+        }
+    },
+    {
+        'keys': ['--skip-differential-abundance'],
+        'properties': {
+            'action': 'store_true',
+            'help': 'skip differential abundance analysis',
         }
     },
     {
@@ -267,6 +274,7 @@ class EntryPoint:
             colormap=args.colormap,
             invert_colors=args.invert_colors,
             publication_figure=args.publication_figure,
+            skip_differential_abundance=args.skip_differential_abundance,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)

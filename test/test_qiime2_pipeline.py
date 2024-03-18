@@ -28,8 +28,9 @@ class TestQiime2Pipeline(TestCase):
             heatmap_read_fraction=0.99,
             n_taxa_barplot=20,
             beta_diversity_feature_level='species',
-            colormap='Set1',
+            colormap='gold,limegreen',
             invert_colors=True,
+            skip_differential_abundance=False,
         )
 
     def test_single_end(self):
@@ -52,4 +53,5 @@ class TestQiime2Pipeline(TestCase):
             beta_diversity_feature_level='feature',
             colormap='Set1',
             invert_colors=True,
+            skip_differential_abundance=False,
         )

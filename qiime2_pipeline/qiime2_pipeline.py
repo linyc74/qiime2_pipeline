@@ -40,6 +40,7 @@ class Qiime2Pipeline(Processor):
     beta_diversity_feature_level: str
     colormap: str
     invert_colors: bool
+    skip_differential_abundance: bool
 
     feature_table_qza: str
     feature_sequence_qza: str
@@ -70,7 +71,8 @@ class Qiime2Pipeline(Processor):
             n_taxa_barplot: int,
             beta_diversity_feature_level: str,
             colormap: str,
-            invert_colors: bool):
+            invert_colors: bool,
+            skip_differential_abundance: bool):
 
         self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
@@ -90,6 +92,7 @@ class Qiime2Pipeline(Processor):
         self.beta_diversity_feature_level = beta_diversity_feature_level
         self.colormap = colormap
         self.invert_colors = invert_colors
+        self.skip_differential_abundance = skip_differential_abundance
 
         self.copy_sample_sheet()
 
@@ -229,6 +232,8 @@ class Qiime2Pipeline(Processor):
             colors=self.colors)
 
     def differential_abundance(self):
+        if self.skip_differential_abundance:
+            return
         DifferentialAbundance(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             sample_sheet=self.sample_sheet,

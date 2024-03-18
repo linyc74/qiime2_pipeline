@@ -56,3 +56,15 @@ class TestGetColors(TestCase):
             (0.8941176470588236, 0.10196078431372549, 0.10980392156862745, 1.0),
         ]
         self.assertListEqual(expected, actual)
+
+    def test_input_color_names(self):
+        actual = GetColors(self.settings).main(
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
+            colormap='red,green',
+            invert_colors=False
+        )
+        expected = [
+            (1.0, 0.0, 0.0, 1.0),
+            (0.0, 0.5019607843137255, 0.0, 1.0)
+        ]
+        self.assertListEqual(expected, actual)
