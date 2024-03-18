@@ -252,22 +252,36 @@ class ScatterPlot(Processor):
         self.colors = colors
         self.output_prefix = output_prefix
 
+        self.set_figsize()
         self.set_parameters()
         self.init_figure()
         self.scatterplot()
         self.label_points()
         self.save_figure()
 
+    def set_figsize(self):
+        if self.settings.for_publication:
+            base_width = 7.5 / 2.54
+            chr_width = 0.15 / 2.54
+            h = 6 / 2.54
+        else:
+            base_width = 14 / 2.54
+            chr_width = 0.218 / 2.54
+            h = 12 / 2.54
+
+        max_legend_chrs = pd.Series(self.sample_coordinate_df[self.group_column]).apply(len).max()
+        w = base_width + (max_legend_chrs * chr_width)
+
+        self.figsize = (w, h)
+
     def set_parameters(self):
         if self.settings.for_publication:
-            self.figsize = (9 / 2.54, 6 / 2.54)
             self.point_size = 20.
             self.marker_edge_color = 'white'
             self.line_width = 0.5
             self.fontsize = 7
             self.dpi = 600
         else:
-            self.figsize = (16.5 / 2.54, 12 / 2.54)
             self.point_size = 30.
             self.marker_edge_color = 'white'
             self.line_width = 1.0

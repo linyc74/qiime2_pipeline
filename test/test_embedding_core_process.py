@@ -41,9 +41,18 @@ class TestScatterPlot(TestCase):
     def tearDown(self):
         self.tear_down()
 
-    def test_main(self):
+    def test_short_name(self):
         ScatterPlot(self.settings).main(
-            sample_coordinate_df=read_tsv(f'{self.indir}/braycurtis-pcoa-sample-coordinate.tsv'),
+            sample_coordinate_df=read_tsv(f'{self.indir}/sample-coordinate-short-name.tsv'),
+            x_column='PC1',
+            y_column='PC2',
+            hue_column='Group',
+            colors=['#1f77b4', '#ff7f0e', '#2ca02c'],
+            output_prefix=f'{self.outdir}/scatterplot')
+
+    def test_long_name(self):
+        ScatterPlot(self.settings).main(
+            sample_coordinate_df=read_tsv(f'{self.indir}/sample-coordinate-long-name.tsv'),
             x_column='PC1',
             y_column='PC2',
             hue_column='Group',
