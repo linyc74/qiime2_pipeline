@@ -64,6 +64,7 @@ class Logger:
 class Processor:
 
     CMD_LINEBREAK = ' \\\n  '
+    MAX_TRY = 3
 
     settings: Settings
     workdir: str
@@ -90,5 +91,17 @@ class Processor:
 
     def call(self, cmd: str):
         self.logger.info(cmd)
-        if not self.mock:
-            subprocess.check_call(cmd, shell=True)
+        if self.mock:
+            return
+
+        tried = 0
+        while True:
+            try:
+                subprocess.check_call(cmd, shell=True)
+                break  # succeed and break from the loop
+            except Exception as e:
+                self.logger.info(f'Failed: {e}')
+                tried += 1
+
+            if tried >= self.MAX_TRY:
+                raise Exception('Failed too many times')

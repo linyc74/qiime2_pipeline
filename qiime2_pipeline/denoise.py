@@ -26,7 +26,7 @@ class Dada2Base(Processor):
 
         self.set_output_paths()
         self.set_cmd()
-        self.execute()
+        self.call(self.cmd)
         self.export_stats()
 
         return self.feature_table_qza, self.feature_sequence_qza
@@ -38,20 +38,6 @@ class Dada2Base(Processor):
 
     def set_cmd(self):
         pass
-
-    def execute(self):
-        # dada2 could randomly fail due to memory segmentaion fault, so retry if it fails
-        tried = 0
-        while True:
-            try:
-                self.call(self.cmd)
-                break  # succeed and break from the loop
-            except Exception as e:
-                self.logger.info(f'DADA2 failed: {e}')
-                tried += 1
-
-            if tried >= 3:
-                raise Exception('DADA2 failed too many times')
 
     def export_stats(self):
         out = f'{self.workdir}/dada2'
