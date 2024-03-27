@@ -14,6 +14,8 @@ class Dada2Base(Processor):
     feature_table_qza: str
     denoising_stats_qza: str
 
+    cmd: str
+
     def main(
             self,
             demultiplexed_seq_qza: str,
@@ -23,6 +25,7 @@ class Dada2Base(Processor):
         self.max_expected_error_bases = max_expected_error_bases
 
         self.set_output_paths()
+        self.set_cmd()
         self.execute()
         self.export_stats()
 
@@ -33,8 +36,22 @@ class Dada2Base(Processor):
         self.feature_table_qza = f'{self.workdir}/dada2-feature-table.qza'
         self.denoising_stats_qza = f'{self.workdir}/dada2-stats.qza'
 
-    def execute(self):
+    def set_cmd(self):
         pass
+
+    def execute(self):
+        # dada2 could randomly fail due to memory segmentaion fault, so retry if it fails
+        tried = 0
+        while True:
+            try:
+                self.call(self.cmd)
+                break  # succeed and break from the loop
+            except Exception as e:
+                self.logger.info(f'DADA2 failed: {e}')
+                tried += 1
+
+            if tried >= 3:
+                raise Exception('DADA2 failed too many times')
 
     def export_stats(self):
         out = f'{self.workdir}/dada2'
@@ -54,9 +71,9 @@ class Dada2Base(Processor):
 
 class Dada2SingleEnd(Dada2Base):
 
-    def execute(self):
+    def set_cmd(self):
         log = f'{self.outdir}/qiime-dada2-denoise-single.log'
-        cmd = self.CMD_LINEBREAK.join([
+        self.cmd = self.CMD_LINEBREAK.join([
             'qiime dada2 denoise-single',
             f'--i-demultiplexed-seqs {self.demultiplexed_seq_qza}',
             f'--p-trim-left {self.TRIM_LEFT}',
@@ -69,16 +86,15 @@ class Dada2SingleEnd(Dada2Base):
             f'1>> {log}',
             f'2>> {log}'
         ])
-        self.call(cmd)
 
 
 class Dada2PairedEnd(Dada2Base):
 
     MIN_OVERLAP = 12
 
-    def execute(self):
+    def set_cmd(self):
         log = f'{self.outdir}/qiime-dada2-denoise-paired.log'
-        cmd = self.CMD_LINEBREAK.join([
+        self.cmd = self.CMD_LINEBREAK.join([
             'qiime dada2 denoise-paired',
             f'--i-demultiplexed-seqs {self.demultiplexed_seq_qza}',
             f'--p-trim-left-f {self.TRIM_LEFT}',
@@ -95,4 +111,3 @@ class Dada2PairedEnd(Dada2Base):
             f'1>> {log}',
             f'2>> {log}'
         ])
-        self.call(cmd)
