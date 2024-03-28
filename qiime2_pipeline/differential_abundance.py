@@ -3,9 +3,10 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.axes
 import matplotlib.pyplot as plt
+from typing import List, Dict
 from itertools import combinations
-from typing import List, Tuple, Dict
 from scipy.stats import mannwhitneyu
+from statsmodels.stats.multitest import multipletests
 from .template import Processor
 from .grouping import GROUP_COLUMN, AddGroupColumn
 from .normalization import CountNormalization
@@ -79,41 +80,11 @@ class OneTaxonLevelDifferentialAbundance(Processor):
             sample_sheet=self.sample_sheet)
 
     def mannwhitneyu_tests_and_boxplots(self):
-
-        groups = pd.read_csv(self.sample_sheet, index_col=0)[GROUP_COLUMN].unique()
-
-        for group_1, group_2 in combinations(groups, 2):
-
-            dstdir = f'{self.outdir}/{DSTDIR_NAME}/{self.taxon_level}/{group_1}-{group_2}'
-            os.makedirs(dstdir, exist_ok=True)
-            stats_data = []
-
-            for taxon in self.taxon_df.columns:
-
-                if taxon == GROUP_COLUMN:
-                    continue
-
-                statistic, pvalue = MannwhitneyuTestAndBoxplot(self.settings).main(
-                    df=self.taxon_df,
-                    colors=self.colors,
-                    group_1=group_1,
-                    group_2=group_2,
-                    taxon=taxon,
-                    dstdir=dstdir)
-
-                stats_data.append({
-                    'Taxon': taxon,
-                    'Statistics': statistic,
-                    'P value': pvalue
-                })
-
-            pd.DataFrame(stats_data).sort_values(
-                by='P value',
-                ascending=True
-            ).to_csv(
-                f'{dstdir}/Mann-Whitney-U.csv',
-                index=False
-            )
+        MannwhitneyuTestsAndBoxplots(self.settings).main(
+            taxon_level=self.taxon_level,
+            taxon_df=self.taxon_df,
+            sample_sheet=self.sample_sheet,
+            colors=self.colors)
 
 
 class PrepareTaxonDf(Processor):
@@ -206,59 +177,83 @@ class AddSuffixToDuplicatedColumns(Processor):
             self.outdf = pd.concat([self.outdf, series], axis=1)
 
 
-class MannwhitneyuTestAndBoxplot(Processor):
+class MannwhitneyuTestsAndBoxplots(Processor):
 
-    df: pd.DataFrame
+    taxon_level: str
+    taxon_df: pd.DataFrame
+    sample_sheet: str
     colors: list
-    group_1: str
-    group_2: str
-    taxon: str
-    dstdir: str
-
-    statistic: float
-    pvalue: float
 
     def main(
             self,
-            df: pd.DataFrame,
-            colors: list,
-            group_1: str,
-            group_2: str,
-            taxon: str,
-            dstdir: str) -> Tuple[float, float]:
+            taxon_level: str,
+            taxon_df: pd.DataFrame,
+            sample_sheet: str,
+            colors: list):
 
-        self.df = df
+        self.taxon_level = taxon_level
+        self.taxon_df = taxon_df
+        self.sample_sheet = sample_sheet
         self.colors = colors
-        self.group_1 = group_1
-        self.group_2 = group_2
-        self.taxon = taxon
-        self.dstdir = dstdir
 
-        self.mannwhitneyu_test()
-        self.boxplot()
+        groups = pd.read_csv(self.sample_sheet, index_col=0)[GROUP_COLUMN].unique()
 
-        return self.statistic, self.pvalue
+        for group_1, group_2 in combinations(groups, 2):
+            self.process_group_pair(group_1=group_1, group_2=group_2)
 
-    def mannwhitneyu_test(self):
-        is_group_1 = self.df[GROUP_COLUMN] == self.group_1
-        is_group_2 = self.df[GROUP_COLUMN] == self.group_2
+    def process_group_pair(self, group_1: str, group_2: str):
+        dstdir = f'{self.outdir}/{DSTDIR_NAME}/{self.taxon_level}/{group_1}-{group_2}'
+        os.makedirs(dstdir, exist_ok=True)
 
-        res = mannwhitneyu(
-            x=self.df.loc[is_group_1, self.taxon],
-            y=self.df.loc[is_group_2, self.taxon]
+        stats_data = []
+
+        for taxon in self.taxon_df.columns:
+
+            if taxon == GROUP_COLUMN:
+                continue
+
+            is_group_1 = self.taxon_df[GROUP_COLUMN] == group_1
+            is_group_2 = self.taxon_df[GROUP_COLUMN] == group_2
+
+            statistic, pvalue = mannwhitneyu(
+                x=self.taxon_df.loc[is_group_1, taxon],
+                y=self.taxon_df.loc[is_group_2, taxon]
+            )
+
+            Boxplot(self.settings).main(
+                data=self.taxon_df[is_group_1 | is_group_2],
+                x=GROUP_COLUMN,
+                y=taxon,
+                colors=self.colors,
+                title=f'{taxon}\np = {pvalue:.4f}',
+                dstdir=dstdir)
+
+            stats_data.append({
+                'Taxon': taxon,
+                'Mean 1 (%)': self.taxon_df.loc[is_group_1, taxon].mean(),
+                'Mean 2 (%)': self.taxon_df.loc[is_group_2, taxon].mean(),
+                'Statistics': statistic,
+                'P value': pvalue,
+            })
+
+        stats_df = pd.DataFrame(stats_data).sort_values(
+            by='P value',
+            ascending=True
         )
 
-        self.statistic, self.pvalue = res.statistic, res.pvalue
+        rejected, pvals_corrected, _, _ = multipletests(
+            stats_df['P value'],
+            alpha=0.1,
+            method='fdr_bh',  # Benjamini-Hochberg
+            is_sorted=False,
+            returnsorted=False)
 
-    def boxplot(self):
-        isin_groups = self.df[GROUP_COLUMN].isin([self.group_1, self.group_2])
-        Boxplot(self.settings).main(
-            data=self.df[isin_groups],
-            x=GROUP_COLUMN,
-            y=self.taxon,
-            colors=self.colors,
-            title=f'{self.taxon}\np = {self.pvalue:.4f}',
-            dstdir=self.dstdir)
+        stats_df['Benjamini-Hochberg adjusted P value'] = pvals_corrected
+
+        stats_df.to_csv(
+            f'{dstdir}/Mann-Whitney-U.csv',
+            index=False
+        )
 
 
 class Boxplot(Processor):
