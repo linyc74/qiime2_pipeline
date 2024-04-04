@@ -122,7 +122,7 @@ class Qiime2Pipeline(Processor):
 
     def copy_sample_sheet(self):
         # to avoid the user from modifying or deleting the original sample sheet
-        self.call(f'cp {self.sample_sheet} {self.workdir}/')
+        self.call(f'cp "{self.sample_sheet}" "{self.workdir}/"')
         self.sample_sheet = edit_fpath(
             fpath=self.sample_sheet,
             dstdir=self.workdir)
