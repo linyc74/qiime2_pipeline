@@ -89,7 +89,7 @@ class Classify(Processor):
         log = f'{self.outdir}/qiime-feature-classifier-classify-sklearn.log'
         cmd = self.CMD_LINEBREAK.join([
             'qiime feature-classifier classify-sklearn',
-            f'--i-classifier {self.nb_classifier_qza}',
+            f'--i-classifier "{self.nb_classifier_qza}"',
             f'--i-reads {self.representative_seq_qza}',
             f'--p-read-orientation {self.read_orientation}',
             f'--p-confidence {self.CONFIDENCE_CUTOFF}',
