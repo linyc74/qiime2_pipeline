@@ -98,7 +98,7 @@ def read_data(
     classes = list(set([v[2] for v in rows if len(v)>2]))
     if len(classes) < 1: 
         print("No differentially abundant features found in "+input_file)
-        os.system("touch "+output_file)
+        os.system(f'touch "{output_file}"')
         # sys.exit()  # This nasty exit was causing the pipeline to fail, need to comment it out
     data = {}
     data['rows'] = rows
