@@ -93,8 +93,8 @@ class LefSeOneTaxonLevel(Processor):
             self.lefse_input,
             f'-u 1',  # first row subject id
             f'-c 2',  # second row class id
-            f'1>> {self.lefse_log}',
-            f'2>> {self.lefse_log}'
+            f'1>> "{self.lefse_log}"',
+            f'2>> "{self.lefse_log}"'
         ])
         self.call(cmd)
 
@@ -103,9 +103,9 @@ class LefSeOneTaxonLevel(Processor):
         cmd = self.CMD_LINEBREAK.join([
             'lefse_run.py',
             self.lefse_input,
-            self.lefse_result,
-            f'1>> {self.lefse_log}',
-            f'2>> {self.lefse_log}'
+            f'"{self.lefse_result}"',
+            f'1>> "{self.lefse_log}"',
+            f'2>> "{self.lefse_log}"'
         ])
         self.call(cmd)
 

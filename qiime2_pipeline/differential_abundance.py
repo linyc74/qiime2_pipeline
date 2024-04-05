@@ -41,8 +41,8 @@ class DifferentialAbundance(Processor):
         self.zip_dstdir()
 
     def zip_dstdir(self):
-        self.call(f'tar -C {self.outdir} -czf {self.outdir}/{DSTDIR_NAME}.tar.gz {DSTDIR_NAME}')
-        self.call(f'rm -r {self.outdir}/{DSTDIR_NAME}')
+        self.call(f'tar -C "{self.outdir}" -czf "{self.outdir}/{DSTDIR_NAME}.tar.gz" {DSTDIR_NAME}')
+        self.call(f'rm -r "{self.outdir}/{DSTDIR_NAME}"')
 
 
 class OneTaxonLevelDifferentialAbundance(Processor):

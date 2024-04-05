@@ -96,8 +96,8 @@ class Classify(Processor):
             f'--p-n-jobs {self.threads}',
             f'--p-reads-per-batch {self.classifier_reads_per_batch}',
             f'--o-classification {self.taxonomy_qza}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 

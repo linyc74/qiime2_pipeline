@@ -241,5 +241,5 @@ class Qiime2Pipeline(Processor):
 
     def collect_log_files(self):
         makedirs(f'{self.outdir}/log', exist_ok=True)
-        cmd = f'mv {self.outdir}/*.log {self.outdir}/log/'
+        cmd = f'mv "{self.outdir}"/*.log "{self.outdir}"/log/'
         self.call(cmd)

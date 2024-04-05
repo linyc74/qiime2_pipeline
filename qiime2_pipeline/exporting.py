@@ -11,14 +11,14 @@ class Export(Processor):
             'qiime tools export',
             f'--input-path {input_path}',
             f'--output-path {output_path}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 
     def mv(self, src: str, dst: str):
         if abspath(src) != abspath(dst):
-            self.call(f'mv {src} {dst}')
+            self.call(f'mv "{src}" "{dst}"')
 
 
 class ExportFeatureTable(Export):
@@ -51,8 +51,8 @@ class ExportFeatureTable(Export):
             'biom convert --to-tsv',
             f'-i {self.workdir}/feature-table.biom',
             f'-o {self.tsv}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 

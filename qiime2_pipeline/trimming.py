@@ -66,7 +66,8 @@ class TrimGalorePairedEnd(Processor):
         args += [
             self.fq1,
             self.fq2,
-            f'1>> {log} 2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ]
 
         self.call(self.CMD_LINEBREAK.join(args))
@@ -79,7 +80,7 @@ class TrimGalorePairedEnd(Processor):
             'fastqc.zip',
             'trimming_report.txt'
         ]:
-            self.call(f'mv {self.workdir}/*{suffix} {dstdir}/')
+            self.call(f'mv {self.workdir}/*{suffix} "{dstdir}/"')
 
     def set_out_fq1(self):
         f = basename(self.fq1)
@@ -168,7 +169,7 @@ class BatchTrimGalorePairedEnd(Processor):
             (trimmed_fq2_gz, self.TRIMMED_FQ2_SUFFIX)
         ]:
             dst = f'{self.out_fq_dir}/{name}{suffix}'
-            self.call(f'mv {fq_gz} {dst}')
+            self.call(f'mv "{fq_gz}" "{dst}"')
 
 
 class TrimGaloreSingleEnd(Processor):
@@ -215,7 +216,8 @@ class TrimGaloreSingleEnd(Processor):
         log = f'{self.outdir}/trim_galore.log'
         args += [
             self.fq,
-            f'1>> {log} 2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ]
 
         self.call(self.CMD_LINEBREAK.join(args))
@@ -228,7 +230,7 @@ class TrimGaloreSingleEnd(Processor):
             'fastqc.zip',
             'trimming_report.txt'
         ]:
-            self.call(f'mv {self.workdir}/*{suffix} {dstdir}/')
+            self.call(f'mv {self.workdir}/*{suffix} "{dstdir}/"')
 
     def set_out_fq(self):
         f = basename(self.fq)
@@ -294,4 +296,4 @@ class BatchTrimGaloreSingleEnd(Processor):
 
         fq = self.trim_galore(fq=fq, clip_5_prime=self.clip_5_prime)
 
-        self.call(f'mv {fq} {self.out_fq_dir}/{name}{self.TRIMMED_FQ_SUFFIX}')
+        self.call(f'mv "{fq}" "{self.out_fq_dir}/{name}{self.TRIMMED_FQ_SUFFIX}"')

@@ -10,7 +10,7 @@ def get_dirs(py_path: str) -> Tuple[str, str, str]:
     indir = os.path.relpath(path=py_path[:-3], start=os.getcwd())
     basedir = os.path.dirname(indir)
     workdir = os.path.join(basedir, 'workdir')
-    outdir = os.path.join(basedir, 'outdir')
+    outdir = os.path.join(basedir, 'outdir with blanks')
     return indir, workdir, outdir
 
 

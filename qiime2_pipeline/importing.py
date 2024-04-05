@@ -49,8 +49,8 @@ class ImportSingleEndFastq(ImportFastq):
             f'--input-format SingleEndFastqManifestPhred33V2',
             f'--input-path {self.manifest_tsv}',
             f'--output-path {self.output_qza}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 
@@ -96,8 +96,8 @@ class ImportPairedEndFastq(ImportFastq):
             f'--input-format PairedEndFastqManifestPhred33V2',
             f'--input-path {self.manifest_tsv}',
             f'--output-path {self.output_qza}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 
@@ -235,10 +235,10 @@ class ImportFeatureTable(Processor):
             'biom convert',
             '--to-hdf5',
             '--table-type="OTU table"',
-            f'-i {self.feature_table_tsv}',
-            f'-o {self.biom}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'-i "{self.feature_table_tsv}"',
+            f'-o "{self.biom}"',
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 
@@ -255,10 +255,10 @@ class ImportFeatureTable(Processor):
             'qiime tools import',
             f'--type \'FeatureTable[Frequency]\'',
             f'--input-format BIOMV210Format',
-            f'--input-path {self.biom}',
-            f'--output-path {self.qza}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'--input-path "{self.biom}"',
+            f'--output-path "{self.qza}"',
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 
@@ -283,10 +283,10 @@ class ImportFeatureSequence(Processor):
         cmd = self.CMD_LINEBREAK.join([
             'qiime tools import',
             f'--type FeatureData[Sequence]',
-            f'--input-path {self.feature_sequence_fa}',
-            f'--output-path {self.qza}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'--input-path "{self.feature_sequence_fa}"',
+            f'--output-path "{self.qza}"',
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 
@@ -312,9 +312,9 @@ class ImportTaxonomy(Processor):
         cmd = self.CMD_LINEBREAK.join([
             'qiime tools import',
             f'--type FeatureData[Taxonomy]',
-            f'--input-path {self.taxonomy_tsv}',
-            f'--output-path {self.qza}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'--input-path "{self.taxonomy_tsv}"',
+            f'--output-path "{self.qza}"',
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)

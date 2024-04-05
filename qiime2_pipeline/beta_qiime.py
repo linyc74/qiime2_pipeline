@@ -117,7 +117,7 @@ class RunAllBetaMetricsToDistanceMatrixTsvs(Processor):
                 old_suffix='',
                 new_suffix='',
                 dstdir=dstdir)
-            self.call(f'mv {tsv} {new}')
+            self.call(f'mv "{tsv}" "{new}"')
             self.distance_matrix_tsvs[i] = new
 
     def log_error(self, metric: str, exception_instance: Exception):
@@ -148,8 +148,8 @@ class RunOneBetaMetricToTsv(Processor):
             f'--i-table {self.feature_table_qza}',
             f'--p-metric {self.metric}',
             f'--o-distance-matrix {self.distance_matrix_qza}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 
@@ -188,8 +188,8 @@ class RunOneBetaPhylogeneticMetricToTsv(Processor):
             f'--i-phylogeny {self.rooted_tree_qza}',
             f'--p-metric {self.metric}',
             f'--o-distance-matrix {self.distance_matrix_qza}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 

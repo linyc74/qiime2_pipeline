@@ -40,7 +40,7 @@ class Vsearch(Processor):
             f'--p-threads {self.threads}',
             f'--o-clustered-table {self.clustered_table_qza}',
             f'--o-clustered-sequences {self.clustered_sequence_qza}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)

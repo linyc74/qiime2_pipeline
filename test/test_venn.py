@@ -53,7 +53,7 @@ class TestProcessTsvPlotVenn(TestCase):
         ProcessTsvPlotVenn(self.settings).main(
             tsv=f'{self.indir}/mock-feature-table.tsv',
             sample_sheet=f'{self.indir}/mock-sample-sheet-3-groups.csv',
-            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0)],
+            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0), (0.3, 0.6, 0.0, 1.0)],
             dstdir=self.outdir)
 
     def test_4_groups(self):

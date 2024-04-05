@@ -47,12 +47,12 @@ class Dada2Base(Processor):
             'qiime tools export',
             f'--input-path {self.denoising_stats_qza}',
             f'--output-path {out}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 
-        self.call(f'mv {out}/stats.tsv {self.outdir}/dada2-stats.tsv')
+        self.call(f'mv "{out}/stats.tsv" "{self.outdir}/dada2-stats.tsv"')
 
 
 class Dada2SingleEnd(Dada2Base):
@@ -69,8 +69,8 @@ class Dada2SingleEnd(Dada2Base):
             f'--o-representative-sequences {self.feature_sequence_qza}',
             f'--o-table {self.feature_table_qza}',
             f'--o-denoising-stats {self.denoising_stats_qza}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
 
 
@@ -94,6 +94,6 @@ class Dada2PairedEnd(Dada2Base):
             f'--o-representative-sequences {self.feature_sequence_qza}',
             f'--o-table {self.feature_table_qza}',
             f'--o-denoising-stats {self.denoising_stats_qza}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])

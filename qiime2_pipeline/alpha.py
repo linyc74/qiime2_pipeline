@@ -106,8 +106,8 @@ class RunOneAlphaMetric(Processor):
             f'--i-table {self.feature_table_qza}',
             f'--p-metric {self.metric}',
             f'--o-alpha-diversity {self.output_qza}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 
@@ -132,8 +132,8 @@ class ReadAlphaDiversityQza(Processor):
             'qiime tools export',
             f'--input-path {self.qza}',
             f'--output-path {self.workdir}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 

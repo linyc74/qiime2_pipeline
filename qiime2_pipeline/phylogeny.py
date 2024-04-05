@@ -94,8 +94,8 @@ class MafftFasttree(Processor):
             f'--o-masked-alignment {self.masked_aligned_seq_qza}',
             f'--o-tree {self.unrooted_tree_qza}',
             f'--o-rooted-tree {self.rooted_tree_qza}',
-            f'1>> {log}',
-            f'2>> {log}'
+            f'1>> "{log}"',
+            f'2>> "{log}"'
         ])
         self.call(cmd)
 
@@ -105,7 +105,7 @@ class MafftFasttree(Processor):
             (self.masked_aligned_seq_qza, self.masked_aligned_seq_fa),
         ]:
             f = ExportAlignedSequence(self.settings).main(aligned_sequence_qza=qza)
-            self.call(f'mv {f} {fa}')
+            self.call(f'mv "{f}" "{fa}"')
 
     def export_to_nwk(self):
         for qza, nwk in [
@@ -113,7 +113,7 @@ class MafftFasttree(Processor):
             (self.unrooted_tree_qza, self.unrooted_tree_nwk),
         ]:
             f = ExportTree(self.settings).main(tree_qza=qza)
-            self.call(f'mv {f} {nwk}')
+            self.call(f'mv "{f}" "{nwk}"')
 
 
 class DrawTree(Processor):
