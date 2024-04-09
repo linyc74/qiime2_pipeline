@@ -1,5 +1,6 @@
 from .setup import TestCase
-from qiime2_pipeline.labeling import FeatureLabeling, add_genus_prefix_to_unidentified_species
+from qiime2_pipeline.labeling import FeatureLabeling, add_genus_prefix_to_unidentified_species, \
+    ensure_one_space_after_semicolon
 
 
 class TestFeatureLabeling(TestCase):
@@ -24,6 +25,34 @@ class TestFeatureLabeling(TestCase):
             (f'{self.workdir}/labeled-feature-sequence.qza', sequence_qza),
         ]:
             self.assertFileExists(expected, actual)
+
+    def test_fungi(self):
+        table_tsv, table_qza, sequence_qza = FeatureLabeling(self.settings).main(
+            taxonomy_qza=f'{self.indir}/fungi-taxonomy.qza',
+            feature_table_qza=f'{self.indir}/fungi-dada2-feature-table.qza',
+            feature_sequence_qza=f'{self.indir}/fungi-dada2-feature-sequence.qza',
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
+            skip_otu=True)
+
+        for expected, actual in [
+            (f'{self.outdir}/labeled-feature-table.tsv', table_tsv),
+            (f'{self.workdir}/labeled-feature-table.qza', table_qza),
+            (f'{self.workdir}/labeled-feature-sequence.qza', sequence_qza),
+        ]:
+            self.assertFileExists(expected, actual)
+
+
+class TestEnsureOneSpaceAfterSemicolon(TestCase):
+
+    def test_already_with_space(self):
+        actual = ensure_one_space_after_semicolon('k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Prevotellaceae; g__Prevotella; s__intermedia')
+        expected = 'k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Prevotellaceae; g__Prevotella; s__intermedia'
+        self.assertEqual(expected, actual)
+
+    def test_no_space_after_semicolon(self):
+        actual = ensure_one_space_after_semicolon('k__Bacteria;p__Bacteroidetes;c__Bacteroidia;o__Bacteroidales;f__Prevotellaceae;g__Prevotella;s__intermedia')
+        expected = 'k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Prevotellaceae; g__Prevotella; s__intermedia'
+        self.assertEqual(expected, actual)
 
 
 class TestAddGenusPrefixToUnidentifiedSpecies(TestCase):

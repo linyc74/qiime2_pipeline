@@ -116,11 +116,19 @@ class GetFeatureIDToLabelDict(Processor):
         for i, row in self.df.iterrows():
             id_ = row['Feature ID']
             taxon = row['Taxon']
+            taxon = ensure_one_space_after_semicolon(taxon)
             taxon = add_genus_prefix_to_unidentified_species(taxon)
+            print(taxon)
             label = f'{self.label_prefix}{i + 1:04d}; {taxon}'
             self.output_dict[id_] = label
 
         return self.output_dict
+
+
+def ensure_one_space_after_semicolon(taxon: str) -> str:
+    items = taxon.split(';')
+    items = [i.lstrip() for i in items]
+    return '; '.join(items)
 
 
 def add_genus_prefix_to_unidentified_species(taxon: str) -> str:
