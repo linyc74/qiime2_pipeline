@@ -61,12 +61,12 @@ class PICRUSt2(Processor):
         log = f'{self.outdir}/picrust2.log'
         args = [
             'picrust2_pipeline.py',
-            f'--study_fasta {self.feature_sequence_fa}',
-            f'--input {self.feature_table_tsv}',
-            f'--output {self.outdir}/{self.DSTDIR_NAME}',
+            f'--study_fasta "{self.feature_sequence_fa}"',
+            f'--input "{self.feature_table_tsv}"',
+            f'--output "{self.outdir}/{self.DSTDIR_NAME}"',
             f'--processes {self.threads}',
-            f'1>> {log}',
-            f'2>> {log}',
+            f'1>> "{log}"',
+            f'2>> "{log}"',
         ]
         self.call(self.CMD_LINEBREAK.join(args))
 
@@ -74,7 +74,7 @@ class PICRUSt2(Processor):
         self.pathway_table_tsv = f'{self.outdir}/picrust2-pathway-table.tsv'
         args = [
             'gunzip --keep --stdout',
-            f'{self.outdir}/{self.DSTDIR_NAME}/pathways_out/path_abun_unstrat.tsv.gz',
-            f'> {self.pathway_table_tsv}'
+            f'"{self.outdir}/{self.DSTDIR_NAME}/pathways_out/path_abun_unstrat.tsv.gz"',
+            f'> "{self.pathway_table_tsv}"'
         ]
         self.call(self.CMD_LINEBREAK.join(args))
