@@ -242,7 +242,7 @@ class Qiime2Pipeline(Processor):
     def lefse(self):
         table_tsv_dict = self.taxon_table_tsv_dict.copy()
         if self.picrust2_pathway_table_tsv is not None:
-            table_tsv_dict['picrust2-pathway'] = self.labeled_feature_table_tsv
+            table_tsv_dict['picrust2-pathway'] = self.picrust2_pathway_table_tsv
         LefSe(self.settings).main(
             table_tsv_dict=table_tsv_dict,
             sample_sheet=self.sample_sheet,
