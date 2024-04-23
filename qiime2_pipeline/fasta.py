@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Union, Dict, List
+from typing import Optional, Tuple
 
 
 class FastaParser:

@@ -10,37 +10,45 @@ from .lefse_plot_cladogram import LefSePlotCladogram
 
 class LefSe(Processor):
 
-    taxon_table_tsv_dict: Dict[str, str]
+    table_tsv_dict: Dict[str, str]
     sample_sheet: str
     colors: list
 
     def main(
             self,
-            taxon_table_tsv_dict: Dict[str, str],
+            table_tsv_dict: Dict[str, str],
             sample_sheet: str,
             colors: list):
 
-        self.taxon_table_tsv_dict = taxon_table_tsv_dict
+        self.table_tsv_dict = table_tsv_dict
         self.sample_sheet = sample_sheet
         self.colors = colors
 
-        for level, tsv in self.taxon_table_tsv_dict.items():
+        for name, tsv in self.table_tsv_dict.items():
             try:
-                LefSeOneTaxonLevel(self.settings).main(
-                    taxon_table_tsv=tsv,
-                    taxon_level=level,
+                LefSeOneLevel(self.settings).main(
+                    table_tsv=tsv,
+                    name=name,
                     sample_sheet=self.sample_sheet,
                     colors=self.colors)
             except Exception as e:
-                self.logger.warning(f'Failed to run LefSe on "{level}" taxon table, with Exception:\n{e}')
+                self.logger.warning(f'Failed to run LefSe on "{name}" table, with Exception:\n{e}')
 
 
-class LefSeOneTaxonLevel(Processor):
+class LefSeOneLevel(Processor):
 
     DSTDIR_NAME = 'lefse'
+    TAXON_LEVELS = [
+        'phylum',
+        'class',
+        'order',
+        'family',
+        'genus',
+        'species'
+    ]
 
-    taxon_table_tsv: str
-    taxon_level: str
+    table_tsv: str
+    name: str
     sample_sheet: str
     colors: list
 
@@ -53,18 +61,18 @@ class LefSeOneTaxonLevel(Processor):
 
     def main(
             self,
-            taxon_table_tsv: str,
-            taxon_level: str,
+            table_tsv: str,
+            name: str,
             sample_sheet: str,
             colors: list):
 
-        self.taxon_table_tsv = taxon_table_tsv
-        self.taxon_level = taxon_level
+        self.table_tsv = table_tsv
+        self.name = name
         self.sample_sheet = sample_sheet
         self.colors = colors
 
         self.make_dstdir()
-        self.add_taxon_level_prefix()
+        self.add_taxon_level_prefixes()
         self.insert_group_row()
         self.format_input()
         self.run_lefse()
@@ -75,21 +83,22 @@ class LefSeOneTaxonLevel(Processor):
         self.dstdir = f'{self.outdir}/{self.DSTDIR_NAME}'
         os.makedirs(self.dstdir, exist_ok=True)
 
-    def add_taxon_level_prefix(self):
-        self.taxon_table_tsv = AddTaxonLevelPrefix(self.settings).main(
-            taxon_table_tsv=self.taxon_table_tsv)
+    def add_taxon_level_prefixes(self):
+        if self.name not in self.TAXON_LEVELS:  # do not add taxon prefixes for picrust2 pathway
+            return
+        self.table_tsv = AddTaxonLevelPrefixes(self.settings).main(taxon_table_tsv=self.table_tsv)
 
     def insert_group_row(self):
-        self.taxon_table_tsv = InsertGroupRow(self.settings).main(
-            taxon_table_tsv=self.taxon_table_tsv,
+        self.table_tsv = InsertGroupRow(self.settings).main(
+            table_tsv=self.table_tsv,
             sample_sheet=self.sample_sheet)
 
     def format_input(self):
-        self.lefse_input = f'{self.workdir}/lefse-{self.taxon_level}-input'
-        self.lefse_log = f'{self.dstdir}/lefse-{self.taxon_level}.log'
+        self.lefse_input = f'{self.workdir}/lefse-{self.name}-input'
+        self.lefse_log = f'{self.dstdir}/lefse-{self.name}.log'
         cmd = self.CMD_LINEBREAK.join([
             'lefse_format_input.py',
-            self.taxon_table_tsv,
+            self.table_tsv,
             self.lefse_input,
             f'-u 1',  # first row subject id
             f'-c 2',  # second row class id
@@ -99,7 +108,7 @@ class LefSeOneTaxonLevel(Processor):
         self.call(cmd)
 
     def run_lefse(self):
-        self.lefse_result = f'{self.dstdir}/lefse-{self.taxon_level}-result.txt'
+        self.lefse_result = f'{self.dstdir}/lefse-{self.name}-result.txt'
         cmd = self.CMD_LINEBREAK.join([
             'lefse_run.py',
             self.lefse_input,
@@ -110,22 +119,23 @@ class LefSeOneTaxonLevel(Processor):
         self.call(cmd)
 
     def plot_feature(self):
-        self.feature_png = f'{self.dstdir}/lefse-{self.taxon_level}-features.png'
+        self.feature_png = f'{self.dstdir}/lefse-{self.name}-features.png'
         LefSePlotRes().main(
             input_file=self.lefse_result,
             output_file=self.feature_png,
             colors=self.colors)
 
     def plot_cladogram(self):
-        self.cladogram_png = f'{self.dstdir}/lefse-{self.taxon_level}-cladogram.png'
-
+        if self.name not in self.TAXON_LEVELS:  # do not run cladogram for picrust2 pathway
+            return
+        self.cladogram_png = f'{self.dstdir}/lefse-{self.name}-cladogram.png'
         LefSePlotCladogram().main(
             input_file=self.lefse_result,
             output_file=self.cladogram_png,
             colors=self.colors)
 
 
-class AddTaxonLevelPrefix(Processor):
+class AddTaxonLevelPrefixes(Processor):
 
     LEVEL_PREFIXES = [
         'domain__',
@@ -152,14 +162,14 @@ class AddTaxonLevelPrefix(Processor):
 
         return self.output_tsv
 
+    def read_taxon_table_tsv(self):
+        self.df = pd.read_csv(self.taxon_table_tsv, sep='\t', index_col=0)
+
     def add_level_prefixes(self, s: str) -> str:
         items = []
         for i, taxon in enumerate(s.split('|')):
             items.append(self.LEVEL_PREFIXES[i] + taxon)
         return '|'.join(items)
-
-    def read_taxon_table_tsv(self):
-        self.df = pd.read_csv(self.taxon_table_tsv, sep='\t', index_col=0)
 
     def write_output_tsv(self):
         self.output_tsv = edit_fpath(
@@ -176,7 +186,7 @@ class InsertGroupRow(Processor):
     GROUP_INDEX = 'Group'
     NA_VALUE: str = 'None'
 
-    taxon_table_tsv: str
+    table_tsv: str
     sample_sheet: str
 
     df: pd.DataFrame
@@ -185,13 +195,13 @@ class InsertGroupRow(Processor):
 
     def main(
             self,
-            taxon_table_tsv: str,
+            table_tsv: str,
             sample_sheet: str) -> str:
 
-        self.taxon_table_tsv = taxon_table_tsv
+        self.table_tsv = table_tsv
         self.sample_sheet = sample_sheet
 
-        self.read_taxon_table_tsv()
+        self.read_table_tsv()
         self.set_sample_to_group()
         self.add_group_row()
         self.move_group_row()
@@ -199,8 +209,8 @@ class InsertGroupRow(Processor):
 
         return self.output_tsv
 
-    def read_taxon_table_tsv(self):
-        self.df = pd.read_csv(self.taxon_table_tsv, sep='\t', index_col=0)
+    def read_table_tsv(self):
+        self.df = pd.read_csv(self.table_tsv, sep='\t', index_col=0)
 
     def set_sample_to_group(self):
         sample_df = pd.read_csv(self.sample_sheet, index_col=0)
@@ -224,7 +234,7 @@ class InsertGroupRow(Processor):
 
     def write_output_tsv(self):
         self.output_tsv = edit_fpath(
-            fpath=self.taxon_table_tsv,
+            fpath=self.table_tsv,
             old_suffix='.tsv',
             new_suffix='-grouped.tsv',
             dstdir=self.workdir

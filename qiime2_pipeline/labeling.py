@@ -35,7 +35,7 @@ class FeatureLabeling(Processor):
             feature_table_qza: str,
             feature_sequence_qza: str,
             sample_sheet: str,
-            skip_otu: bool) -> Tuple[str, str, str]:
+            skip_otu: bool) -> Tuple[str, str, str, str]:
 
         self.taxonomy_qza = taxonomy_qza
         self.feature_table_qza = feature_table_qza
@@ -50,9 +50,8 @@ class FeatureLabeling(Processor):
         self.write_taxonomy_condifence_table()
         self.compress()
 
-        return self.labeled_feature_table_tsv, \
-            self.labeled_feature_table_qza, \
-            self.labeled_feature_sequence_qza
+        return self.labeled_feature_table_tsv, self.labeled_feature_table_qza, \
+            self.labeled_feature_sequence_fa, self.labeled_feature_sequence_qza
 
     def decompress(self):
         self.taxonomy_tsv = ExportTaxonomy(self.settings).main(
@@ -118,7 +117,6 @@ class GetFeatureIDToLabelDict(Processor):
             taxon = row['Taxon']
             taxon = ensure_one_space_after_semicolon(taxon)
             taxon = add_genus_prefix_to_unidentified_species(taxon)
-            print(taxon)
             label = f'{self.label_prefix}{i + 1:04d}; {taxon}'
             self.output_dict[id_] = label
 

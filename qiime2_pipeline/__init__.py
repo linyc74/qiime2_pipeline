@@ -28,6 +28,7 @@ class Main:
     invert_colors: bool
     publication_figure: bool
     skip_differential_abundance: bool
+    skip_picrust2: bool
 
     settings: Settings
 
@@ -53,6 +54,7 @@ class Main:
             invert_colors: bool,
             publication_figure: bool,
             skip_differential_abundance: bool,
+            skip_picrust2: bool,
             outdir: str,
             threads: int,
             debug: bool):
@@ -77,6 +79,7 @@ class Main:
         self.invert_colors = invert_colors
         self.publication_figure = publication_figure
         self.skip_differential_abundance = skip_differential_abundance
+        self.skip_picrust2 = skip_picrust2
 
         self.settings = Settings(
             workdir=get_temp_path(prefix='./qiime2_pipeline_workdir_'),
@@ -114,7 +117,8 @@ class Main:
             beta_diversity_feature_level=self.beta_diversity_feature_level,
             colormap=self.colormap,
             invert_colors=self.invert_colors,
-            skip_differential_abundance=self.skip_differential_abundance)
+            skip_differential_abundance=self.skip_differential_abundance,
+            skip_picrust2=self.skip_picrust2)
 
     def remove_workdir(self):
         if not self.settings.debug:

@@ -12,7 +12,7 @@ class TestFeatureLabeling(TestCase):
         self.tear_down()
 
     def test_main(self):
-        table_tsv, table_qza, sequence_qza = FeatureLabeling(self.settings).main(
+        table_tsv, table_qza, sequence_fa, sequence_qza = FeatureLabeling(self.settings).main(
             taxonomy_qza=f'{self.indir}/taxonomy.qza',
             feature_table_qza=f'{self.indir}/dada2-feature-table.qza',
             feature_sequence_qza=f'{self.indir}/dada2-feature-sequence.qza',
@@ -22,12 +22,13 @@ class TestFeatureLabeling(TestCase):
         for expected, actual in [
             (f'{self.outdir}/labeled-feature-table.tsv', table_tsv),
             (f'{self.workdir}/labeled-feature-table.qza', table_qza),
+            (f'{self.outdir}/labeled-feature-sequence.fa', sequence_fa),
             (f'{self.workdir}/labeled-feature-sequence.qza', sequence_qza),
         ]:
             self.assertFileExists(expected, actual)
 
     def test_fungi(self):
-        table_tsv, table_qza, sequence_qza = FeatureLabeling(self.settings).main(
+        table_tsv, table_qza, sequence_fa, sequence_qza = FeatureLabeling(self.settings).main(
             taxonomy_qza=f'{self.indir}/fungi-taxonomy.qza',
             feature_table_qza=f'{self.indir}/fungi-dada2-feature-table.qza',
             feature_sequence_qza=f'{self.indir}/fungi-dada2-feature-sequence.qza',
@@ -37,6 +38,7 @@ class TestFeatureLabeling(TestCase):
         for expected, actual in [
             (f'{self.outdir}/labeled-feature-table.tsv', table_tsv),
             (f'{self.workdir}/labeled-feature-table.qza', table_qza),
+            (f'{self.outdir}/labeled-feature-sequence.fa', sequence_fa),
             (f'{self.workdir}/labeled-feature-sequence.qza', sequence_qza),
         ]:
             self.assertFileExists(expected, actual)

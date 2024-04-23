@@ -3,6 +3,7 @@ from typing import List, Optional, Dict
 from .lefse import LefSe
 from .tools import edit_fpath
 from .taxonomy import Taxonomy
+from .picrust2 import PICRUSt2
 from .template import Processor
 from .grouping import GetColors
 from .phylogeny import Phylogeny
@@ -41,16 +42,19 @@ class Qiime2Pipeline(Processor):
     colormap: str
     invert_colors: bool
     skip_differential_abundance: bool
+    skip_picrust2: bool
 
+    colors: list
     feature_table_qza: str
     feature_sequence_qza: str
     taxonomy_qza: str
     labeled_feature_table_tsv: str
     labeled_feature_table_qza: str
+    labeled_feature_sequence_fa: str
     labeled_feature_sequence_qza: str
     rooted_tree_qza: str
     taxon_table_tsv_dict: Dict[str, str]
-    colors: list
+    picrust2_pathway_table_tsv: Optional[str]
 
     def main(
             self,
@@ -72,7 +76,8 @@ class Qiime2Pipeline(Processor):
             beta_diversity_feature_level: str,
             colormap: str,
             invert_colors: bool,
-            skip_differential_abundance: bool):
+            skip_differential_abundance: bool,
+            skip_picrust2: bool):
 
         self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
@@ -93,6 +98,7 @@ class Qiime2Pipeline(Processor):
         self.colormap = colormap
         self.invert_colors = invert_colors
         self.skip_differential_abundance = skip_differential_abundance
+        self.skip_picrust2 = skip_picrust2
 
         self.copy_sample_sheet()
 
@@ -105,6 +111,7 @@ class Qiime2Pipeline(Processor):
         self.taxonomic_classification()
         self.feature_labeling()
         self.taxon_table()
+        self.picrust2()
 
         self.phylogenetic_tree()
 
@@ -166,9 +173,8 @@ class Qiime2Pipeline(Processor):
             classifier_reads_per_batch=self.classifier_reads_per_batch)
 
     def feature_labeling(self):
-        self.labeled_feature_table_tsv, \
-            self.labeled_feature_table_qza, \
-            self.labeled_feature_sequence_qza = FeatureLabeling(self.settings).main(
+        self.labeled_feature_table_tsv, self.labeled_feature_table_qza, \
+            self.labeled_feature_sequence_fa, self.labeled_feature_sequence_qza = FeatureLabeling(self.settings).main(
                 taxonomy_qza=self.taxonomy_qza,
                 feature_table_qza=self.feature_table_qza,
                 feature_sequence_qza=self.feature_sequence_qza,
@@ -177,6 +183,14 @@ class Qiime2Pipeline(Processor):
 
     def taxon_table(self):
         self.taxon_table_tsv_dict = TaxonTable(self.settings).main(
+            labeled_feature_table_tsv=self.labeled_feature_table_tsv)
+
+    def picrust2(self):
+        if self.skip_picrust2:
+            self.picrust2_pathway_table_tsv = None
+            return
+        self.picrust2_pathway_table_tsv = PICRUSt2(self.settings).main(
+            labeled_feature_sequence_fa=self.labeled_feature_sequence_fa,
             labeled_feature_table_tsv=self.labeled_feature_table_tsv)
 
     def phylogenetic_tree(self):
@@ -226,8 +240,11 @@ class Qiime2Pipeline(Processor):
             sample_sheet=self.sample_sheet)
 
     def lefse(self):
+        table_tsv_dict = self.taxon_table_tsv_dict.copy()
+        if self.picrust2_pathway_table_tsv is not None:
+            table_tsv_dict['picrust2-pathway'] = self.labeled_feature_table_tsv
         LefSe(self.settings).main(
-            taxon_table_tsv_dict=self.taxon_table_tsv_dict,
+            table_tsv_dict=table_tsv_dict,
             sample_sheet=self.sample_sheet,
             colors=self.colors)
 
