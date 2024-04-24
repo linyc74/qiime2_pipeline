@@ -56,7 +56,7 @@ class PICRUSt2(Processor):
 
     def remove_existing_dstdir(self):
         if exists(f'{self.workdir}/{self.DSTDIR_NAME}'):
-            self.call(f'rm -r "{self.workdir}/{self.DSTDIR_NAME}"')  # to avoid directory already exists error
+            self.call(f'rm -r {self.workdir}/{self.DSTDIR_NAME}')  # to avoid directory already exists error
 
     def run_picrust2(self):
         log = f'{self.outdir}/picrust2.log'

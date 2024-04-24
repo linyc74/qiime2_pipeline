@@ -43,7 +43,7 @@ RUN Rscript -e 'install.packages("survival", version="2.44", repos="https://cran
 
 RUN conda install -c bioconda \
     epa-ng=0.3.8 \
-    gappa=0.8.4 \
+    gappa=0.7.1 \
  && Rscript -e 'install.packages("castor", version="1.7.11", repos="https://cran.csie.ntu.edu.tw/")' \
  && wget https://github.com/picrust/picrust2/archive/v2.5.2.tar.gz \
  && tar xvzf v2.5.2.tar.gz \
