@@ -116,7 +116,6 @@ class Qiime2Pipeline(Processor):
         self.phylogenetic_tree()
 
         self.alpha_diversity()
-
         self.beta_diversity()
 
         self.plot_heatmaps()
@@ -188,10 +187,10 @@ class Qiime2Pipeline(Processor):
     def picrust2(self):
         if self.skip_picrust2:
             self.picrust2_pathway_table_tsv = None
-            return
-        self.picrust2_pathway_table_tsv = PICRUSt2(self.settings).main(
-            labeled_feature_sequence_fa=self.labeled_feature_sequence_fa,
-            labeled_feature_table_tsv=self.labeled_feature_table_tsv)
+        else:
+            self.picrust2_pathway_table_tsv = PICRUSt2(self.settings).main(
+                labeled_feature_sequence_fa=self.labeled_feature_sequence_fa,
+                labeled_feature_table_tsv=self.labeled_feature_table_tsv)
 
     def phylogenetic_tree(self):
         self.rooted_tree_qza = Phylogeny(self.settings).main(
@@ -241,8 +240,10 @@ class Qiime2Pipeline(Processor):
 
     def lefse(self):
         table_tsv_dict = self.taxon_table_tsv_dict.copy()
+
         if self.picrust2_pathway_table_tsv is not None:
             table_tsv_dict['picrust2-pathway'] = self.picrust2_pathway_table_tsv
+
         LefSe(self.settings).main(
             table_tsv_dict=table_tsv_dict,
             sample_sheet=self.sample_sheet,

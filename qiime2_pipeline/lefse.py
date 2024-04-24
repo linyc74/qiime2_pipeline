@@ -26,7 +26,7 @@ class LefSe(Processor):
 
         for name, tsv in self.table_tsv_dict.items():
             try:
-                LefSeOneLevel(self.settings).main(
+                OneLefSe(self.settings).main(
                     table_tsv=tsv,
                     name=name,
                     sample_sheet=self.sample_sheet,
@@ -35,7 +35,7 @@ class LefSe(Processor):
                 self.logger.warning(f'Failed to run LefSe on "{name}" table, with Exception:\n{e}')
 
 
-class LefSeOneLevel(Processor):
+class OneLefSe(Processor):
 
     DSTDIR_NAME = 'lefse'
     TAXON_LEVELS = [
@@ -84,7 +84,7 @@ class LefSeOneLevel(Processor):
         os.makedirs(self.dstdir, exist_ok=True)
 
     def add_taxon_level_prefixes(self):
-        if self.name not in self.TAXON_LEVELS:  # do not add taxon prefixes for picrust2 pathway
+        if self.name not in self.TAXON_LEVELS:  # do not add taxon prefixes for the picrust2 pathway table
             return
         self.table_tsv = AddTaxonLevelPrefixes(self.settings).main(taxon_table_tsv=self.table_tsv)
 
@@ -126,7 +126,7 @@ class LefSeOneLevel(Processor):
             colors=self.colors)
 
     def plot_cladogram(self):
-        if self.name not in self.TAXON_LEVELS:  # do not run cladogram for picrust2 pathway
+        if self.name not in self.TAXON_LEVELS:  # do not run cladogram for the picrust2 pathway table
             return
         self.cladogram_png = f'{self.dstdir}/lefse-{self.name}-cladogram.png'
         LefSePlotCladogram().main(
