@@ -24,21 +24,21 @@ class TestPICRUSt2(TestCase):
         for e, a in zip(expected, actual):
             self.assertFileExists(e, a)
 
-    def test_add_pathway_description(self):
+    def test_add_description_pathway(self):
         PICRUSt2(self.settings).add_description(
             in_tsv=f'{self.indir}/picrust2/pathways_out/path_abun_unstrat.tsv.gz',
             map_type='METACYC',
             out_tsv=f'{self.outdir}/picrust2-pathway-table.tsv'
         )
 
-    def test_add_ec_description(self):
+    def test_add_description_ec(self):
         PICRUSt2(self.settings).add_description(
             in_tsv=f'{self.indir}/picrust2/EC_metagenome_out/pred_metagenome_unstrat.tsv.gz',
             map_type='EC',
             out_tsv=f'{self.outdir}/picrust2-EC-table.tsv'
         )
 
-    def test_add_kegg_ortholog_description(self):
+    def test_add_description_kegg_ortholog(self):
         PICRUSt2(self.settings).add_description(
             in_tsv=f'{self.indir}/picrust2/KO_metagenome_out/pred_metagenome_unstrat.tsv.gz',
             map_type='KO',
