@@ -26,7 +26,7 @@ class PICRUSt2(Processor):
         self.remove_white_space_in_headers()
         self.remove_existing_workdir()
         self.run_picrust2()
-        self.unzip_and_add_description()
+        self.unzip_and_add_descriptions()
 
         return self.tsv_dict
 
@@ -73,7 +73,7 @@ class PICRUSt2(Processor):
         ]
         self.call(self.CMD_LINEBREAK.join(args))
 
-    def unzip_and_add_description(self):
+    def unzip_and_add_descriptions(self):
         tsv_dstdir = f'{self.outdir}/{self.DSTDIR_NAME}'
         os.makedirs(tsv_dstdir, exist_ok=True)
         self.tsv_dict = {}
@@ -96,13 +96,23 @@ class PICRUSt2(Processor):
             ),
         ]:
             out_tsv = f'{tsv_dstdir}/{key}-table.tsv'
-            self.add_description(in_tsv, map_type, out_tsv)
+            self.add_descriptions(in_tsv, map_type, out_tsv)
             self.tsv_dict[key] = out_tsv
 
-    def add_description(self, in_tsv: str, map_type: str, out_tsv: str):
-        self.call(f'add_descriptions.py --input "{in_tsv}" --map_type {map_type} --output "{out_tsv}"')
+    def add_descriptions(self, in_tsv: str, map_type: str, out_tsv: str):
+        log = f'{self.outdir}/picrust2.log'
+        args = [
+            'add_descriptions.py',
+            f'--input "{in_tsv}"',
+            f'--map_type {map_type}',
+            f'--output "{out_tsv}"',
+            f'1>> "{log}"',
+            f'2>> "{log}"',
+        ]
+        self.call(self.CMD_LINEBREAK.join(args))
+
         df = pd.read_csv(out_tsv, sep='\t', index_col=0)
-        df = merge_description_into_index(df)
+        df = merge_description_into_index(df=df)
         df.to_csv(out_tsv, sep='\t')
 
 

@@ -8,8 +8,8 @@ class TestPICRUSt2(TestCase):
     def setUp(self):
         self.set_up(py_path=__file__)
 
-    # def tearDown(self):
-    #     self.tear_down()
+    def tearDown(self):
+        self.tear_down()
 
     def test_main(self):
         actual = PICRUSt2(self.settings).main(
@@ -24,22 +24,22 @@ class TestPICRUSt2(TestCase):
         for e, a in zip(expected, actual):
             self.assertFileExists(e, a)
 
-    def test_add_description_pathway(self):
-        PICRUSt2(self.settings).add_description(
+    def test_add_descriptions_pathway(self):
+        PICRUSt2(self.settings).add_descriptions(
             in_tsv=f'{self.indir}/picrust2/pathways_out/path_abun_unstrat.tsv.gz',
             map_type='METACYC',
             out_tsv=f'{self.outdir}/picrust2-pathway-table.tsv'
         )
 
-    def test_add_description_ec(self):
-        PICRUSt2(self.settings).add_description(
+    def test_add_descriptions_ec(self):
+        PICRUSt2(self.settings).add_descriptions(
             in_tsv=f'{self.indir}/picrust2/EC_metagenome_out/pred_metagenome_unstrat.tsv.gz',
             map_type='EC',
             out_tsv=f'{self.outdir}/picrust2-EC-table.tsv'
         )
 
-    def test_add_description_kegg_ortholog(self):
-        PICRUSt2(self.settings).add_description(
+    def test_add_descriptions_kegg_ortholog(self):
+        PICRUSt2(self.settings).add_descriptions(
             in_tsv=f'{self.indir}/picrust2/KO_metagenome_out/pred_metagenome_unstrat.tsv.gz',
             map_type='KO',
             out_tsv=f'{self.outdir}/picrust2-KEGG-ortholog-table.tsv'
