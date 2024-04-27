@@ -6,6 +6,7 @@ from pylab import *
 from lefse.lefse import *
 from typing import Dict, Any
 from collections import defaultdict
+from .lefse_char_mapping import ORIGINAL_TO_NEW
 
 
 class LefSePlotRes:
@@ -117,7 +118,7 @@ def plot_histo_hor(
         cls2 = sorted(params['all_feats'].split(":"))
     cls = sorted(data['cls'])
     if bcl: data['rows'].sort(key=lambda ab: fabs(float(ab[3]))*(cls.index(ab[2])*2-1))
-    else: 
+    else:
         mmax = max([fabs(float(a)) for a in list(zip(*list(data['rows'])))[3]])
         data['rows'].sort(key=lambda ab: fabs(float(ab[3]))/mmax+(cls.index(ab[2])+1))
     pos = arange(len(data['rows']))
@@ -158,9 +159,21 @@ def plot_histo_hor(
             print('%s\t%s\t%s' %(i, out_data[i][0], out_data[i][1]))
     for i,r in enumerate(data['rows']):
         indcl = cls.index(data['rows'][i][2])
-        if params['n_scl'] < 0: rr = r[0]
-        else: rr = ".".join(r[0].split(".")[-params['n_scl']:])
-        if len(rr) > params['max_feature_len']: rr = rr[:params['max_feature_len']/2-2]+" [..]"+rr[-params['max_feature_len']/2+2:]
+
+        if params['n_scl'] < 0:
+            rr = r[0]
+        else:
+            rr = ".".join(r[0].split(".")[-params['n_scl']:])
+
+        # only at this deep I can modify back to the original characters
+        for original, new in ORIGINAL_TO_NEW:
+            rr = rr.replace(new, original)
+
+        # `params['max_feature_len']/2` causese non-integer index bug
+        # if len(rr) > params['max_feature_len']: rr = rr[:params['max_feature_len']/2-2]+" [..]"+rr[-params['max_feature_len']/2+2:]
+        if len(rr) > params['max_feature_len']:
+            rr = rr[:params['max_feature_len'] - 3] + '...'  # shorten to max_feature_len
+
         if m*(indcl*2-1) < 0 and bcl: ax.text(mv/40.0,float(i)-0.3,rr, l_align, size=params['feature_font_size'],color=params['fore_color'])
         else: ax.text(-mv/40.0,float(i)-0.3,rr, r_align, size=params['feature_font_size'],color=params['fore_color'])
     ax.set_title(params['title'],size=params['title_font_size'],y=1.0+head*(1.0-ints/(ints+ht))*0.8,color=params['fore_color'])
