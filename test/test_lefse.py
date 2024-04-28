@@ -12,31 +12,29 @@ class TestLefSe(TestCase):
         self.tear_down()
 
     def test_taxa(self):
-        indir = f'{self.indir}/taxon-table'
         table_tsv_dict = {
-            'phylum': f'{indir}/phylum-table.tsv',
-            'class': f'{indir}/class-table.tsv',
-            'order': f'{indir}/order-table.tsv',
-            'family': f'{indir}/family-table.tsv',
-            'genus': f'{indir}/genus-table.tsv',
-            'species': f'{indir}/species-table.tsv',
+            'phylum': f'{self.indir}/taxon-table/phylum-table.tsv',
+            'class': f'{self.indir}/taxon-table/class-table.tsv',
+            'order': f'{self.indir}/taxon-table/order-table.tsv',
+            'family': f'{self.indir}/taxon-table/family-table.tsv',
+            'genus': f'{self.indir}/taxon-table/genus-table.tsv',
+            'species': f'{self.indir}/taxon-table/species-table.tsv',
         }
         LefSe(self.settings).main(
             table_tsv_dict=table_tsv_dict,
-            sample_sheet=f'{indir}/sample-sheet.csv',
+            sample_sheet=f'{self.indir}/taxon-table/sample-sheet.csv',
             colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0)]
         )
 
     def test_picrust2(self):
-        indir = f'{self.indir}/picrust2'
         table_tsv_dict = {
-            'picrust2-pathway': f'{indir}/picrust2-pathway-table.tsv',
-            'picrust2-EC': f'{indir}/picrust2-EC-table.tsv',
-            'picrust2-KEGG-ortholog': f'{indir}/picrust2-KEGG-ortholog-table.tsv',
+            'picrust2-pathway': f'{self.indir}/picrust2/picrust2-pathway-table.tsv',
+            'picrust2-EC': f'{self.indir}/picrust2/picrust2-EC-table.tsv',
+            'picrust2-KEGG-ortholog': f'{self.indir}/picrust2/picrust2-KEGG-ortholog-table.tsv',
         }
         LefSe(self.settings).main(
             table_tsv_dict=table_tsv_dict,
-            sample_sheet=f'{indir}/sample-sheet.csv',
+            sample_sheet=f'{self.indir}/picrust2/sample-sheet.csv',
             colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0)]
         )
 

@@ -90,12 +90,12 @@ class OneLefSe(Processor):
             lefse_result_tsv=lefse_result_tsv)
 
         # to avoid too many (unplottable) features
-        filtered_lefse_result_tsv = FilterLefseResult(self.settings).main(
+        limited_lefse_result_tsv = LimitLefseResult(self.settings).main(
             input_tsv=lefse_result_tsv)
 
         png = f'{self.outdir}/{DSTDIR}/lefse-{self.name}-features.png'
         LefSePlotRes().main(
-            input_file=filtered_lefse_result_tsv,
+            input_file=limited_lefse_result_tsv,
             output_file=png,
             colors=self.colors)
 
@@ -148,8 +148,7 @@ class OneLefSe(Processor):
 
 class FormatForLefse(Processor):
     """
-    When multiple taxon levels separated by '|',
-    e.g. 'Bacteria|Firmicutes|Bacilli|Lactobacillales|Streptococcaceae|Streptococcus|Streptococcus_mutans',
+    When multiple taxon levels separated by '|', e.g. 'Bacteria|Firmicutes|Bacilli|Lactobacillales|Streptococcaceae|Streptococcus|Streptococcus_mutans',
     LEfSe can compute LDA scores for all levels
     """
 
@@ -241,17 +240,17 @@ class FormatForLefse(Processor):
         self.df.index = pd.Series(self.df.index).apply(replace)
 
     def write_output_tsv(self):
-        s = 'full-taxon' if self.full_taxon_levels else 'short-taxon'
+        suffix = 'full-taxon' if self.full_taxon_levels else 'short-taxon'
         self.output_tsv = edit_fpath(
             fpath=self.table_tsv,
             old_suffix='.tsv',
-            new_suffix=f'-lefse-{s}.tsv',
+            new_suffix=f'-lefse-{suffix}.tsv',
             dstdir=self.workdir
         )
         self.df.to_csv(self.output_tsv, sep='\t', index=True)
 
 
-class FilterLefseResult(Processor):
+class LimitLefseResult(Processor):
 
     MAX_FEATURES_PER_GROUP = 50
 
@@ -286,14 +285,14 @@ class FilterLefseResult(Processor):
         self.outdf = pd.DataFrame(columns=self.indf.columns)
 
     def keep_the_highest_lda_for(self, group: str):
-        df = self.indf[self.indf['Group'] == group]
-        df = df.sort_values(
+        subdf = self.indf[self.indf['Group'] == group]
+        subdf = subdf.sort_values(
             by='LDA',
             ascending=False
         ).head(
             n=self.MAX_FEATURES_PER_GROUP
         )
-        self.outdf = pd.concat([self.outdf, df])
+        self.outdf = pd.concat([self.outdf, subdf])
 
     def save_output_tsv(self):
         self.output_tsv = edit_fpath(
