@@ -23,12 +23,16 @@ class PICRUSt2(Processor):
         self.labeled_feature_sequence_fa = labeled_feature_sequence_fa
         self.labeled_feature_table_tsv = labeled_feature_table_tsv
 
-        self.remove_white_space_in_headers()
-        self.remove_existing_workdir()
-        self.run_picrust2()
-        self.unzip_and_add_descriptions()
-
-        return self.tsv_dict
+        try:
+            self.remove_white_space_in_headers()
+            self.remove_existing_workdir()
+            self.run_picrust2()
+            self.unzip_and_add_descriptions()
+            return self.tsv_dict
+        except Exception as e:
+            self.logger.warning(e)
+            self.clean_up_if_failed()
+            return {}
 
     def remove_white_space_in_headers(self):
 
@@ -114,6 +118,11 @@ class PICRUSt2(Processor):
         df = pd.read_csv(out_tsv, sep='\t', index_col=0)
         df = merge_description_into_index(df=df)
         df.to_csv(out_tsv, sep='\t')
+
+    def clean_up_if_failed(self):
+        d = f'{self.outdir}/{self.DSTDIR_NAME}'
+        if os.path.exists(d):
+            self.call(f'rm -r {self.outdir}/{self.DSTDIR_NAME}')
 
 
 def merge_description_into_index(df: pd.DataFrame) -> pd.DataFrame:

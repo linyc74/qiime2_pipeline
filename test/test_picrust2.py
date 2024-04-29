@@ -1,4 +1,3 @@
-import shutil
 from qiime2_pipeline.picrust2 import PICRUSt2
 from .setup import TestCase
 
@@ -23,6 +22,13 @@ class TestPICRUSt2(TestCase):
         }
         for e, a in zip(expected, actual):
             self.assertFileExists(e, a)
+
+    def test_fungi_should_fail(self):
+        actual = PICRUSt2(self.settings).main(
+            labeled_feature_sequence_fa=f'{self.indir}/fungi-labeled-feature-sequence.fa',
+            labeled_feature_table_tsv=f'{self.indir}/fungi-labeled-feature-table.tsv'
+        )
+        self.assertDictEqual({}, actual)
 
     def test_add_descriptions_pathway(self):
         PICRUSt2(self.settings).add_descriptions(
