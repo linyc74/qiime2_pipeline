@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.4.3'
+__VERSION__ = '2.4.4-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -13,7 +13,7 @@ REQUIRED = [
         'properties': {
             'type': str,
             'required': True,
-            'help': 'path to the sample sheet (CSV format), "Sample" and "Group" cloumns are required',
+            'help': 'path to the sample sheet (CSV, TSV, or XLSX format), "Sample" and "Group" cloumns are required',
         }
     },
     {

@@ -1,7 +1,6 @@
 from os import makedirs
 from typing import List, Optional, Dict
 from .lefse import LefSe
-from .tools import edit_fpath
 from .taxonomy import Taxonomy
 from .picrust2 import PICRUSt2
 from .template import Processor
@@ -18,6 +17,7 @@ from .generate_asv import GenerateASV
 from .beta_qiime import QiimeBetaDiversity
 from .raw_read_counts import RawReadCounts
 from .taxon_barplot import PlotTaxonBarplots
+from .sample_sheet import TranscribeSampleSheet
 from .differential_abundance import DifferentialAbundance
 
 
@@ -100,7 +100,7 @@ class Qiime2Pipeline(Processor):
         self.skip_differential_abundance = skip_differential_abundance
         self.skip_picrust2 = skip_picrust2
 
-        self.copy_sample_sheet()
+        self.transcribe_sample_sheet()
 
         self.raw_read_counts()
         self.set_colors()
@@ -126,12 +126,9 @@ class Qiime2Pipeline(Processor):
 
         self.collect_log_files()
 
-    def copy_sample_sheet(self):
-        # to avoid the user from modifying or deleting the original sample sheet
-        self.call(f'cp "{self.sample_sheet}" "{self.workdir}/"')
-        self.sample_sheet = edit_fpath(
-            fpath=self.sample_sheet,
-            dstdir=self.workdir)
+    def transcribe_sample_sheet(self):
+        self.sample_sheet = TranscribeSampleSheet(self.settings).main(
+            sample_sheet=self.sample_sheet)
 
     def raw_read_counts(self):
         RawReadCounts(self.settings).main(

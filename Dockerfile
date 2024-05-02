@@ -52,6 +52,8 @@ RUN conda install -c bioconda \
  && pip install --editable . \
  && cd ..
 
+RUN ${bin_path}/pip install --no-cache-dir openpyxl==3.1.2
+
 RUN conda clean --all --yes
 
 COPY ./qiime2_pipeline/* /qiime2_pipeline/qiime2_pipeline/
