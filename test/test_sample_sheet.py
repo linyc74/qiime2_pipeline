@@ -31,4 +31,3 @@ class TestTranscribeSampleSheet(TestCase):
             pd.read_csv(f'{self.indir}/expected.csv'),
             pd.read_csv(actual)
         )
-

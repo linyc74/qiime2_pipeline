@@ -59,6 +59,15 @@ class TestScatterPlot(TestCase):
             colors=['#1f77b4', '#ff7f0e', '#2ca02c'],
             output_prefix=f'{self.outdir}/scatterplot')
 
+    def test_number_name(self):
+        ScatterPlot(self.settings).main(
+            sample_coordinate_df=read_tsv(f'{self.indir}/sample-coordinate-number-name.tsv'),
+            x_column='PC1',
+            y_column='PC2',
+            hue_column='Group',
+            colors=['#1f77b4', '#ff7f0e', '#2ca02c'],
+            output_prefix=f'{self.outdir}/scatterplot')
+
 
 def read_tsv(tsv: str) -> pd.DataFrame:
     return pd.read_csv(tsv, sep='\t', index_col=0)

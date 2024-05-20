@@ -245,7 +245,7 @@ class ScatterPlot(Processor):
             colors: list,
             output_prefix: str):
 
-        self.sample_coordinate_df = sample_coordinate_df
+        self.sample_coordinate_df = sample_coordinate_df.copy()
         self.x_column = x_column
         self.y_column = y_column
         self.group_column = hue_column
@@ -269,7 +269,9 @@ class ScatterPlot(Processor):
             chr_width = 0.218 / 2.54
             h = 12 / 2.54
 
-        max_legend_chrs = pd.Series(self.sample_coordinate_df[self.group_column]).apply(len).max()
+        df, group = self.sample_coordinate_df, self.group_column
+        df[group] = df[group].astype(str)  # int group name needs to be converted to str
+        max_legend_chrs = pd.Series(df[group]).apply(len).max()  # apply len to each str
         w = base_width + (max_legend_chrs * chr_width)
 
         self.figsize = (w, h)
