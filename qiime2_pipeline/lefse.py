@@ -220,6 +220,7 @@ class FormatForLefse(Processor):
             if pd.isna(group):
                 self.sample_to_group[sample] = self.NA_VALUE
             else:
+                group = str(group)  # in case group is a number
                 self.sample_to_group[sample] = group.replace(' ', '_')  # lefse does not allow space in group name
 
     def add_group_row(self):
