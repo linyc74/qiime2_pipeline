@@ -36,7 +36,7 @@ class LefSe(Processor):
                     sample_sheet=self.sample_sheet,
                     colors=self.colors)
             except Exception as e:
-                self.logger.warning(f'Failed to run LefSe on "{name}" table, with Exception:\n{e}')
+                self.logger.warning(f'Failed to run LefSe on "{name}" table, with Exception:\n{repr(e)}')
 
 
 class OneLefSe(Processor):
