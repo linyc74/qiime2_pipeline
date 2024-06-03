@@ -15,7 +15,7 @@ class TestQiimeBetaDiversity(TestCase):
     def test_main(self):
         QiimeBetaDiversity(self.settings).main(
             feature_table_tsv=f'{self.indir}/feature-table.tsv',
-            rooted_tree_qza=f'{self.indir}/mafft-aligned-sequences-masked.qza',
+            rooted_tree_qza=f'{self.indir}/fasttree-rooted.qza',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0),  'green'],
         )
@@ -34,12 +34,13 @@ class TestRunAllBetaMetricsToTsvs(TestCase):
 
     def test_main(self):
         actual = RunAllBetaMetricsToDistanceMatrixTsvs(self.settings).main(
-            feature_table_qza=f'{self.indir}/labeled-feature-table-normalized.qza',
-            rooted_tree_qza=f'{self.indir}/mafft-aligned-sequences-masked.qza'
+            feature_table_qza=f'{self.indir}/feature-table.qza',
+            rooted_tree_qza=f'{self.indir}/fasttree-rooted.qza'
         )
         expected = [
-            f'{self.outdir}/beta-diversity/jaccard.tsv',
             f'{self.outdir}/beta-diversity/braycurtis.tsv',
+            f'{self.outdir}/beta-diversity/euclidean.tsv',
+            f'{self.outdir}/beta-diversity/jaccard.tsv',
         ]
         for e, a in zip(expected, actual):
             self.assertFileExists(expected=e, actual=a)
