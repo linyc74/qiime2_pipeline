@@ -27,7 +27,7 @@ class TestQiime2Pipeline(TestCase):
             max_expected_error_bases=2.0,
             heatmap_read_fraction=0.99,
             n_taxa_barplot=20,
-            beta_diversity_feature_level='species',
+            beta_diversity_feature_level='feature',
             colormap='gold,limegreen',
             invert_colors=True,
             skip_differential_abundance=False,
