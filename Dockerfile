@@ -54,6 +54,8 @@ RUN conda install -c bioconda \
 
 RUN ${bin_path}/pip install --no-cache-dir openpyxl==3.1.2
 
+ENV UNIFRAC_USE_GPU N
+
 RUN conda clean --all --yes
 
 COPY ./qiime2_pipeline/* /qiime2_pipeline/qiime2_pipeline/
