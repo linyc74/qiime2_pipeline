@@ -202,7 +202,8 @@ class Qiime2Pipeline(Processor):
         else:
             feature_table_tsv = self.taxon_table_tsv_dict[self.beta_diversity_feature_level]
 
-        rooted_tree_qza = Phylogeny(self.settings).main(seq_qza=self.feature_sequence_qza)
+        rooted_tree_qza = Phylogeny(self.settings).main(
+            seq_qza=self.feature_sequence_qza)  # no need to use taxonomy-labeled feature sequences
 
         QiimeBetaDiversity(self.settings).main(
             feature_table_tsv=feature_table_tsv,
