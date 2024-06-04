@@ -190,7 +190,7 @@ class Qiime2Pipeline(Processor):
 
     def alpha_diversity(self):
         AlphaDiversity(self.settings).main(
-            feature_table_qza=self.feature_table_qza,  # does not need to be labeled with taxonomy
+            feature_table_qza=self.feature_table_qza,  # no need to use taxonomy-labeled feature table
             sample_sheet=self.sample_sheet,
             alpha_metrics=self.alpha_metrics,
             colors=self.colors)
@@ -198,7 +198,7 @@ class Qiime2Pipeline(Processor):
     def phylogeny_and_beta_diversity(self):
         if self.beta_diversity_feature_level == 'feature':
             feature_table_tsv = ExportFeatureTable(self.settings).main(
-                feature_table_qza=self.feature_table_qza)  # does not need to be labeled with taxonomy
+                feature_table_qza=self.feature_table_qza)  # no need to use taxonomy-labeled feature table
         else:
             feature_table_tsv = self.taxon_table_tsv_dict[self.beta_diversity_feature_level]
 
