@@ -199,10 +199,8 @@ class LabelFeatureTable(Processor):
         self.df = pd.read_csv(
             self.feature_table_tsv,
             sep='\t',
-            index_col=0,
-            skiprows=1  # exclude 1st line from qza (# Constructed from biom file)
-        )
-        self.df.index.name = ''
+            index_col=0)
+        self.df.index.name = ''  # remove residual index name (e.g. "#OTU ID") created by biom
 
     def reorder_sample_columns(self):
         samples = pd.read_csv(self.sample_sheet, index_col=0).index
