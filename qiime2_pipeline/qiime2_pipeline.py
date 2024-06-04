@@ -14,6 +14,7 @@ from .taxon_table import TaxonTable
 from .beta_my import MyBetaDiversity
 from .labeling import FeatureLabeling
 from .generate_asv import GenerateASV
+from .exporting import ExportFeatureTable
 from .beta_qiime import QiimeBetaDiversity
 from .raw_read_counts import RawReadCounts
 from .taxon_barplot import PlotTaxonBarplots
@@ -52,7 +53,6 @@ class Qiime2Pipeline(Processor):
     labeled_feature_table_qza: str
     labeled_feature_sequence_fa: str
     labeled_feature_sequence_qza: str
-    rooted_tree_qza: str
     taxon_table_tsv_dict: Dict[str, str]
     picrust2_table_tsv_dict: Dict[str, str]
 
@@ -113,10 +113,9 @@ class Qiime2Pipeline(Processor):
         self.taxon_table()
         self.picrust2()
 
-        self.phylogenetic_tree()
-
         self.alpha_diversity()
-        self.beta_diversity()
+
+        self.phylogeny_and_beta_diversity()
 
         self.plot_heatmaps()
         self.plot_venn_diagrams()
@@ -189,24 +188,25 @@ class Qiime2Pipeline(Processor):
                 labeled_feature_sequence_fa=self.labeled_feature_sequence_fa,
                 labeled_feature_table_tsv=self.labeled_feature_table_tsv)
 
-    def phylogenetic_tree(self):
-        self.rooted_tree_qza = Phylogeny(self.settings).main(
-            seq_qza=self.labeled_feature_sequence_qza)
-
     def alpha_diversity(self):
         AlphaDiversity(self.settings).main(
-            feature_table_qza=self.labeled_feature_table_qza,
+            feature_table_qza=self.feature_table_qza,  # does not need to be labeled with taxonomy
             sample_sheet=self.sample_sheet,
             alpha_metrics=self.alpha_metrics,
             colors=self.colors)
 
-    def beta_diversity(self):
-        feature_table_tsv = self.labeled_feature_table_tsv if self.beta_diversity_feature_level == 'feature' \
-            else self.taxon_table_tsv_dict[self.beta_diversity_feature_level]
+    def phylogeny_and_beta_diversity(self):
+        if self.beta_diversity_feature_level == 'feature':
+            feature_table_tsv = ExportFeatureTable(self.settings).main(
+                feature_table_qza=self.feature_table_qza)  # does not need to be labeled with taxonomy
+        else:
+            feature_table_tsv = self.taxon_table_tsv_dict[self.beta_diversity_feature_level]
+
+        rooted_tree_qza = Phylogeny(self.settings).main(seq_qza=self.feature_sequence_qza)
 
         QiimeBetaDiversity(self.settings).main(
             feature_table_tsv=feature_table_tsv,
-            rooted_tree_qza=self.rooted_tree_qza,
+            rooted_tree_qza=rooted_tree_qza,
             sample_sheet=self.sample_sheet,
             colors=self.colors)
 

@@ -12,7 +12,7 @@ class TestPhylogeny(TestCase):
 
     def test_main(self):
         actual = Phylogeny(self.settings).main(
-            seq_qza=f'{self.indir}/labeled-feature-sequence.qza')
+            seq_qza=f'{self.indir}/feature-sequence.qza')
         expected = f'{self.workdir}/fasttree-rooted.qza'
         self.assertFileExists(expected, actual)
 
