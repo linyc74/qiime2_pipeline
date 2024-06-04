@@ -31,6 +31,7 @@ class ExportFeatureTable(Export):
 
         self.qza_to_biom()
         self.biom_to_tsv()
+        self.remove_first_line()  # remove the first line of the tsv file: "# Constructed from biom file"
 
         return self.tsv
 
@@ -55,6 +56,12 @@ class ExportFeatureTable(Export):
             f'2>> "{log}"'
         ])
         self.call(cmd)
+
+    def remove_first_line(self):
+        with open(self.tsv, 'r') as f:
+            lines = f.readlines()
+        with open(self.tsv, 'w') as f:
+            f.writelines(lines[1:])
 
 
 class ExportFeatureSequence(Export):

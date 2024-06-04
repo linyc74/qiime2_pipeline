@@ -15,8 +15,8 @@ class TestExportFeatureTable(TestCase):
         actual = ExportFeatureTable(self.settings).main(
             feature_table_qza=f'{self.indir}/feature-table.qza'
         )
-        expected = f'{self.workdir}/feature-table.tsv'
-        self.assertFileExists(expected, actual)
+        self.assertFileExists(f'{self.workdir}/feature-table.tsv', actual)
+        self.assertFileEqual(f'{self.indir}/feature-table.tsv', actual)
 
 
 class TestExportFeatureSequence(TestCase):
