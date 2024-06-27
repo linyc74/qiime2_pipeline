@@ -1,6 +1,6 @@
 import pandas as pd
 from abc import ABC
-from .tools import edit_fpath
+from .utils import edit_fpath
 from .template import Processor
 from .normalization import CountNormalization
 from .embedding_core_process import PCACore, TSNECore, EmbeddingProcessTemplate

@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from typing import Dict, Hashable
-from .tools import edit_fpath
+from .utils import edit_fpath
 from .template import Processor
 from .grouping import GROUP_COLUMN
 from .lefse_plot_res import LefSePlotRes

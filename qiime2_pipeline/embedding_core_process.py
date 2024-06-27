@@ -6,7 +6,7 @@ from matplotlib.axes import Axes
 from matplotlib import pyplot as plt
 from abc import ABC, abstractmethod
 from typing import Tuple, Union, List
-from .tools import edit_fpath
+from .utils import edit_fpath
 from .template import Processor
 from .grouping import GROUP_COLUMN, AddGroupColumn
 

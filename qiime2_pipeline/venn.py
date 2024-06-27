@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from typing import List, Dict, Set, Tuple
 from matplotlib_venn import venn2, venn3
-from .tools import edit_fpath
+from .utils import edit_fpath
 from .template import Processor
 from .grouping import GROUP_COLUMN
 

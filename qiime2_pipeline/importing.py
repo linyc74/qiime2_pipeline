@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from typing import List
-from .tools import edit_fpath
+from .utils import edit_fpath
 from .template import Processor
 
 

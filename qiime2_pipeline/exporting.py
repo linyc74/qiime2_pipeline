@@ -1,5 +1,5 @@
 from os.path import abspath
-from .tools import edit_fpath
+from .utils import edit_fpath
 from .template import Processor
 
 

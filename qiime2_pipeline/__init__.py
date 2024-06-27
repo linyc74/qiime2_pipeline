@@ -2,7 +2,7 @@ import os
 import shutil
 from typing import List, Optional
 from .template import Settings
-from .tools import get_temp_path
+from .utils import get_temp_path
 from .qiime2_pipeline import Qiime2Pipeline
 
 

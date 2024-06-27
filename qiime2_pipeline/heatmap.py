@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import Tuple, List
-from .tools import edit_fpath
+from .utils import edit_fpath
 from .template import Processor
 from .normalization import CountNormalization
 from .grouping import TagGroupNamesOnSampleColumns

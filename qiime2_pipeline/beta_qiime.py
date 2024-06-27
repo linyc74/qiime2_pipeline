@@ -4,7 +4,7 @@ from abc import ABC
 from typing import List
 from skbio import DistanceMatrix
 from skbio.stats.ordination import pcoa
-from .tools import edit_fpath
+from .utils import edit_fpath
 from .template import Processor, Settings
 from .importing import ImportFeatureTable
 from .exporting import ExportBetaDiversity

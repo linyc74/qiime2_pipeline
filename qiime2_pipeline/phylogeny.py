@@ -2,7 +2,7 @@ import os
 from random import randrange
 from typing import Tuple, Dict, List
 from ete3 import Tree, TreeStyle, NodeStyle, TextFace, RectFace
-from .tools import edit_fpath
+from .utils import edit_fpath
 from .template import Processor
 from .exporting import ExportAlignedSequence, ExportTree
 
