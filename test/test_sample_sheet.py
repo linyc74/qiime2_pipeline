@@ -31,3 +31,10 @@ class TestTranscribeSampleSheet(TestCase):
             pd.read_csv(f'{self.indir}/expected.csv'),
             pd.read_csv(actual)
         )
+
+    def test_remove_empty_rows_and_columns(self):
+        actual = TranscribeSampleSheet(self.settings).main(sample_sheet=f'{self.indir}/faulty-sample-sheet.csv')
+        self.assertDataFrameEqual(
+            pd.read_csv(f'{self.indir}/expected.csv'),
+            pd.read_csv(actual)
+        )
