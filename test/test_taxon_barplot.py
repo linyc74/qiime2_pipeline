@@ -12,6 +12,8 @@ class TestPlotTaxonBarplots(TestCase):
         self.tear_down()
 
     def test_main(self):
+        self.settings.for_publication = True
+
         taxon_table_tsv_dict = {
             'phylum': f'{self.indir}/phylum-table.tsv',
             'class': f'{self.indir}/class-table.tsv',
@@ -27,14 +29,15 @@ class TestPlotTaxonBarplots(TestCase):
             sample_sheet=f'{self.indir}/sample-sheet.csv',
         )
 
-        for level in [
-            'phylum',
-            'class',
-            'order',
-            'family',
-            'genus',
-            'species',
-        ]:
-            for ext in ['png', 'tsv']:
-                fpath = f'{self.outdir}/taxon-barplot/{level}-barplot.{ext}'
-                self.assertTrue(exists(fpath))
+        for prefix in ['sample', 'group']:
+            for level in [
+                'phylum',
+                'class',
+                'order',
+                'family',
+                'genus',
+                'species',
+            ]:
+                for ext in ['pdf', 'png', 'tsv']:
+                    with self.subTest(prefix=prefix, level=level, ext=ext):
+                        self.assertTrue(exists(f'{self.outdir}/taxon-barplot/{prefix}-{level}-barplot.{ext}'))
