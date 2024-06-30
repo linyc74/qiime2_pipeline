@@ -168,14 +168,15 @@ class Plot(Processor):
             self.plot_one(metric=metric)
 
     def set_parameters(self):
+        n_groups = self.df[GROUP_COLUMN].nunique()
         if self.settings.for_publication:
-            self.figsize = (4 / 2.54, 4 / 2.54)
+            self.figsize = get_figsize_for_publication(n_groups=n_groups)
             self.box_width = 0.35
             self.dpi = 600
             self.line_width = 0.5
             self.fontsize = 7
         else:
-            self.figsize = (10 / 2.54, 10 / 2.54)
+            self.figsize = get_figsize(n_groups=n_groups)
             self.box_width = 0.5
             self.dpi = 300
             self.line_width = 1.0
@@ -210,3 +211,15 @@ class Plot(Processor):
             plt.savefig(f'{self.dstdir}/{metric}.{ext}', dpi=self.dpi)
 
         plt.close()
+
+
+def get_figsize(n_groups: int) -> Tuple[float, float]:
+    w = (3 * n_groups + 3) / 2.54
+    h = 10 / 2.54
+    return w, h
+
+
+def get_figsize_for_publication(n_groups: int) -> Tuple[float, float]:
+    w = (1.2 * n_groups + 2) / 2.54
+    h = 4 / 2.54
+    return w, h

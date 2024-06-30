@@ -35,6 +35,15 @@ class TestAlphaDiversity(TestCase):
             self.assertTrue(exists(file))
 
     def test_plot(self):
+        self.settings.for_publication = False
+        Plot(self.settings).main(
+            df=pd.read_csv(f'{self.indir}/alpha-diversity-346-samples.csv', index_col=0),
+            dstdir=self.outdir,
+            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0)]
+        )
+
+    def test_plot_for_publication(self):
+        self.settings.for_publication = True
         Plot(self.settings).main(
             df=pd.read_csv(f'{self.indir}/alpha-diversity.csv', index_col=0),
             dstdir=self.outdir,
