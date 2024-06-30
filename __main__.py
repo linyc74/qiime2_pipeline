@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.4.8'
+__VERSION__ = '2.5.0-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -191,10 +191,10 @@ OPTIONAL = [
         }
     },
     {
-        'keys': ['--skip-picrust2'],
+        'keys': ['--run-picrust2'],
         'properties': {
             'action': 'store_true',
-            'help': 'skip PICRUSt2 analysis',
+            'help': 'run PICRUSt2 analysis',
         }
     },
     {
@@ -282,7 +282,7 @@ class EntryPoint:
             invert_colors=args.invert_colors,
             publication_figure=args.publication_figure,
             skip_differential_abundance=args.skip_differential_abundance,
-            skip_picrust2=args.skip_picrust2,
+            run_picrust2=args.run_picrust2,
             outdir=args.outdir,
             threads=args.threads,
             debug=args.debug)

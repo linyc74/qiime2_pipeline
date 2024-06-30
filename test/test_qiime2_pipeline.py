@@ -31,7 +31,7 @@ class TestQiime2Pipeline(TestCase):
             colormap='gold,limegreen',
             invert_colors=True,
             skip_differential_abundance=False,
-            skip_picrust2=True,
+            run_picrust2=False,
         )
 
     def test_single_end(self):
@@ -55,7 +55,7 @@ class TestQiime2Pipeline(TestCase):
             colormap='Set1',
             invert_colors=True,
             skip_differential_abundance=False,
-            skip_picrust2=True,
+            run_picrust2=False,
         )
 
     def test_fungi(self):
@@ -79,5 +79,5 @@ class TestQiime2Pipeline(TestCase):
             colormap='gold,limegreen',
             invert_colors=True,
             skip_differential_abundance=False,
-            skip_picrust2=True,
+            run_picrust2=False,
         )

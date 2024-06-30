@@ -43,7 +43,7 @@ class Qiime2Pipeline(Processor):
     colormap: str
     invert_colors: bool
     skip_differential_abundance: bool
-    skip_picrust2: bool
+    run_picrust2: bool
 
     colors: list
     feature_table_qza: str
@@ -77,7 +77,7 @@ class Qiime2Pipeline(Processor):
             colormap: str,
             invert_colors: bool,
             skip_differential_abundance: bool,
-            skip_picrust2: bool):
+            run_picrust2: bool):
 
         self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
@@ -98,7 +98,7 @@ class Qiime2Pipeline(Processor):
         self.colormap = colormap
         self.invert_colors = invert_colors
         self.skip_differential_abundance = skip_differential_abundance
-        self.skip_picrust2 = skip_picrust2
+        self.run_picrust2 = run_picrust2
 
         self.transcribe_sample_sheet()
 
@@ -181,12 +181,12 @@ class Qiime2Pipeline(Processor):
             labeled_feature_table_tsv=self.labeled_feature_table_tsv)
 
     def picrust2(self):
-        if self.skip_picrust2:
-            self.picrust2_table_tsv_dict = {}
-        else:
+        if self.run_picrust2:
             self.picrust2_table_tsv_dict = PICRUSt2(self.settings).main(
                 labeled_feature_sequence_fa=self.labeled_feature_sequence_fa,
                 labeled_feature_table_tsv=self.labeled_feature_table_tsv)
+        else:
+            self.picrust2_table_tsv_dict = {}
 
     def alpha_diversity(self):
         AlphaDiversity(self.settings).main(
