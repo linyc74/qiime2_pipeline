@@ -260,21 +260,12 @@ class ScatterPlot(Processor):
         self.save_figure()
 
     def set_figsize(self):
-        if self.settings.for_publication:
-            base_width = 7.5 / 2.54
-            chr_width = 0.15 / 2.54
-            h = 6 / 2.54
-        else:
-            base_width = 14 / 2.54
-            chr_width = 0.218 / 2.54
-            h = 12 / 2.54
-
         df, group = self.sample_coordinate_df, self.group_column
-        df[group] = df[group].astype(str)  # int group name needs to be converted to str
-        max_legend_chrs = pd.Series(df[group]).apply(len).max()  # apply len to each str
-        w = base_width + (max_legend_chrs * chr_width)
+        max_legend_chrs = get_max_str_length(df[group])
+        n_groups = len(df[group].unique())
 
-        self.figsize = (w, h)
+        self.figsize = GetFigsize(self.settings).main(
+            max_legend_chrs=max_legend_chrs, n_groups=n_groups)
 
     def set_parameters(self):
         if self.settings.for_publication:
@@ -328,3 +319,28 @@ class ScatterPlot(Processor):
         for ext in ['pdf', 'png']:
             plt.savefig(f'{self.output_prefix}.{ext}', dpi=self.dpi)
         plt.close()
+
+
+def get_max_str_length(series: pd.Series) -> int:
+    return series.astype(str).apply(len).max()
+
+
+class GetFigsize(Processor):
+
+    def main(self, max_legend_chrs: int, n_groups: int) -> Tuple[float, float]:
+
+        if self.settings.for_publication:
+            base_width = 7.5 / 2.54
+            chr_width = 0.15 / 2.54
+            base_height = 6 / 2.54
+            line_height = 0.4 / 2.54
+        else:
+            base_width = 14 / 2.54
+            chr_width = 0.218 / 2.54
+            base_height = 12 / 2.54
+            line_height = 0.5 / 2.54
+
+        w = base_width + (max_legend_chrs * chr_width)
+        h = max(base_height, n_groups * line_height)
+
+        return w, h
