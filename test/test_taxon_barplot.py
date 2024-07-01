@@ -12,7 +12,7 @@ class TestPlotTaxonBarplots(TestCase):
         self.tear_down()
 
     def test_main(self):
-        self.settings.for_publication = True
+        self.settings.for_publication = False
 
         taxon_table_tsv_dict = {
             'phylum': f'{self.indir}/phylum-table.tsv',
