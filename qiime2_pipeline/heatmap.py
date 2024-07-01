@@ -170,7 +170,7 @@ class Clustermap(Processor):
     X_LABEL_CHAR_WIDTH = 0.14 / 2.54
     CELL_WIDTH = 0.4 / 2.54
     CELL_HEIGHT = 0.4 / 2.54
-    DENDROGRAM_RATIO = (0.06, 0.06)
+    DENDROGRAM_SIZE = 1.0 / 2.54
     COLORBAR_WIDTH = 0.01
     COLORBAR_HORIZONTAL_POSITION = 1.
     FONTSIZE = 7
@@ -221,14 +221,16 @@ class Clustermap(Processor):
 
     def __set_x_y_label_padding(self):
         max_x_label_length = pd.Series(self.data.columns).apply(len).max()
-        self.x_label_padding = max_x_label_length * self.X_LABEL_CHAR_WIDTH
+        self.x_label_padding = max_x_label_length * self.X_LABEL_CHAR_WIDTH + self.DENDROGRAM_SIZE
 
         max_y_label_length = pd.Series(self.data.index).apply(len).max()
-        self.y_label_padding = max_y_label_length * self.Y_LABEL_CHAR_WIDTH
+        self.y_label_padding = max_y_label_length * self.Y_LABEL_CHAR_WIDTH + self.DENDROGRAM_SIZE
 
     def clustermap(self):
         plt.rcParams['font.size'] = self.FONTSIZE
         plt.rcParams['axes.linewidth'] = self.LINE_WIDTH
+        w, h = self.figsize
+        dendrogram_ratio = (self.DENDROGRAM_SIZE / w, self.DENDROGRAM_SIZE / h)
         self.grid = sns.clustermap(
             data=self.data,
             cmap=self.COLORMAP,
@@ -236,7 +238,7 @@ class Clustermap(Processor):
             xticklabels=True,  # include every x label
             yticklabels=True,  # include every y label
             col_cluster=self.CLUSTER_COLUMNS,
-            dendrogram_ratio=self.DENDROGRAM_RATIO,
+            dendrogram_ratio=dendrogram_ratio,
             linewidth=0.25)
         self.__set_plotted_data()
 
@@ -293,7 +295,7 @@ class Clustermap(Processor):
     def __downsize_dpi_if_too_large(self) -> int:
         longer_side = max(self.figsize)
         dpi = self.DPI
-        while longer_side * dpi >= 2**16:  # 2^16 is the limit
+        while longer_side * dpi >= 2**15:  # 2^16 is the limit of matplotlib, but 2^15 is safer after some tests
             dpi = int(dpi/2)  # downsize
         return dpi
 
