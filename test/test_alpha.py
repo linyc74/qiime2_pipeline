@@ -8,7 +8,6 @@ class TestAlphaDiversity(TestCase):
 
     def setUp(self):
         self.set_up(py_path=__file__)
-        self.settings.for_publication = False
 
     def tearDown(self):
         self.tear_down()
@@ -34,7 +33,16 @@ class TestAlphaDiversity(TestCase):
         ]:
             self.assertTrue(exists(file))
 
-    def test_plot(self):
+
+class TestPlot(TestCase):
+
+    def setUp(self):
+        self.set_up(py_path=__file__)
+
+    def tearDown(self):
+        self.tear_down()
+
+    def test_not_for_publication(self):
         self.settings.for_publication = False
         Plot(self.settings).main(
             df=pd.read_csv(f'{self.indir}/alpha-diversity-346-samples.csv', index_col=0),
@@ -42,7 +50,7 @@ class TestAlphaDiversity(TestCase):
             colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0)]
         )
 
-    def test_plot_for_publication(self):
+    def test_for_publication(self):
         self.settings.for_publication = True
         Plot(self.settings).main(
             df=pd.read_csv(f'{self.indir}/alpha-diversity.csv', index_col=0),

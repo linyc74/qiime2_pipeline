@@ -44,6 +44,7 @@ class AlphaDiversity(Processor):
         for metric in self.alpha_metrics:
             self.run_one(metric=metric)
         self.add_group_column()
+        self.reorder_samples_by_sample_sheet()
         self.save_csv()
         self.plot()
 
@@ -64,6 +65,10 @@ class AlphaDiversity(Processor):
         self.df = AddGroupColumn(self.settings).main(
             df=self.df,
             sample_sheet=self.sample_sheet)
+
+    def reorder_samples_by_sample_sheet(self):
+        sample_order = pd.read_csv(self.sample_sheet, index_col=0).index
+        self.df = self.df.loc[sample_order, :]
 
     def save_csv(self):
         dstdir = f'{self.outdir}/{self.ALPHA_DIVERSITY_DIRNAME}'
