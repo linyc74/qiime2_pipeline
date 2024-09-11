@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.6.0'
+__VERSION__ = '2.6.1-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -74,7 +74,7 @@ OPTIONAL = [
             'required': False,
             'default': 'merge',
             'choices': ['merge', 'pool'],
-            'help': 'mode to combine paired end reads: "merge" or "pool" (default: %(default)s)',
+            'help': 'mode to combine Illumina paired end reads: "merge" or "pool" (default: %(default)s)',
         }
     },
     {
@@ -111,7 +111,7 @@ OPTIONAL = [
             'type': int,
             'required': False,
             'default': 0,
-            'help': 'hard clip <int> bp from 5\' end of read 1 (default: %(default)s)',
+            'help': 'hard clip <int> bp from 5\' end of Illumina read 1 (default: %(default)s)',
         }
     },
     {
@@ -120,7 +120,7 @@ OPTIONAL = [
             'type': int,
             'required': False,
             'default': 0,
-            'help': 'hard clip <int> bp from 5\' end of read 2 (default: %(default)s)',
+            'help': 'hard clip <int> bp from 5\' end of Illumina read 2 (default: %(default)s)',
         }
     },
     {
@@ -129,7 +129,7 @@ OPTIONAL = [
             'type': float,
             'required': False,
             'default': 2.0,
-            'help': 'max number of expected error bases, i.e. the sum error rates across all bases (default: %(default)s)',
+            'help': 'max number of expected error bases for DADA2, i.e. the sum error rates across all bases (default: %(default)s)',
         }
     },
     {

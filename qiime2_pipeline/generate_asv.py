@@ -2,9 +2,8 @@ import os
 import pandas as pd
 from typing import Tuple, Optional, List
 from .template import Processor
-from .denoise import Dada2SingleEnd, Dada2PairedEnd
 from .importing import ImportSingleEndFastq, ImportPairedEndFastq
-from .trimming import BatchTrimGalorePairedEnd, BatchTrimGaloreSingleEnd, BatchTrimPacBio
+from .trimming import BatchTrimGalorePairedEnd, BatchTrimGaloreSingleEnd
 
 
 class GenerateASV(Processor):
@@ -46,6 +45,7 @@ class GenerateASV(Processor):
 
         if self.pacbio:
             self.generate_asv_pacbio()
+
         else:  # illumina
             if self.fq2_suffix is None:
                 self.generate_asv_single_end()
@@ -103,20 +103,14 @@ class GenerateASVPacBio(Processor):
         self.fq_suffix = fq_suffix
         self.max_expected_error_bases = max_expected_error_bases
 
-        # 1 trimming
-        trimmed_fq_dir, trimmed_fq_suffix = BatchTrimPacBio(self.settings).main(
+        # 1 importing
+        single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
             sample_sheet=self.sample_sheet,
             fq_dir=self.fq_dir,
             fq_suffix=self.fq_suffix)
 
-        # 2 importing
-        single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
-            sample_sheet=self.sample_sheet,
-            fq_dir=trimmed_fq_dir,
-            fq_suffix=trimmed_fq_suffix)
-
-        # 3 denoise
-        self.feature_table_qza, self.feature_sequence_qza = Dada2SingleEnd(self.settings).main(
+        # 2 denoise
+        self.feature_table_qza, self.feature_sequence_qza = Dada2PacBio(self.settings).main(
             demultiplexed_seq_qza=single_end_seq_qza,
             max_expected_error_bases=self.max_expected_error_bases)
 
@@ -266,6 +260,137 @@ class GenerateASVPairedEnd(Processor):
         self.feature_table_qza, self.feature_sequence_qza = Dada2SingleEnd(self.settings).main(
             demultiplexed_seq_qza=single_end_seq_qza,
             max_expected_error_bases=self.max_expected_error_bases)
+
+
+#
+
+
+class Dada2Base(Processor):
+
+    TRIM_LEFT = 0  # number of 5' bases to be clipped
+    TRUNCATE_LENGTH = 0  # min read length
+
+    demultiplexed_seq_qza: str
+    max_expected_error_bases: float
+
+    feature_sequence_qza: str
+    feature_table_qza: str
+    denoising_stats_qza: str
+
+    cmd: str
+
+    def main(
+            self,
+            demultiplexed_seq_qza: str,
+            max_expected_error_bases: float) -> Tuple[str, str]:
+
+        self.demultiplexed_seq_qza = demultiplexed_seq_qza
+        self.max_expected_error_bases = max_expected_error_bases
+
+        self.set_output_paths()
+        self.set_cmd()
+        self.call(self.cmd)
+        self.export_stats()
+
+        return self.feature_table_qza, self.feature_sequence_qza
+
+    def set_output_paths(self):
+        self.feature_sequence_qza = f'{self.workdir}/dada2-feature-sequence.qza'
+        self.feature_table_qza = f'{self.workdir}/dada2-feature-table.qza'
+        self.denoising_stats_qza = f'{self.workdir}/dada2-stats.qza'
+
+    def set_cmd(self):
+        pass
+
+    def export_stats(self):
+        out = f'{self.workdir}/dada2'
+        log = f'{self.outdir}/qiime-tools-export.log'
+
+        cmd = self.CMD_LINEBREAK.join([
+            'qiime tools export',
+            f'--input-path {self.denoising_stats_qza}',
+            f'--output-path {out}',
+            f'1>> "{log}"',
+            f'2>> "{log}"'
+        ])
+        self.call(cmd)
+
+        self.call(f'mv "{out}/stats.tsv" "{self.outdir}/dada2-stats.tsv"')
+
+
+class Dada2SingleEnd(Dada2Base):
+
+    def set_cmd(self):
+        log = f'{self.outdir}/qiime-dada2-denoise-single.log'
+        self.cmd = self.CMD_LINEBREAK.join([
+            'qiime dada2 denoise-single',
+            f'--i-demultiplexed-seqs {self.demultiplexed_seq_qza}',
+            f'--p-trim-left {self.TRIM_LEFT}',
+            f'--p-trunc-len {self.TRUNCATE_LENGTH}',
+            f'--p-max-ee {self.max_expected_error_bases}',
+            f'--p-n-threads {self.threads}',
+            f'--o-representative-sequences {self.feature_sequence_qza}',
+            f'--o-table {self.feature_table_qza}',
+            f'--o-denoising-stats {self.denoising_stats_qza}',
+            f'1>> "{log}"',
+            f'2>> "{log}"'
+        ])
+
+
+class Dada2PairedEnd(Dada2Base):
+
+    MIN_OVERLAP = 12
+
+    def set_cmd(self):
+        log = f'{self.outdir}/qiime-dada2-denoise-paired.log'
+        self.cmd = self.CMD_LINEBREAK.join([
+            'qiime dada2 denoise-paired',
+            f'--i-demultiplexed-seqs {self.demultiplexed_seq_qza}',
+            f'--p-trim-left-f {self.TRIM_LEFT}',
+            f'--p-trim-left-r {self.TRIM_LEFT}',
+            f'--p-trunc-len-f {self.TRUNCATE_LENGTH}',
+            f'--p-trunc-len-r {self.TRUNCATE_LENGTH}',
+            f'--p-max-ee-f {self.max_expected_error_bases}',
+            f'--p-max-ee-r {self.max_expected_error_bases}',
+            f'--p-min-overlap {self.MIN_OVERLAP}',
+            f'--p-n-threads {self.threads}',
+            f'--o-representative-sequences {self.feature_sequence_qza}',
+            f'--o-table {self.feature_table_qza}',
+            f'--o-denoising-stats {self.denoising_stats_qza}',
+            f'1>> "{log}"',
+            f'2>> "{log}"'
+        ])
+
+
+class Dada2PacBio(Dada2Base):
+
+    FORWARD_PRIMER = 'AGRGTTYGATYMTGGCTCAG'  # 27F
+    REVERSE_PRIMER = 'RGYTACCTTGTTACGACTT'  # 1492R
+    MIN_LENGTH = 1000
+    MAX_LENGTH = 1600
+    MIN_FOLD_PARENT_OVER_ABUNDANCE = 3.5
+
+    def set_cmd(self):
+        log = f'{self.outdir}/qiime-dada2-denoise-ccs.log'
+        self.cmd = self.CMD_LINEBREAK.join([
+            'qiime dada2 denoise-ccs',
+            f'--i-demultiplexed-seqs {self.demultiplexed_seq_qza}',
+            f'--p-front {self.FORWARD_PRIMER}',
+            f'--p-adapter {self.REVERSE_PRIMER}',
+            f'--p-max-ee {self.max_expected_error_bases}',
+            f'--p-min-len {self.MIN_LENGTH}',
+            f'--p-max-len {self.MAX_LENGTH}',
+            f'--p-min-fold-parent-over-abundance {self.MIN_FOLD_PARENT_OVER_ABUNDANCE}',
+            f'--p-n-threads {self.threads}',
+            f'--o-representative-sequences {self.feature_sequence_qza}',
+            f'--o-table {self.feature_table_qza}',
+            f'--o-denoising-stats {self.denoising_stats_qza}',
+            f'1>> "{log}"',
+            f'2>> "{log}"'
+        ])
+
+
+#
 
 
 class BatchPool(Processor):
