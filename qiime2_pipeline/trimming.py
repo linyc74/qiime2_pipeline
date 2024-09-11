@@ -297,3 +297,57 @@ class BatchTrimGaloreSingleEnd(Processor):
         fq = self.trim_galore(fq=fq, clip_5_prime=self.clip_5_prime)
 
         self.call(f'mv "{fq}" "{self.out_fq_dir}/{name}{self.TRIMMED_FQ_SUFFIX}"')
+
+
+class BatchTrimPacBio(Processor):
+
+    TRIMMED_FQ_SUFFIX = '.fastq.gz'
+    FORWARD_ADAPTER_PATTERN = 'AGRGTTYGATYMTGGCTCAG...AAGTCGTAACAAGGTARCY'  # 27F...1492R
+    REVERSE_ADAPTER_PATTERN = 'RGYTACCTTGTTACGACTT...CTGAGCCAKRATCRAACYCT'  # 1492F...27R
+
+    sample_sheet: str
+    fq_dir: str
+    fq_suffix: str
+
+    sample_names: List[str]
+    out_fq_dir: str
+
+    def main(
+            self,
+            sample_sheet: str,
+            fq_dir: str,
+            fq_suffix: str) -> Tuple[str, str]:
+
+        self.sample_sheet = sample_sheet
+        self.fq_dir = fq_dir
+        self.fq_suffix = fq_suffix
+
+        self.set_sample_names()
+        self.make_out_fq_dir()
+        for name in self.sample_names:
+            self.process_one_fq(name)
+
+        return self.out_fq_dir, self.TRIMMED_FQ_SUFFIX
+
+    def set_sample_names(self):
+        self.sample_names = pd.read_csv(self.sample_sheet, index_col=0).index.tolist()
+
+    def make_out_fq_dir(self):
+        self.out_fq_dir = f'{self.workdir}/trimmed_fastqs'
+        os.makedirs(self.out_fq_dir, exist_ok=True)
+
+    def process_one_fq(self, name: str):
+        in_fq = f'{self.fq_dir}/{name}{self.fq_suffix}'
+        out_fq = f'{self.out_fq_dir}/{name}{self.TRIMMED_FQ_SUFFIX}'
+        log = f'{self.outdir}/cutadapt.log'
+        args = [
+            'cutadapt',
+            f'--front {self.FORWARD_ADAPTER_PATTERN}',
+            f'--front {self.REVERSE_ADAPTER_PATTERN}',
+            f'--cores {self.threads}',
+            f'-o {out_fq}',
+            in_fq,
+            f'1>> "{log}"',
+            f'2>> "{log}"'
+        ]
+        self.call(self.CMD_LINEBREAK.join(args))

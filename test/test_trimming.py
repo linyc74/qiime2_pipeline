@@ -1,6 +1,6 @@
 from .setup import TestCase
 from qiime2_pipeline.trimming import TrimGalorePairedEnd, BatchTrimGalorePairedEnd, \
-    TrimGaloreSingleEnd, BatchTrimGaloreSingleEnd
+    TrimGaloreSingleEnd, BatchTrimGaloreSingleEnd, BatchTrimPacBio
 
 
 class TestTrimGalorePairedEnd(TestCase):
@@ -78,6 +78,24 @@ class TestBatchTrimGaloreSingleEnd(TestCase):
             fq_dir=f'{self.indir}/fq_dir',
             fq_suffix='_L001_R2_001.fastq.gz',
             clip_5_prime=17)
+        expected = f'{self.workdir}/trimmed_fastqs'
+        self.assertFileExists(expected, fq_dir)
+        self.assertEqual('.fastq.gz', fq_suffix)
+
+
+class TestBatchTrimPacBio(TestCase):
+
+    def setUp(self):
+        self.set_up(py_path=__file__)
+
+    def tearDown(self):
+        self.tear_down()
+
+    def test_main(self):
+        fq_dir, fq_suffix = BatchTrimPacBio(self.settings).main(
+            sample_sheet=f'{self.indir}/sample-sheet-full-length.csv',
+            fq_dir=f'{self.indir}/fq_dir',
+            fq_suffix='.fastq.gz')
         expected = f'{self.workdir}/trimmed_fastqs'
         self.assertFileExists(expected, fq_dir)
         self.assertEqual('.fastq.gz', fq_suffix)
