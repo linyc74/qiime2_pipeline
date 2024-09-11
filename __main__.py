@@ -274,6 +274,7 @@ class EntryPoint:
             fq1_suffix=args.fq1_suffix,
             fq2_suffix=args.fq2_suffix,
             nb_classifier_qza=args.nb_classifier_qza,
+            pacbio=args.pacbio,
             paired_end_mode=args.paired_end_mode,
             otu_identity=args.otu_identity,
             skip_otu=args.skip_otu,
