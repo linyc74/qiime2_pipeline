@@ -19,6 +19,7 @@ from .beta_qiime import QiimeBetaDiversity
 from .raw_read_counts import RawReadCounts
 from .taxon_barplot import PlotTaxonBarplots
 from .sample_sheet import TranscribeSampleSheet
+from .alpha_rarefaction import AlphaRarefaction
 from .differential_abundance import DifferentialAbundance
 
 
@@ -117,6 +118,7 @@ class Qiime2Pipeline(Processor):
         self.picrust2()
 
         self.alpha_diversity()
+        self.alpha_rarefaction()
 
         self.phylogeny_and_beta_diversity()
 
@@ -198,6 +200,9 @@ class Qiime2Pipeline(Processor):
             sample_sheet=self.sample_sheet,
             alpha_metrics=self.alpha_metrics,
             colors=self.colors)
+
+    def alpha_rarefaction(self):
+        AlphaRarefaction(self.settings).main(feature_table_qza=self.feature_table_qza)
 
     def phylogeny_and_beta_diversity(self):
         if self.beta_diversity_feature_level == 'feature':
