@@ -93,7 +93,7 @@ class TestBatchTrimPacBio(TestCase):
 
     def test_main(self):
         fq_dir, fq_suffix = BatchTrimPacBio(self.settings).main(
-            sample_sheet=f'{self.indir}/sample-sheet-full-length.csv',
+            sample_sheet=f'{self.indir}/sample-sheet-pacbio.csv',
             fq_dir=f'{self.indir}/fq_dir',
             fq_suffix='.fastq.gz')
         expected = f'{self.workdir}/trimmed_fastqs'

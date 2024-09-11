@@ -4,7 +4,7 @@ from typing import Tuple, Optional, List
 from .template import Processor
 from .denoise import Dada2SingleEnd, Dada2PairedEnd
 from .importing import ImportSingleEndFastq, ImportPairedEndFastq
-from .trimming import BatchTrimGalorePairedEnd, BatchTrimGaloreSingleEnd
+from .trimming import BatchTrimGalorePairedEnd, BatchTrimGaloreSingleEnd, BatchTrimPacBio
 
 
 class GenerateASV(Processor):
@@ -13,6 +13,7 @@ class GenerateASV(Processor):
     fq_dir: str
     fq1_suffix: str
     fq2_suffix: Optional[str]
+    pacbio: bool
     paired_end_mode: str
     clip_r1_5_prime: int
     clip_r2_5_prime: int
@@ -27,6 +28,7 @@ class GenerateASV(Processor):
             fq_dir: str,
             fq1_suffix: str,
             fq2_suffix: Optional[str],
+            pacbio: bool,
             paired_end_mode: str,
             clip_r1_5_prime: int,
             clip_r2_5_prime: int,
@@ -36,17 +38,28 @@ class GenerateASV(Processor):
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
+        self.pacbio = pacbio
         self.paired_end_mode = paired_end_mode
         self.clip_r1_5_prime = clip_r1_5_prime
         self.clip_r2_5_prime = clip_r2_5_prime
         self.max_expected_error_bases = max_expected_error_bases
 
-        if self.fq2_suffix is None:
-            self.generate_asv_single_end()
-        else:
-            self.generate_asv_paired_end()
+        if self.pacbio:
+            self.generate_asv_pacbio()
+        else:  # illumina
+            if self.fq2_suffix is None:
+                self.generate_asv_single_end()
+            else:
+                self.generate_asv_paired_end()
 
         return self.feature_table_qza, self.feature_sequence_qza
+
+    def generate_asv_pacbio(self):
+        self.feature_table_qza, self.feature_sequence_qza = GenerateASVPacBio(self.settings).main(
+            sample_sheet=self.sample_sheet,
+            fq_dir=self.fq_dir,
+            fq_suffix=self.fq1_suffix,
+            max_expected_error_bases=self.max_expected_error_bases)
 
     def generate_asv_single_end(self):
         self.feature_table_qza, self.feature_sequence_qza = GenerateASVSingleEnd(self.settings).main(
@@ -66,6 +79,48 @@ class GenerateASV(Processor):
             clip_r2_5_prime=self.clip_r2_5_prime,
             paired_end_mode=self.paired_end_mode,
             max_expected_error_bases=self.max_expected_error_bases)
+
+
+class GenerateASVPacBio(Processor):
+
+    sample_sheet: str
+    fq_dir: str
+    fq_suffix: str
+    max_expected_error_bases: float
+
+    feature_sequence_qza: str
+    feature_table_qza: str
+
+    def main(
+            self,
+            sample_sheet: str,
+            fq_dir: str,
+            fq_suffix: str,
+            max_expected_error_bases: float) -> Tuple[str, str]:
+
+        self.sample_sheet = sample_sheet
+        self.fq_dir = fq_dir
+        self.fq_suffix = fq_suffix
+        self.max_expected_error_bases = max_expected_error_bases
+
+        # 1 trimming
+        trimmed_fq_dir, trimmed_fq_suffix = BatchTrimPacBio(self.settings).main(
+            sample_sheet=self.sample_sheet,
+            fq_dir=self.fq_dir,
+            fq_suffix=self.fq_suffix)
+
+        # 2 importing
+        single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
+            sample_sheet=self.sample_sheet,
+            fq_dir=trimmed_fq_dir,
+            fq_suffix=trimmed_fq_suffix)
+
+        # 3 denoise
+        self.feature_table_qza, self.feature_sequence_qza = Dada2SingleEnd(self.settings).main(
+            demultiplexed_seq_qza=single_end_seq_qza,
+            max_expected_error_bases=self.max_expected_error_bases)
+
+        return self.feature_table_qza, self.feature_sequence_qza
 
 
 class GenerateASVSingleEnd(Processor):

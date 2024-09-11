@@ -13,6 +13,7 @@ class Main:
     fq1_suffix: str
     fq2_suffix: Optional[str]
     nb_classifier_qza: str
+    pacbio: bool
     paired_end_mode: str
     otu_identity: float
     skip_otu: bool
@@ -39,6 +40,7 @@ class Main:
             fq1_suffix: str,
             fq2_suffix: str,
             nb_classifier_qza: str,
+            pacbio: bool,
             paired_end_mode: str,
             otu_identity: float,
             skip_otu: bool,
@@ -64,6 +66,7 @@ class Main:
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = None if fq2_suffix == 'None' else fq2_suffix
         self.nb_classifier_qza = nb_classifier_qza
+        self.pacbio = pacbio
         self.paired_end_mode = paired_end_mode
         self.otu_identity = float(otu_identity)
         self.skip_otu = skip_otu
@@ -104,6 +107,7 @@ class Main:
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix,
             nb_classifier_qza=self.nb_classifier_qza,
+            pacbio=self.pacbio,
             paired_end_mode=self.paired_end_mode,
             otu_identity=self.otu_identity,
             skip_otu=self.skip_otu,

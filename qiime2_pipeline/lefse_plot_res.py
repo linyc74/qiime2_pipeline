@@ -1,7 +1,6 @@
 """
 This script is a modified version of the lefse_plot_res.py script from the LEfSe package (https://github.com/SegataLab/lefse/tree/master/lefse).
 """
-import pandas as pd
 from pylab import *
 from lefse.lefse import *
 from typing import Dict, Any

@@ -61,6 +61,13 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--pacbio'],
+        'properties': {
+            'action': 'store_true',
+            'help': 'PacBio CCS reads using primers 27F and 1492R',
+        }
+    },
+    {
         'keys': ['-m', '--paired-end-mode'],
         'properties': {
             'type': str,

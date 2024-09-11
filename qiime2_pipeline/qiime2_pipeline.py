@@ -29,6 +29,7 @@ class Qiime2Pipeline(Processor):
     fq1_suffix: str
     fq2_suffix: Optional[str]
     nb_classifier_qza: str
+    pacbio: bool
     paired_end_mode: str
     otu_identity: float
     skip_otu: bool
@@ -63,6 +64,7 @@ class Qiime2Pipeline(Processor):
             fq1_suffix: str,
             fq2_suffix: Optional[str],
             nb_classifier_qza: str,
+            pacbio: bool,
             paired_end_mode: str,
             otu_identity: float,
             skip_otu: bool,
@@ -84,6 +86,7 @@ class Qiime2Pipeline(Processor):
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
         self.nb_classifier_qza = nb_classifier_qza
+        self.pacbio = pacbio
         self.paired_end_mode = paired_end_mode
         self.otu_identity = otu_identity
         self.skip_otu = skip_otu
@@ -148,6 +151,7 @@ class Qiime2Pipeline(Processor):
             fq_dir=self.fq_dir,
             fq1_suffix=self.fq1_suffix,
             fq2_suffix=self.fq2_suffix,
+            pacbio=self.pacbio,
             paired_end_mode=self.paired_end_mode,
             clip_r1_5_prime=self.clip_r1_5_prime,
             clip_r2_5_prime=self.clip_r2_5_prime,
