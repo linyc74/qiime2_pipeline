@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+from venny4py.venny4py import venny4py
 from typing import List, Dict, Set, Tuple
 from matplotlib_venn import venn2, venn3
 from .utils import edit_fpath
@@ -39,7 +40,7 @@ class PlotVennDiagrams(Processor):
         groups = pd.read_csv(self.sample_sheet, index_col=0)[GROUP_COLUMN].unique()
 
         n = len(groups)
-        if n in [2, 3]:
+        if n in [2, 3, 4]:
             return True
         else:
             p = 'There is only 1' if n == 1 else f'There are {n}'
@@ -67,7 +68,7 @@ class ProcessTsvPlotVenn(Processor):
 
     tsv: str
     sample_sheet: str
-    color: list
+    colors: list
     dstdir: str
 
     df: pd.DataFrame
@@ -162,7 +163,7 @@ class PlotVenn(Processor):
         self.save_figure()
 
     def assert_number_of_groups(self):
-        assert len(self.set_labels) in [2, 3]
+        assert len(self.set_labels) in [2, 3, 4]
 
     def set_parameters(self):
         if self.settings.for_publication:
@@ -170,9 +171,9 @@ class PlotVenn(Processor):
             self.dpi = 600
             self.fontsize = 7
         else:
-            self.figsize = (8, 6)
+            self.figsize = (8 / 2.54, 6 / 2.54)
             self.dpi = 300
-            self.fontsize = 12
+            self.fontsize = 10
 
     def init_figure(self):
         plt.rcParams['font.size'] = self.fontsize
@@ -182,8 +183,24 @@ class PlotVenn(Processor):
 
         if len(self.subsets) == 2:
             venn2(subsets=self.subsets, set_labels=self.set_labels, set_colors=self.colors)
-        else:
+        elif len(self.subsets) == 3:
             venn3(subsets=self.subsets, set_labels=self.set_labels, set_colors=self.colors)
+        else:
+            sets = {label: subset for label, subset in zip(self.set_labels, self.subsets)}
+            venny4py(
+                sets=sets,
+                out=self.workdir,
+                asax=False,
+                ext='png',
+                dpi=self.dpi,
+                size=self.figsize[0] * 1.5,
+                colors=self.colors,
+                line_width=0.5,
+                font_size=self.fontsize,
+                legend_cols=2,
+                column_spacing=1,
+                edge_color='black'
+            )
 
     def save_figure(self):
         for ext in ['pdf', 'png']:

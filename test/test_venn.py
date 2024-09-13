@@ -57,9 +57,16 @@ class TestProcessTsvPlotVenn(TestCase):
             dstdir=self.outdir)
 
     def test_4_groups(self):
+        ProcessTsvPlotVenn(self.settings).main(
+            tsv=f'{self.indir}/mock-feature-table.tsv',
+            sample_sheet=f'{self.indir}/mock-sample-sheet-4-groups.csv',
+            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0), (0.4, 0.1, 0.9, 1.0), (0.2, 0.9, 0.1, 1.0)],
+            dstdir=self.outdir)
+
+    def test_5_groups(self):
         with self.assertRaises(AssertionError):
             ProcessTsvPlotVenn(self.settings).main(
                 tsv=f'{self.indir}/mock-feature-table.tsv',
-                sample_sheet=f'{self.indir}/mock-sample-sheet-4-groups.csv',
+                sample_sheet=f'{self.indir}/mock-sample-sheet-5-groups.csv',
                 colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0)],
                 dstdir=self.outdir)

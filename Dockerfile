@@ -52,7 +52,7 @@ RUN conda install -c bioconda \
  && pip install --editable . \
  && cd ..
 
-RUN ${bin_path}/pip install --no-cache-dir openpyxl==3.1.2
+RUN ${bin_path}/pip install --no-cache-dir openpyxl==3.1.2 venny4py==1.0.3
 
 # to avoid unifrac bug
 ENV UNIFRAC_USE_GPU N

@@ -363,6 +363,10 @@ class Dada2PairedEnd(Dada2Base):
 
 
 class Dada2PacBio(Dada2Base):
+    """
+    Reference:
+      Callahan et al., High-throughput amplicon sequencing of the full-length 16S rRNA gene with single-nucleotide resolution (doi: 10.1093/nar/gkz569)
+    """
 
     FORWARD_PRIMER = 'AGRGTTYGATYMTGGCTCAG'  # 27F
     REVERSE_PRIMER = 'RGYTACCTTGTTACGACTT'  # 1492R
