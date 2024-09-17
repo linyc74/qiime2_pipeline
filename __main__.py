@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.6.3-beta'
+__VERSION__ = '2.7.0-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -30,14 +30,6 @@ REQUIRED = [
             'type': str,
             'required': True,
             'help': 'suffix of read 1 fastq files',
-        }
-    },
-    {
-        'keys': ['-b', '--nb-classifier-qza'],
-        'properties': {
-            'type': str,
-            'required': True,
-            'help': 'pre-trained naive Bayes classifier (.qza file) for feature classification (https://docs.qiime2.org/2021.8/data-resources)',
         }
     },
 ]
@@ -74,7 +66,7 @@ OPTIONAL = [
             'required': False,
             'default': 'merge',
             'choices': ['merge', 'pool'],
-            'help': 'mode to combine Illumina paired end reads: "merge" or "pool" (default: %(default)s)',
+            'help': 'mode to combine Illumina paired end reads (default: %(default)s)',
         }
     },
     {
@@ -87,12 +79,49 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--feature-classifier'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'nb',
+            'choices': ['nb', 'vsearch'],
+            'help': 'taxonomy classification algorithm, "nb" for Naive Bayes (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--nb-classifier-qza'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'None',
+            'help': 'pre-trained Naive Bayes classifier (.qza file) required for "nb" feature-classifier (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['--classifier-reads-per-batch'],
         'properties': {
             'type': int,
             'required': False,
             'default': 0,
-            'help': 'number of reads per batch for feature classifier, default indicates \'auto\' (default: %(default)s)',
+            'help': 'reads per batch for "nb" feature classifier, default indicates "auto" (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--reference-sequence-qza'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'None',
+            'help': 'reference sequence (.qza file) required for "vsearch" feature-classifier (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--reference-taxonomy-qza'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'None',
+            'help': 'reference taxnomy (.qza file) required for "vsearch" feature-classifier (default: %(default)s)',
         }
     },
     {
@@ -268,17 +297,20 @@ class EntryPoint:
     def run(self):
         args = self.parser.parse_args()
         print(f'Start running Qiime2 pipeline version {__VERSION__}\n', flush=True)
-        qiime2_pipeline.Main().main(
+        qiime2_pipeline.main(
             sample_sheet=args.sample_sheet,
             fq_dir=args.fq_dir,
             fq1_suffix=args.fq1_suffix,
             fq2_suffix=args.fq2_suffix,
-            nb_classifier_qza=args.nb_classifier_qza,
             pacbio=args.pacbio,
             paired_end_mode=args.paired_end_mode,
             otu_identity=args.otu_identity,
             skip_otu=args.skip_otu,
+            feature_classifier=args.feature_classifier,
+            nb_classifier_qza=args.nb_classifier_qza,
             classifier_reads_per_batch=args.classifier_reads_per_batch,
+            reference_sequence_qza=args.reference_sequence_qza,
+            reference_taxonomy_qza=args.reference_taxonomy_qza,
             alpha_metrics=args.alpha_metrics,
             clip_r1_5_prime=args.clip_r1_5_prime,
             clip_r2_5_prime=args.clip_r2_5_prime,
