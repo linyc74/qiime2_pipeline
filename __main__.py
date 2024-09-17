@@ -103,7 +103,7 @@ OPTIONAL = [
             'type': int,
             'required': False,
             'default': 0,
-            'help': 'reads per batch for "nb" feature classifier, default indicates "auto" (default: %(default)s)',
+            'help': 'reads per batch for "nb" feature-classifier, default indicates "auto" (default: %(default)s)',
         }
     },
     {
@@ -121,7 +121,7 @@ OPTIONAL = [
             'type': str,
             'required': False,
             'default': 'None',
-            'help': 'reference taxnomy (.qza file) required for "vsearch" feature-classifier (default: %(default)s)',
+            'help': 'reference taxonomy (.qza file) required for "vsearch" feature-classifier (default: %(default)s)',
         }
     },
     {

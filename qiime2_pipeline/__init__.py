@@ -6,7 +6,6 @@ from .qiime2_pipeline import Qiime2Pipeline
 
 
 def main(
-        self,
         sample_sheet: str,
         fq_dir: str,
         fq1_suffix: str,
