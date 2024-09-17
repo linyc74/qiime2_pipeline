@@ -35,12 +35,20 @@ class TestPlotOneHeatmap(TestCase):
     def tearDown(self):
         self.tear_down()
 
-    def test_main(self):
+    def test_346_samples(self):
         self.settings.for_publication = False
         PlotOneHeatmap(self.settings).main(
             tsv=f'{self.indir}/346-samples-species-table.tsv',
             heatmap_read_fraction=0.95,
             sample_sheet=f'{self.indir}/346-samples-sample-sheet.csv',
+            dstdir=self.outdir
+        )
+
+    def test_only_only_row(self):
+        PlotOneHeatmap(self.settings).main(
+            tsv=f'{self.indir}/only-one-row-table.tsv',
+            heatmap_read_fraction=0.95,
+            sample_sheet=f'{self.indir}/only-one-row-sample-sheet.csv',
             dstdir=self.outdir
         )
 

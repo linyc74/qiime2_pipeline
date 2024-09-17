@@ -229,14 +229,19 @@ class Clustermap(Processor):
     def clustermap(self):
         plt.rcParams['font.size'] = self.FONTSIZE
         plt.rcParams['axes.linewidth'] = self.LINE_WIDTH
+
+        row_cluster = True if len(self.data) > 1 else False  # do not cluster if only one row
+
         w, h = self.figsize
         dendrogram_ratio = (self.DENDROGRAM_SIZE / w, self.DENDROGRAM_SIZE / h)
+
         self.grid = sns.clustermap(
             data=self.data,
             cmap=self.COLORMAP,
             figsize=self.figsize,
             xticklabels=True,  # include every x label
             yticklabels=True,  # include every y label
+            row_cluster=row_cluster,
             col_cluster=self.CLUSTER_COLUMNS,
             dendrogram_ratio=dendrogram_ratio,
             linewidth=0.25)
