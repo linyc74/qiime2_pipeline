@@ -1,13 +1,75 @@
 import pandas as pd
-from typing import Union
+from typing import Optional
+from .template import Processor
 from .exporting import ExportTaxonomy
 from .importing import ImportTaxonomy
-from .template import Processor, Settings
 
 
 class Taxonomy(Processor):
 
-    CONFIDENCE = 0
+    representative_seq_qza: str
+    feature_classifier: str
+    nb_classifier_qza: Optional[str]
+    classifier_reads_per_batch: int
+    reference_sequence_qza: Optional[str]
+    reference_taxonomy_qza: Optional[str]
+
+    taxonomy_qza: str
+
+    def main(
+            self,
+            representative_seq_qza: str,
+            feature_classifier: str,
+            nb_classifier_qza: Optional[str],
+            classifier_reads_per_batch: int,
+            reference_sequence_qza: Optional[str],
+            reference_taxonomy_qza: Optional[str]):
+
+        self.representative_seq_qza = representative_seq_qza
+        self.feature_classifier = feature_classifier
+        self.nb_classifier_qza = nb_classifier_qza
+        self.classifier_reads_per_batch = classifier_reads_per_batch
+        self.reference_sequence_qza = reference_sequence_qza
+        self.reference_taxonomy_qza = reference_taxonomy_qza
+
+        if self.feature_classifier == 'nb':
+            self.classify_nb()
+        elif self.feature_classifier == 'vsearch':
+            self.classify_vsearch()
+
+        return self.taxonomy_qza
+
+    def classify_nb(self):
+        assert self.nb_classifier_qza is not None
+        self.taxonomy_qza = ClassifyNB(self.settings).main(
+            representative_seq_qza=self.representative_seq_qza,
+            nb_classifier_qza=self.nb_classifier_qza,
+            classifier_reads_per_batch=self.classifier_reads_per_batch)
+
+    def classify_vsearch(self):
+        assert self.reference_sequence_qza is not None
+        assert self.reference_taxonomy_qza is not None
+        self.taxonomy_qza = f'{self.workdir}/taxonomy-vsearch.qza'
+        search_results_qza = f'{self.workdir}/search-results.qza'
+        log = f'{self.outdir}/qiime-feature-classifier-classify-consensus-vsearch.log'
+        args = [
+            'qiime feature-classifier classify-consensus-vsearch',
+            f'--i-query {self.representative_seq_qza}',
+            f'--i-reference-reads {self.reference_sequence_qza}',
+            f'--i-reference-taxonomy {self.reference_taxonomy_qza}',
+            f'--p-strand both',
+            f'--p-threads {self.threads}',
+            f'--o-classification {self.taxonomy_qza}',
+            f'--o-search-results {search_results_qza}',
+            f'1>> "{log}"',
+            f'2>> "{log}"'
+        ]
+        self.call(self.CMD_LINEBREAK.join(args))
+
+
+class ClassifyNB(Processor):
+
+    CONFIDENCE_CUTOFF = 0
 
     representative_seq_qza: str
     nb_classifier_qza: str
@@ -27,79 +89,32 @@ class Taxonomy(Processor):
         self.nb_classifier_qza = nb_classifier_qza
         self.classifier_reads_per_batch = classifier_reads_per_batch
 
-        self.forward_classify()
-        self.reverse_classify()
-        self.merge_foward_reverse()
-
-        return self.merged_taxonomy_qza
-
-    def forward_classify(self):
-        self.forward_taxonomy_qza = Classify(self.settings).main(
-            representative_seq_qza=self.representative_seq_qza,
-            nb_classifier_qza=self.nb_classifier_qza,
-            read_orientation='same',
-            classifier_reads_per_batch=self.classifier_reads_per_batch)
-
-    def reverse_classify(self):
-        self.reverse_taxonomy_qza = Classify(self.settings).main(
-            representative_seq_qza=self.representative_seq_qza,
-            nb_classifier_qza=self.nb_classifier_qza,
-            read_orientation='reverse-complement',
-            classifier_reads_per_batch=self.classifier_reads_per_batch)
-
-    def merge_foward_reverse(self):
+        self.forward_taxonomy_qza = self.classify(read_orientation='same')
+        self.reverse_taxonomy_qza = self.classify(read_orientation='reverse-complement')
         self.merged_taxonomy_qza = MergeForwardReverseTaxonomy(self.settings).main(
             forward_taxonomy_qza=self.forward_taxonomy_qza,
             reverse_taxonomy_qza=self.reverse_taxonomy_qza)
 
+        return self.merged_taxonomy_qza
 
-class Classify(Processor):
-
-    CONFIDENCE_CUTOFF = 0
-
-    representative_seq_qza: str
-    nb_classifier_qza: str
-    read_orientation: str
-    classifier_reads_per_batch: Union[int, str]
-
-    taxonomy_qza: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-
-    def main(
-            self,
-            representative_seq_qza: str,
-            nb_classifier_qza: str,
-            read_orientation: str,
-            classifier_reads_per_batch: int) -> str:
-
-        self.representative_seq_qza = representative_seq_qza
-        self.nb_classifier_qza = nb_classifier_qza
-        self.read_orientation = read_orientation
-        self.classifier_reads_per_batch = 'auto' if classifier_reads_per_batch == 0 \
-            else classifier_reads_per_batch
-
-        self.classify()
-
-        return self.taxonomy_qza
-
-    def classify(self):
-        self.taxonomy_qza = f'{self.workdir}/taxonomy-{self.read_orientation}.qza'
+    def classify(self, read_orientation: str) -> str:
+        reads_per_batch = 'auto' if self.classifier_reads_per_batch == 0 else self.classifier_reads_per_batch
+        taxonomy_qza = f'{self.workdir}/taxonomy-{read_orientation}.qza'
         log = f'{self.outdir}/qiime-feature-classifier-classify-sklearn.log'
-        cmd = self.CMD_LINEBREAK.join([
+        args = [
             'qiime feature-classifier classify-sklearn',
             f'--i-classifier "{self.nb_classifier_qza}"',
             f'--i-reads {self.representative_seq_qza}',
-            f'--p-read-orientation {self.read_orientation}',
+            f'--p-read-orientation {read_orientation}',
             f'--p-confidence {self.CONFIDENCE_CUTOFF}',
             f'--p-n-jobs {self.threads}',
-            f'--p-reads-per-batch {self.classifier_reads_per_batch}',
-            f'--o-classification {self.taxonomy_qza}',
+            f'--p-reads-per-batch {reads_per_batch}',
+            f'--o-classification {taxonomy_qza}',
             f'1>> "{log}"',
             f'2>> "{log}"'
-        ])
-        self.call(cmd)
+        ]
+        self.call(self.CMD_LINEBREAK.join(args))
+        return taxonomy_qza
 
 
 class MergeForwardReverseTaxonomy(Processor):
@@ -112,9 +127,6 @@ class MergeForwardReverseTaxonomy(Processor):
     df: pd.DataFrame
 
     merged_taxonomy_qza: str
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
 
     def main(
             self,

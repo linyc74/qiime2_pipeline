@@ -29,12 +29,15 @@ class Qiime2Pipeline(Processor):
     fq_dir: str
     fq1_suffix: str
     fq2_suffix: Optional[str]
-    nb_classifier_qza: str
     pacbio: bool
     paired_end_mode: str
     otu_identity: float
     skip_otu: bool
+    feature_classifier: str
+    nb_classifier_qza: Optional[str]
     classifier_reads_per_batch: int
+    reference_sequence_qza: Optional[str]
+    reference_taxonomy_qza: Optional[str]
     alpha_metrics: List[str]
     clip_r1_5_prime: int
     clip_r2_5_prime: int
@@ -64,12 +67,15 @@ class Qiime2Pipeline(Processor):
             fq_dir: str,
             fq1_suffix: str,
             fq2_suffix: Optional[str],
-            nb_classifier_qza: str,
             pacbio: bool,
             paired_end_mode: str,
             otu_identity: float,
             skip_otu: bool,
+            feature_classifier: str,
+            nb_classifier_qza: Optional[str],
             classifier_reads_per_batch: int,
+            reference_sequence_qza: Optional[str],
+            reference_taxonomy_qza: Optional[str],
             alpha_metrics: List[str],
             clip_r1_5_prime: int,
             clip_r2_5_prime: int,
@@ -86,16 +92,25 @@ class Qiime2Pipeline(Processor):
         self.fq_dir = fq_dir
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
-        self.nb_classifier_qza = nb_classifier_qza
+
         self.pacbio = pacbio
+
+        self.clip_r1_5_prime = clip_r1_5_prime
+        self.clip_r2_5_prime = clip_r2_5_prime
+
+        self.max_expected_error_bases = max_expected_error_bases
+
         self.paired_end_mode = paired_end_mode
         self.otu_identity = otu_identity
         self.skip_otu = skip_otu
+
+        self.feature_classifier = feature_classifier
+        self.nb_classifier_qza = nb_classifier_qza
         self.classifier_reads_per_batch = classifier_reads_per_batch
+        self.reference_sequence_qza = reference_sequence_qza
+        self.reference_taxonomy_qza = reference_taxonomy_qza
+
         self.alpha_metrics = alpha_metrics
-        self.clip_r1_5_prime = clip_r1_5_prime
-        self.clip_r2_5_prime = clip_r2_5_prime
-        self.max_expected_error_bases = max_expected_error_bases
         self.heatmap_read_fraction = heatmap_read_fraction
         self.n_taxa_barplot = n_taxa_barplot
         self.beta_diversity_feature_level = beta_diversity_feature_level
@@ -170,8 +185,11 @@ class Qiime2Pipeline(Processor):
     def taxonomic_classification(self):
         self.taxonomy_qza = Taxonomy(self.settings).main(
             representative_seq_qza=self.feature_sequence_qza,
+            feature_classifier=self.feature_classifier,
             nb_classifier_qza=self.nb_classifier_qza,
-            classifier_reads_per_batch=self.classifier_reads_per_batch)
+            classifier_reads_per_batch=self.classifier_reads_per_batch,
+            reference_sequence_qza=self.reference_sequence_qza,
+            reference_taxonomy_qza=self.reference_taxonomy_qza)
 
     def feature_labeling(self):
         self.labeled_feature_table_tsv, self.labeled_feature_table_qza, \
