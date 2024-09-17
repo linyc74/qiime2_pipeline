@@ -225,6 +225,7 @@ class WriteTaxonomyCondifenceTable(Processor):
     feature_id_to_label: Dict[str, str]
 
     df: pd.DataFrame
+    confidence_or_consensus: str
 
     def main(
             self,
@@ -235,22 +236,32 @@ class WriteTaxonomyCondifenceTable(Processor):
         self.feature_id_to_label = feature_id_to_label
 
         self.read_taxonomy_tsv()
+        self.set_confidence_or_consensus()
         self.label_and_process()
         self.save_output_tsv()
 
     def read_taxonomy_tsv(self):
         self.df = pd.read_csv(self.taxonomy_tsv, sep='\t')
 
+    def set_confidence_or_consensus(self):
+        if 'Confidence' in self.df.columns:
+            self.confidence_or_consensus = 'Confidence'  # NB classifier
+        elif 'Consensus' in self.df.columns:
+            self.confidence_or_consensus = 'Consensus'  # VSEARCH classifier
+        else:
+            raise ValueError('No column named "Confidence" or "Consensus"')
+
     def label_and_process(self):
         self.df['Feature ID'] = [
-            self.feature_id_to_label[id_]
-            for id_ in self.df['Feature ID']
+            self.feature_id_to_label[id_] for id_ in self.df['Feature ID']
         ]
         self.df = self.df.rename(
             columns={'Feature ID': 'Feature Label'}
         )
-        self.df = self.df[['Feature Label', 'Confidence']]
+        column = self.confidence_or_consensus
+        self.df = self.df[['Feature Label', column]]
 
     def save_output_tsv(self):
-        output_tsv = f'{self.outdir}/taxonomy-confidence.tsv'
+        suffix = self.confidence_or_consensus.lower()
+        output_tsv = f'{self.outdir}/taxonomy-{suffix}.tsv'
         self.df.to_csv(output_tsv, sep='\t', index=False)
