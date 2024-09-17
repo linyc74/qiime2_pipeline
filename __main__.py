@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.7.0-beta'
+__VERSION__ = '2.7.0'
 
 
 PROG = 'python qiime2_pipeline'
@@ -78,7 +78,7 @@ OPTIONAL = [
         }
     },
     {
-        'keys': ['-m', '--paired-end-mode'],
+        'keys': ['--paired-end-mode'],
         'properties': {
             'type': str,
             'required': False,
@@ -97,7 +97,7 @@ OPTIONAL = [
         }
     },
     {
-        'keys': ['-i', '--otu-identity'],
+        'keys': ['--otu-identity'],
         'properties': {
             'type': float,
             'required': False,
