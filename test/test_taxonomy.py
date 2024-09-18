@@ -28,8 +28,8 @@ class TestTaxonomy(TestCase):
             feature_classifier='vsearch',
             nb_classifier_qza=None,
             classifier_reads_per_batch=0,
-            reference_sequence_qza=f'{self.indir}/silva-138-99-seqs.qza',
-            reference_taxonomy_qza=f'{self.indir}/silva-138-99-tax.qza'
+            reference_sequence_qza=f'{self.indir}/24_0918_qiime2_silva_reference_sequences.qza',
+            reference_taxonomy_qza=f'{self.indir}/24_0918_qiime2_silva_reference_taxonomy.qza'
         )
         expected = f'{self.workdir}/taxonomy-vsearch.qza'
         self.assertFileExists(expected, actual)

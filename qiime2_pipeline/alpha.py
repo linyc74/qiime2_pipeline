@@ -207,6 +207,13 @@ class Plot(Processor):
             width=self.box_width,
             linewidth=self.line_width
         )
+        sns.stripplot(
+            data=self.df,
+            x=GROUP_COLUMN,
+            y=metric,
+            palette=self.colors,
+            linewidth=self.line_width,
+        )
 
         plt.ylabel(metric.replace('_', ' ').title())  # e.g. 'observed_features' -> 'Observed Features'
 

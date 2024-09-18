@@ -117,6 +117,7 @@ class SampleTaxonBarplot(Processor):
         PercentageBarplot(self.settings).main(
             data=self.df,
             title=self.taxon_level,
+            x_label='Sample',
             output_prefix=f'{self.dstdir}/sample-{self.taxon_level}-barplot'
         )
 
@@ -184,6 +185,7 @@ class GroupTaxonBarplot(Processor):
         PercentageBarplot(self.settings).main(
             data=self.df,
             title=self.taxon_level,
+            x_label='Group',
             output_prefix=f'{self.dstdir}/group-{self.taxon_level}-barplot'
         )
 
@@ -272,7 +274,6 @@ class PoolAndAverageSamplesByGroup(Processor):
 class PercentageBarplot(Processor):
 
     Y_LABEL = 'Percentage'
-    X_LABEL = 'Sample'
     CONSTANT_HORIZONTAL_PADDING = 2.0
     CONSTANT_VERTICAL_PADDING = 1.0
     X_LABEL_CHAR_WIDTH = 0.1 / 2.54
@@ -306,6 +307,7 @@ class PercentageBarplot(Processor):
 
     data: pd.DataFrame
     title: str
+    x_label: str
     output_prefix: str
 
     figsize: Tuple[float, float]
@@ -315,10 +317,12 @@ class PercentageBarplot(Processor):
             self,
             data: pd.DataFrame,
             title: str,
+            x_label: str,
             output_prefix: str):
 
         self.data = data.copy()
         self.title = title
+        self.x_label = x_label
         self.output_prefix = output_prefix
 
         self.set_figsize()
@@ -365,7 +369,7 @@ class PercentageBarplot(Processor):
     def config_and_save(self):
         plt.title(self.title, fontsize=self.TITLE_FONTSIZE)
 
-        plt.xlabel(self.X_LABEL, fontsize=self.X_LABEL_FONTSIZE)
+        plt.xlabel(self.x_label, fontsize=self.X_LABEL_FONTSIZE)
         plt.ylabel(self.Y_LABEL, fontsize=self.Y_LABEL_FONTSIZE)
 
         plt.xlim(left=-1, right=len(self.data.columns))

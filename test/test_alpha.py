@@ -13,6 +13,7 @@ class TestAlphaDiversity(TestCase):
         self.tear_down()
 
     def test_main(self):
+        self.settings.for_publication = True
         AlphaDiversity(self.settings).main(
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             feature_table_qza=f'{self.indir}/feature-table.qza',
