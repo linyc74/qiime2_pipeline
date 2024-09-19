@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.7.1-beta'
+__VERSION__ = '2.7.1'
 
 
 PROG = 'python qiime2_pipeline'
@@ -163,7 +163,7 @@ OPTIONAL = [
         'properties': {
             'type': str,
             'required': False,
-            'default': 3,
+            'default': 10,
             'help': 'maximum number of hits for the consensus of "vsearch" feature-classifier (default: %(default)s)',
         }
     },
