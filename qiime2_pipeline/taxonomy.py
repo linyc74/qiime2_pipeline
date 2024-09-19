@@ -7,6 +7,8 @@ from .importing import ImportTaxonomy
 
 class Taxonomy(Processor):
 
+    MIN_CONSENSUS_FRACTION = 0.0
+
     representative_seq_qza: str
     feature_classifier: str
     nb_classifier_qza: Optional[str]
@@ -61,6 +63,7 @@ class Taxonomy(Processor):
             f'--p-threads {self.threads}',
             f'--o-classification {self.taxonomy_qza}',
             f'--o-search-results {search_results_qza}',
+            f'--p-min-consensus {self.MIN_CONSENSUS_FRACTION}'
             f'1>> "{log}"',
             f'2>> "{log}"'
         ]
