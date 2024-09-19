@@ -63,7 +63,7 @@ class Taxonomy(Processor):
             f'--p-threads {self.threads}',
             f'--o-classification {self.taxonomy_qza}',
             f'--o-search-results {search_results_qza}',
-            f'--p-min-consensus {self.MIN_CONSENSUS_FRACTION}'
+            f'--p-min-consensus {self.MIN_CONSENSUS_FRACTION}',
             f'1>> "{log}"',
             f'2>> "{log}"'
         ]
