@@ -46,6 +46,7 @@ class Qiime2Pipeline(Processor):
     classifier_reads_per_batch: int
     reference_sequence_qza: Optional[str]
     reference_taxonomy_qza: Optional[str]
+    vsearch_classifier_max_hits: int
 
     alpha_metrics: List[str]
     beta_diversity_feature_level: str
@@ -90,6 +91,7 @@ class Qiime2Pipeline(Processor):
             classifier_reads_per_batch: int,
             reference_sequence_qza: Optional[str],
             reference_taxonomy_qza: Optional[str],
+            vsearch_classifier_max_hits: int,
 
             alpha_metrics: List[str],
             beta_diversity_feature_level: str,
@@ -121,6 +123,7 @@ class Qiime2Pipeline(Processor):
         self.classifier_reads_per_batch = classifier_reads_per_batch
         self.reference_sequence_qza = reference_sequence_qza
         self.reference_taxonomy_qza = reference_taxonomy_qza
+        self.vsearch_classifier_max_hits = vsearch_classifier_max_hits
 
         self.alpha_metrics = alpha_metrics
         self.beta_diversity_feature_level = beta_diversity_feature_level
@@ -201,7 +204,8 @@ class Qiime2Pipeline(Processor):
             nb_classifier_qza=self.nb_classifier_qza,
             classifier_reads_per_batch=self.classifier_reads_per_batch,
             reference_sequence_qza=self.reference_sequence_qza,
-            reference_taxonomy_qza=self.reference_taxonomy_qza)
+            reference_taxonomy_qza=self.reference_taxonomy_qza,
+            vsearch_classifier_max_hits=self.vsearch_classifier_max_hits)
 
     def feature_labeling(self):
         self.labeled_feature_table_tsv, self.labeled_feature_table_qza, \

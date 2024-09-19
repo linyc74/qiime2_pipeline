@@ -159,6 +159,15 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--vsearch-classifier-max-hits'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 3,
+            'help': 'maximum number of hits for the consensus of "vsearch" feature-classifier (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['--alpha-metrics'],
         'properties': {
             'type': str,
@@ -320,6 +329,7 @@ class EntryPoint:
             classifier_reads_per_batch=args.classifier_reads_per_batch,
             reference_sequence_qza=args.reference_sequence_qza,
             reference_taxonomy_qza=args.reference_taxonomy_qza,
+            vsearch_classifier_max_hits=args.vsearch_classifier_max_hits,
 
             alpha_metrics=args.alpha_metrics,
             beta_diversity_feature_level=args.beta_diversity_feature_level,

@@ -28,6 +28,7 @@ def main(
         classifier_reads_per_batch: int,
         reference_sequence_qza: str,
         reference_taxonomy_qza: str,
+        vsearch_classifier_max_hits: int,
 
         alpha_metrics: str,
         beta_diversity_feature_level: str,
@@ -77,6 +78,7 @@ def main(
         classifier_reads_per_batch=classifier_reads_per_batch,
         reference_sequence_qza=None if reference_sequence_qza.lower() == 'none' else reference_sequence_qza,
         reference_taxonomy_qza=None if reference_taxonomy_qza.lower() == 'none' else reference_taxonomy_qza,
+        vsearch_classifier_max_hits=vsearch_classifier_max_hits,
 
         alpha_metrics=[] if alpha_metrics == 'all' else alpha_metrics.split(','),
         beta_diversity_feature_level=beta_diversity_feature_level,

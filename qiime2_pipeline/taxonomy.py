@@ -7,14 +7,13 @@ from .importing import ImportTaxonomy
 
 class Taxonomy(Processor):
 
-    MIN_CONSENSUS_FRACTION = 0.0
-
     representative_seq_qza: str
     feature_classifier: str
     nb_classifier_qza: Optional[str]
     classifier_reads_per_batch: int
     reference_sequence_qza: Optional[str]
     reference_taxonomy_qza: Optional[str]
+    vsearch_classifier_max_hits: int
 
     taxonomy_qza: str
 
@@ -25,7 +24,8 @@ class Taxonomy(Processor):
             nb_classifier_qza: Optional[str],
             classifier_reads_per_batch: int,
             reference_sequence_qza: Optional[str],
-            reference_taxonomy_qza: Optional[str]):
+            reference_taxonomy_qza: Optional[str],
+            vsearch_classifier_max_hits: int):
 
         self.representative_seq_qza = representative_seq_qza
         self.feature_classifier = feature_classifier
@@ -33,6 +33,7 @@ class Taxonomy(Processor):
         self.classifier_reads_per_batch = classifier_reads_per_batch
         self.reference_sequence_qza = reference_sequence_qza
         self.reference_taxonomy_qza = reference_taxonomy_qza
+        self.vsearch_classifier_max_hits = vsearch_classifier_max_hits
 
         if self.feature_classifier == 'nb':
             self.classify_nb()
@@ -60,10 +61,10 @@ class Taxonomy(Processor):
             f'--i-reference-reads {self.reference_sequence_qza}',
             f'--i-reference-taxonomy {self.reference_taxonomy_qza}',
             f'--p-strand both',
+            f'--p-maxhits {self.vsearch_classifier_max_hits}',
             f'--p-threads {self.threads}',
             f'--o-classification {self.taxonomy_qza}',
             f'--o-search-results {search_results_qza}',
-            f'--p-min-consensus {self.MIN_CONSENSUS_FRACTION}',
             f'1>> "{log}"',
             f'2>> "{log}"'
         ]

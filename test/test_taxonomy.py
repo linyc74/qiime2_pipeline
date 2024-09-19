@@ -17,7 +17,8 @@ class TestTaxonomy(TestCase):
             nb_classifier_qza=f'{self.indir}/gg-13-8-99-515-806-nb-classifier.qza',
             classifier_reads_per_batch=0,
             reference_sequence_qza=None,
-            reference_taxonomy_qza=None
+            reference_taxonomy_qza=None,
+            vsearch_classifier_max_hits=3,
         )
         expected = f'{self.workdir}/taxonomy-merged.qza'
         self.assertFileExists(expected, actual)
@@ -29,7 +30,8 @@ class TestTaxonomy(TestCase):
             nb_classifier_qza=None,
             classifier_reads_per_batch=0,
             reference_sequence_qza=f'{self.indir}/24_0918_qiime2_silva_reference_sequences.qza',
-            reference_taxonomy_qza=f'{self.indir}/24_0918_qiime2_silva_reference_taxonomy.qza'
+            reference_taxonomy_qza=f'{self.indir}/24_0918_qiime2_silva_reference_taxonomy.qza',
+            vsearch_classifier_max_hits=5,
         )
         expected = f'{self.workdir}/taxonomy-vsearch.qza'
         self.assertFileExists(expected, actual)
