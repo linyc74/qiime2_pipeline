@@ -43,6 +43,7 @@ class LefSePlotCladogram:
 
     input_file: str
     output_file: str
+    sample_sheet: str
     colors: list
 
     params: Dict[str, Any]
@@ -52,10 +53,12 @@ class LefSePlotCladogram:
             self,
             input_file: str,
             output_file: str,
+            sample_sheet: str,
             colors: list):
 
         self.input_file = input_file
         self.output_file = output_file
+        self.sample_sheet = sample_sheet
         self.colors = colors
 
         self.set_params()
@@ -68,8 +71,14 @@ class LefSePlotCladogram:
         self.params['output_file'] = self.output_file
 
     def set_global_plotting_scheme(self):
-        matplotlib.use('Agg')
+        # LEfSe by default plots the groups in alphabetic order,
+        #   which can be the opposite of sample sheet and needs to be corrected
+        groups = list(pd.read_csv(self.sample_sheet)['Group'].unique())  # sample sheet order
+        if len(groups) == 2:
+            if groups != sorted(groups):  # sample sheet order not alphabetic order
+                self.colors = [self.colors[1], self.colors[0]]  # invert the first two colors
 
+        matplotlib.use('Agg')
         global COLORS
         COLORS = self.colors
 

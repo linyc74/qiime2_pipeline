@@ -1,9 +1,10 @@
 """
 This script is a modified version of the lefse_plot_res.py script from the LEfSe package (https://github.com/SegataLab/lefse/tree/master/lefse).
 """
+import pandas as pd
 from pylab import *
 from lefse.lefse import *
-from typing import Dict, Any
+from typing import Dict, Any, List
 from collections import defaultdict
 from .lefse_char_mapping import ORIGINAL_TO_NEW
 
@@ -33,6 +34,7 @@ class LefSePlotRes:
 
     input_file: str
     output_file: str
+    sample_sheet: str
     colors: list
 
     params: Dict[str, Any]
@@ -42,10 +44,12 @@ class LefSePlotRes:
             self,
             input_file: str,
             output_file: str,
+            sample_sheet: str,
             colors: list):
 
         self.input_file = input_file
         self.output_file = output_file
+        self.sample_sheet = sample_sheet
         self.colors = colors
 
         self.set_params()
@@ -58,6 +62,13 @@ class LefSePlotRes:
         self.params['output_file'] = self.output_file
 
     def set_global_plotting_scheme(self):
+        # LEfSe by default plots the groups in alphabetic order,
+        #   which can be the opposite of sample sheet and needs to be corrected
+        groups = list(pd.read_csv(self.sample_sheet)['Group'].unique())  # sample sheet order
+        if len(groups) == 2:
+            if groups != sorted(groups):  # sample sheet order not alphabetic order
+                self.colors = [self.colors[1], self.colors[0]]  # invert the first two colors
+
         matplotlib.use('Agg')
         global COLORS
         COLORS = self.colors

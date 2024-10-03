@@ -97,6 +97,7 @@ class OneLefSe(Processor):
         LefSePlotRes().main(
             input_file=limited_lefse_result_tsv,
             output_file=png,
+            sample_sheet=self.sample_sheet,
             colors=self.colors)
 
     def lefse_cladogram_workflow(self):
@@ -119,6 +120,7 @@ class OneLefSe(Processor):
         LefSePlotCladogram().main(
             input_file=lefse_result_tsv,
             output_file=png,
+            sample_sheet=self.sample_sheet,
             colors=self.colors)
 
     def lefse_format_input(self, table_tsv: str, lefse_input: str):
