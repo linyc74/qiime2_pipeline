@@ -236,6 +236,15 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--differential-abundance-p-value'],
+        'properties': {
+            'type': float,
+            'required': False,
+            'default': 0.05,
+            'help': 'p value cutoff for differential abundance (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['--run-picrust2'],
         'properties': {
             'action': 'store_true',
@@ -339,6 +348,7 @@ class EntryPoint:
             invert_colors=args.invert_colors,
             publication_figure=args.publication_figure,
             skip_differential_abundance=args.skip_differential_abundance,
+            differential_abundance_p_value=args.differential_abundance_p_value,
             run_picrust2=args.run_picrust2,
 
             threads=args.threads,

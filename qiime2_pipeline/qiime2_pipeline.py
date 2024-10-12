@@ -55,6 +55,7 @@ class Qiime2Pipeline(Processor):
     colormap: str
     invert_colors: bool
     skip_differential_abundance: bool
+    differential_abundance_p_value: float
     run_picrust2: bool
 
     colors: list
@@ -100,6 +101,7 @@ class Qiime2Pipeline(Processor):
             colormap: str,
             invert_colors: bool,
             skip_differential_abundance: bool,
+            differential_abundance_p_value: float,
             run_picrust2: bool):
 
         self.sample_sheet = sample_sheet
@@ -132,6 +134,7 @@ class Qiime2Pipeline(Processor):
         self.colormap = colormap
         self.invert_colors = invert_colors
         self.skip_differential_abundance = skip_differential_abundance
+        self.differential_abundance_p_value = differential_abundance_p_value
         self.run_picrust2 = run_picrust2
 
         self.transcribe_sample_sheet()
@@ -293,7 +296,8 @@ class Qiime2Pipeline(Processor):
         DifferentialAbundance(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             sample_sheet=self.sample_sheet,
-            colors=self.colors)
+            colors=self.colors,
+            p_value=self.differential_abundance_p_value)
 
     def collect_log_files(self):
         makedirs(f'{self.outdir}/log', exist_ok=True)

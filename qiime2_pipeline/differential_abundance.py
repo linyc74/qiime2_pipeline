@@ -20,19 +20,19 @@ class DifferentialAbundance(Processor):
     taxon_table_tsv_dict: Dict[str, str]
     sample_sheet: str
     colors: list
-    differential_abundance_p_value: float
+    p_value: float
 
     def main(
             self,
             taxon_table_tsv_dict: Dict[str, str],
             sample_sheet: str,
             colors: list,
-            differential_abundance_p_value: float):
+            p_value: float):
 
         self.taxon_table_tsv_dict = taxon_table_tsv_dict
         self.sample_sheet = sample_sheet
         self.colors = colors
-        self.differential_abundance_p_value = differential_abundance_p_value
+        self.p_value = p_value
 
         for taxon_level, taxon_tsv in self.taxon_table_tsv_dict.items():
             OneTaxonLevelDifferentialAbundance(self.settings).main(
@@ -40,7 +40,7 @@ class DifferentialAbundance(Processor):
                 taxon_tsv=taxon_tsv,
                 sample_sheet=self.sample_sheet,
                 colors=self.colors,
-                p_value=self.differential_abundance_p_value)
+                p_value=self.p_value)
 
         self.zip_dstdir()
 

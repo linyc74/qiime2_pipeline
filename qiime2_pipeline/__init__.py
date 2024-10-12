@@ -38,6 +38,7 @@ def main(
         invert_colors: bool,
         publication_figure: bool,
         skip_differential_abundance: bool,
+        differential_abundance_p_value: float,
         run_picrust2: bool,
 
         threads: int,
@@ -87,6 +88,7 @@ def main(
         colormap=colormap,
         invert_colors=invert_colors,
         skip_differential_abundance=skip_differential_abundance,
+        differential_abundance_p_value=differential_abundance_p_value,
         run_picrust2=run_picrust2)
 
     if not debug:
