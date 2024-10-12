@@ -3,13 +3,13 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.axes
 import matplotlib.pyplot as plt
-from typing import List, Dict
+from typing import List, Dict, Any
 from itertools import combinations
 from scipy.stats import mannwhitneyu
 from statsmodels.stats.multitest import multipletests
 from .template import Processor
-from .grouping import GROUP_COLUMN, AddGroupColumn
 from .normalization import CountNormalization
+from .grouping import GROUP_COLUMN, AddGroupColumn
 
 
 DSTDIR_NAME = 'differential-abundance'
@@ -20,23 +20,27 @@ class DifferentialAbundance(Processor):
     taxon_table_tsv_dict: Dict[str, str]
     sample_sheet: str
     colors: list
+    differential_abundance_p_value: float
 
     def main(
             self,
             taxon_table_tsv_dict: Dict[str, str],
             sample_sheet: str,
-            colors: list):
+            colors: list,
+            differential_abundance_p_value: float):
 
         self.taxon_table_tsv_dict = taxon_table_tsv_dict
         self.sample_sheet = sample_sheet
         self.colors = colors
+        self.differential_abundance_p_value = differential_abundance_p_value
 
         for taxon_level, taxon_tsv in self.taxon_table_tsv_dict.items():
             OneTaxonLevelDifferentialAbundance(self.settings).main(
                 taxon_level=taxon_level,
                 taxon_tsv=taxon_tsv,
                 sample_sheet=self.sample_sheet,
-                colors=self.colors)
+                colors=self.colors,
+                p_value=self.differential_abundance_p_value)
 
         self.zip_dstdir()
 
@@ -51,6 +55,7 @@ class OneTaxonLevelDifferentialAbundance(Processor):
     taxon_tsv: str
     sample_sheet: str
     colors: list
+    p_value: float
 
     taxon_df: pd.DataFrame
 
@@ -59,12 +64,14 @@ class OneTaxonLevelDifferentialAbundance(Processor):
             taxon_level: str,
             taxon_tsv: str,
             sample_sheet: str,
-            colors: list):
+            colors: list,
+            p_value: float):
 
         self.taxon_level = taxon_level
         self.taxon_tsv = taxon_tsv
         self.sample_sheet = sample_sheet
         self.colors = colors
+        self.p_value = p_value
 
         self.logger.info(f'Processing "{self.taxon_tsv}" at {self.taxon_level} level')
         self.read_taxon_tsv()
@@ -84,7 +91,8 @@ class OneTaxonLevelDifferentialAbundance(Processor):
             taxon_level=self.taxon_level,
             taxon_df=self.taxon_df,
             sample_sheet=self.sample_sheet,
-            colors=self.colors)
+            colors=self.colors,
+            p_value=self.p_value)
 
 
 class PrepareTaxonDf(Processor):
@@ -183,23 +191,42 @@ class MannwhitneyuTestsAndBoxplots(Processor):
     taxon_df: pd.DataFrame
     sample_sheet: str
     colors: list
+    p_value: float
 
     def main(
             self,
             taxon_level: str,
             taxon_df: pd.DataFrame,
             sample_sheet: str,
-            colors: list):
+            colors: list,
+            p_value: float):
 
         self.taxon_level = taxon_level
         self.taxon_df = taxon_df
         self.sample_sheet = sample_sheet
         self.colors = colors
+        self.p_value = p_value
+
+        self.plot_all()
 
         groups = pd.read_csv(self.sample_sheet, index_col=0)[GROUP_COLUMN].unique()
 
         for group_1, group_2 in combinations(groups, 2):
             self.process_group_pair(group_1=group_1, group_2=group_2)
+
+    def plot_all(self):
+        for taxon in self.taxon_df.columns:
+            if taxon == GROUP_COLUMN:
+                continue
+            dstdir = f'{self.outdir}/{DSTDIR_NAME}/{self.taxon_level}/all'
+            os.makedirs(dstdir, exist_ok=True)
+            Boxplot(self.settings).main(
+                data=self.taxon_df,
+                x=GROUP_COLUMN,
+                y=taxon,
+                colors=self.colors,
+                title=taxon,
+                dstdir=dstdir)
 
     def process_group_pair(self, group_1: str, group_2: str):
         dstdir = f'{self.outdir}/{DSTDIR_NAME}/{self.taxon_level}/{group_1}-{group_2}'
@@ -220,13 +247,14 @@ class MannwhitneyuTestsAndBoxplots(Processor):
                 y=self.taxon_df.loc[is_group_2, taxon]
             )
 
-            Boxplot(self.settings).main(
-                data=self.taxon_df[is_group_1 | is_group_2],
-                x=GROUP_COLUMN,
-                y=taxon,
-                colors=self.colors,
-                title=f'{taxon}\np = {pvalue:.4f}',
-                dstdir=dstdir)
+            if pvalue <= self.p_value:
+                Boxplot(self.settings).main(
+                    data=self.taxon_df[is_group_1 | is_group_2],
+                    x=GROUP_COLUMN,
+                    y=taxon,
+                    colors=self.colors[:2],  # only need two colors anyway
+                    title=f'{taxon}\np = {pvalue:.4f}',
+                    dstdir=dstdir)
 
             stats_data.append({
                 'Taxon': taxon,
@@ -236,20 +264,20 @@ class MannwhitneyuTestsAndBoxplots(Processor):
                 'P value': pvalue,
             })
 
+        self.__save_stats_data(stats_data=stats_data, dstdir=dstdir)
+
+    def __save_stats_data(self, stats_data: List[Dict[str, Any]], dstdir: str):
         stats_df = pd.DataFrame(stats_data).sort_values(
             by='P value',
             ascending=True
         )
-
         rejected, pvals_corrected, _, _ = multipletests(
             stats_df['P value'],
             alpha=0.1,
             method='fdr_bh',  # Benjamini-Hochberg
             is_sorted=False,
             returnsorted=False)
-
         stats_df['Benjamini-Hochberg adjusted P value'] = pvals_corrected
-
         stats_df.to_csv(
             f'{dstdir}/Mann-Whitney-U.csv',
             index=False
@@ -258,7 +286,9 @@ class MannwhitneyuTestsAndBoxplots(Processor):
 
 class Boxplot(Processor):
 
-    FIGSIZE = (4 / 2.54, 5 / 2.54)
+    WIDTH_PADDING = 1.5 / 2.54
+    WIDTH_PER_GROUP = 1.25 / 2.54
+    HEIGHT = 5 / 2.54
     DPI = 600
     FONT_SIZE = 6
     BOX_WIDTH = 0.5
@@ -302,7 +332,11 @@ class Boxplot(Processor):
     def init(self):
         plt.rcParams['font.size'] = self.FONT_SIZE
         plt.rcParams['axes.linewidth'] = self.LINEWIDTH
-        plt.figure(figsize=self.FIGSIZE)
+
+        groups = len(self.data[self.x].unique())
+        figsize = (groups * self.WIDTH_PER_GROUP + self.WIDTH_PADDING, self.HEIGHT)
+
+        plt.figure(figsize=figsize)
 
     def plot(self):
         self.ax = sns.boxplot(
