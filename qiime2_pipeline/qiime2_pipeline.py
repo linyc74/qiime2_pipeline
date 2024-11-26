@@ -9,7 +9,7 @@ from .phylogeny import Phylogeny
 from .heatmap import PlotHeatmaps
 from .alpha import AlphaDiversity
 from .venn import PlotVennDiagrams
-from .generate_otu import GenerateOTUFromASV
+from .generate_otu import GenerateOTU
 from .taxon_table import TaxonTable
 from .beta_my import MyBetaDiversity
 from .labeling import FeatureLabeling
@@ -195,7 +195,7 @@ class Qiime2Pipeline(Processor):
     def otu_clustering(self):
         if self.skip_otu:
             return
-        self.feature_table_qza, self.feature_sequence_qza = GenerateOTUFromASV(self.settings).main(
+        self.feature_table_qza, self.feature_sequence_qza = GenerateOTU(self.settings).main(
             feature_table_qza=self.feature_table_qza,
             feature_sequence_qza=self.feature_sequence_qza,
             identity=self.otu_identity)
