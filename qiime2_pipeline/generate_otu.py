@@ -2,7 +2,7 @@ from typing import Tuple
 from .template import Processor
 
 
-class Vsearch(Processor):
+class GenerateOTUFromASV(Processor):
 
     feature_table_qza: str
     feature_sequence_qza: str

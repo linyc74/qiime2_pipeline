@@ -1,8 +1,8 @@
 from .setup import TestCase
-from qiime2_pipeline.otu_clustering import Vsearch
+from qiime2_pipeline.generate_otu import GenerateOTUFromASV
 
 
-class TestVsearch(TestCase):
+class TestGenerateOTUFromASV(TestCase):
 
     def setUp(self):
         self.set_up(py_path=__file__)
@@ -11,7 +11,7 @@ class TestVsearch(TestCase):
         self.tear_down()
 
     def test_main(self):
-        clustered_table_qza, clustered_sequence_qza = Vsearch(self.settings).main(
+        clustered_table_qza, clustered_sequence_qza = GenerateOTUFromASV(self.settings).main(
             feature_table_qza=f'{self.indir}/dada2-feature-table.qza',
             feature_sequence_qza=f'{self.indir}/dada2-feature-sequence.qza',
             identity=0.975
@@ -21,3 +21,6 @@ class TestVsearch(TestCase):
             (f'{self.workdir}/vsearch-feature-sequence.qza', clustered_sequence_qza),
         ]:
             self.assertFileExists(expected, actual)
+
+
+
