@@ -12,7 +12,7 @@ def main(
         fq2_suffix: str,
         outdir: str,
 
-        pacbio: bool,
+        sequencing_platform: str,
 
         clip_r1_5_prime: int,
         clip_r2_5_prime: int,
@@ -63,7 +63,7 @@ def main(
         fq1_suffix=fq1_suffix,
         fq2_suffix=None if fq2_suffix.lower() == 'none' else fq2_suffix,
 
-        pacbio=pacbio,
+        sequencing_platform=sequencing_platform,
 
         clip_r1_5_prime=clip_r1_5_prime,
         clip_r2_5_prime=clip_r2_5_prime,

@@ -9,7 +9,6 @@ from .phylogeny import Phylogeny
 from .heatmap import PlotHeatmaps
 from .alpha import AlphaDiversity
 from .venn import PlotVennDiagrams
-from .generate_otu import GenerateOTU
 from .taxon_table import TaxonTable
 from .beta_my import MyBetaDiversity
 from .labeling import FeatureLabeling
@@ -21,6 +20,7 @@ from .taxon_barplot import PlotTaxonBarplots
 from .sample_sheet import TranscribeSampleSheet
 from .alpha_rarefaction import AlphaRarefaction
 from .differential_abundance import DifferentialAbundance
+from .generate_otu import GenerateOTU, GenerateNanoporeOTU
 
 
 class Qiime2Pipeline(Processor):
@@ -30,7 +30,7 @@ class Qiime2Pipeline(Processor):
     fq1_suffix: str
     fq2_suffix: Optional[str]
 
-    pacbio: bool
+    sequencing_platform: str
 
     clip_r1_5_prime: int
     clip_r2_5_prime: int
@@ -76,7 +76,7 @@ class Qiime2Pipeline(Processor):
             fq1_suffix: str,
             fq2_suffix: Optional[str],
 
-            pacbio: bool,
+            sequencing_platform: str,
 
             clip_r1_5_prime: int,
             clip_r2_5_prime: int,
@@ -109,7 +109,7 @@ class Qiime2Pipeline(Processor):
         self.fq1_suffix = fq1_suffix
         self.fq2_suffix = fq2_suffix
 
-        self.pacbio = pacbio
+        self.sequencing_platform = sequencing_platform
 
         self.clip_r1_5_prime = clip_r1_5_prime
         self.clip_r2_5_prime = clip_r2_5_prime
@@ -142,8 +142,7 @@ class Qiime2Pipeline(Processor):
         self.raw_read_counts()
         self.set_colors()
 
-        self.generate_asv()
-        self.otu_clustering()
+        self.generate_asv_otu()
 
         self.taxonomic_classification()
         self.feature_labeling()
@@ -180,25 +179,33 @@ class Qiime2Pipeline(Processor):
             colormap=self.colormap,
             invert_colors=self.invert_colors)
 
-    def generate_asv(self):
-        self.feature_table_qza, self.feature_sequence_qza = GenerateASV(self.settings).main(
-            sample_sheet=self.sample_sheet,
-            fq_dir=self.fq_dir,
-            fq1_suffix=self.fq1_suffix,
-            fq2_suffix=self.fq2_suffix,
-            pacbio=self.pacbio,
-            paired_end_mode=self.paired_end_mode,
-            clip_r1_5_prime=self.clip_r1_5_prime,
-            clip_r2_5_prime=self.clip_r2_5_prime,
-            max_expected_error_bases=self.max_expected_error_bases)
+    def generate_asv_otu(self):
+        if self.sequencing_platform == 'nanopore':
+            self.feature_table_qza, self.feature_sequence_qza = GenerateNanoporeOTU(self.settings).main(
+                sample_sheet=self.sample_sheet,
+                fq_dir=self.fq_dir,
+                fq_suffix=self.fq1_suffix,
+                identity=self.otu_identity)
 
-    def otu_clustering(self):
-        if self.skip_otu:
-            return
-        self.feature_table_qza, self.feature_sequence_qza = GenerateOTU(self.settings).main(
-            feature_table_qza=self.feature_table_qza,
-            feature_sequence_qza=self.feature_sequence_qza,
-            identity=self.otu_identity)
+        elif self.sequencing_platform in ['illumina', 'pacbio']:
+            self.feature_table_qza, self.feature_sequence_qza = GenerateASV(self.settings).main(
+                sample_sheet=self.sample_sheet,
+                fq_dir=self.fq_dir,
+                fq1_suffix=self.fq1_suffix,
+                fq2_suffix=self.fq2_suffix,
+                pacbio=self.sequencing_platform == 'pacbio',
+                paired_end_mode=self.paired_end_mode,
+                clip_r1_5_prime=self.clip_r1_5_prime,
+                clip_r2_5_prime=self.clip_r2_5_prime,
+                max_expected_error_bases=self.max_expected_error_bases)
+            if not self.skip_otu:
+                self.feature_table_qza, self.feature_sequence_qza = GenerateOTU(self.settings).main(
+                    feature_table_qza=self.feature_table_qza,
+                    feature_sequence_qza=self.feature_sequence_qza,
+                    identity=self.otu_identity)
+
+        else:
+            raise ValueError(f'Invalid sequencing platform: {self.sequencing_platform}')
 
     def taxonomic_classification(self):
         self.taxonomy_qza = Taxonomy(self.settings).main(

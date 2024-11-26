@@ -53,10 +53,13 @@ OPTIONAL = [
         }
     },
     {
-        'keys': ['--pacbio'],
+        'keys': ['--sequencing-platform'],
         'properties': {
-            'action': 'store_true',
-            'help': 'PacBio CCS reads using primers 27F and 1492R',
+            'type': str,
+            'required': False,
+            'default': 'illumina',
+            'choices': ['illumina', 'pacbio', 'nanopore'],
+            'help': 'sequencing platform (default: %(default)s)',
         }
     },
     {
@@ -322,7 +325,7 @@ class EntryPoint:
             fq2_suffix=args.fq2_suffix,
             outdir=args.outdir,
 
-            pacbio=args.pacbio,
+            sequencing_platform=args.sequencing_platform,
 
             clip_r1_5_prime=args.clip_r1_5_prime,
             clip_r2_5_prime=args.clip_r2_5_prime,
