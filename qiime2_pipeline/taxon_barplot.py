@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from typing import Tuple, Dict, List
 from .template import Processor
 from .normalization import CountNormalization
-from .grouping import TagGroupNamesOnSampleColumns
+from .grouping import TagGroupNamesOnSampleColumns, GROUP_COLUMN
 
 
 class PlotTaxonBarplots(Processor):
@@ -255,8 +255,9 @@ class PoolAndAverageSamplesByGroup(Processor):
 
     def set_sample_ids_and_group_names(self):
         df = pd.read_csv(self.sample_sheet, index_col=0)
-        self.group_names = list(df['Group'].unique())
-        self.sample_id_to_group_names = df['Group'].astype(str).to_dict()
+        df[GROUP_COLUMN] = df[GROUP_COLUMN].astype(str)  # convert int group names to str
+        self.group_names = list(df[GROUP_COLUMN].unique())
+        self.sample_id_to_group_names = df[GROUP_COLUMN].to_dict()
 
     def pool_samples_by_group(self):
         for sample_id in self.df.columns:
