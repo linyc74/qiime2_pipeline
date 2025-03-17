@@ -44,7 +44,10 @@ def main(
         threads: int,
         debug: bool):
 
-    workdir = get_temp_path(prefix='./qiime2_pipeline_workdir_')
+    prefix = os.path.basename(outdir)
+    for c in [' ', ',', '(', ')']:
+        prefix = prefix.replace(c, '_')
+    workdir = get_temp_path(prefix=f'./{prefix}')
 
     settings = Settings(
         workdir=workdir,

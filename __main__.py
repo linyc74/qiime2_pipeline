@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.9.1'
+__VERSION__ = '2.9.2-beta'
 
 
 PROG = 'python qiime2_pipeline'
