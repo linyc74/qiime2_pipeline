@@ -47,7 +47,7 @@ def main(
     prefix = os.path.basename(outdir)
     for c in [' ', ',', '(', ')']:
         prefix = prefix.replace(c, '_')
-    workdir = get_temp_path(prefix=f'./{prefix}')
+    workdir = get_temp_path(prefix=f'./{prefix}_')
 
     settings = Settings(
         workdir=workdir,
