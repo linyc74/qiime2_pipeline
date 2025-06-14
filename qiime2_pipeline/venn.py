@@ -186,7 +186,7 @@ class PlotVenn(Processor):
         elif len(self.subsets) == 3:
             venn3(subsets=self.subsets, set_labels=self.set_labels, set_colors=self.colors)
         else:
-            sets = {label: subset for label, subset in zip(self.set_labels, self.subsets)}
+            sets = {str(label): subset for label, subset in zip(self.set_labels, self.subsets)}
             venny4py(
                 sets=sets,
                 out=self.workdir,
