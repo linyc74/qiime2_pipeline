@@ -8,8 +8,8 @@ class TestPlotTaxonBarplots(TestCase):
     def setUp(self):
         self.set_up(py_path=__file__)
 
-    def tearDown(self):
-        self.tear_down()
+    # def tearDown(self):
+    #     self.tear_down()
 
     def test_main(self):
         self.settings.for_publication = False
@@ -41,3 +41,16 @@ class TestPlotTaxonBarplots(TestCase):
                 for ext in ['pdf', 'png', 'tsv']:
                     with self.subTest(prefix=prefix, level=level, ext=ext):
                         self.assertTrue(exists(f'{self.outdir}/taxon-barplot/{prefix}-{level}-barplot.{ext}'))
+
+    def test_unassgined_should_be_included_in_others(self):
+        self.settings.for_publication = False
+
+        taxon_table_tsv_dict = {
+            'species': f'{self.indir}/ITS-species-table.tsv',
+        }
+
+        PlotTaxonBarplots(self.settings).main(
+            taxon_table_tsv_dict=taxon_table_tsv_dict,
+            n_taxa=20,
+            sample_sheet=f'{self.indir}/ITS-sample-sheet.csv',
+        )

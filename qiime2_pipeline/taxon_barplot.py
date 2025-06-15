@@ -193,7 +193,6 @@ class GroupTaxonBarplot(Processor):
 class PoolMinorFeatures(Processor):
 
     POOLED_FEATURE_NAME = 'Others'
-    ROW_SUM = 'Row Sum'
 
     df: pd.DataFrame
     n_major_features: int
@@ -206,30 +205,37 @@ class PoolMinorFeatures(Processor):
         self.df = df
         self.n_major_features = n_major_features
 
-        self.sum_each_row()
-        self.sort_by_sum()
+        self.sort_by_abundance()
+        self.move_unassigned_to_bottom()
         self.pool_minor_features()
-        self.clean_up()
 
         return self.df
 
-    def sum_each_row(self):
-        self.df[self.ROW_SUM] = np.sum(self.df.to_numpy(), axis=1)
-
-    def sort_by_sum(self):
+    def sort_by_abundance(self):
+        self.df['Row Sum'] = np.sum(self.df.to_numpy(), axis=1)  # sum of each row, i.e. abundance of each feature
         self.df = self.df.sort_values(
-            by=self.ROW_SUM,
-            ascending=False)
+            by='Row Sum',
+            ascending=False
+        ).drop(
+            columns='Row Sum',
+        )
+
+    def move_unassigned_to_bottom(self):
+        self.df['Is Unassigned'] = self.df.index.str.contains('Unassigned', case=False)
+        self.df = self.df.sort_values(
+            by='Is Unassigned',
+            ascending=True,
+            kind='mergesort'  # stable sort to keep original order of other features
+        ).drop(
+            columns='Is Unassigned',
+        )
 
     def pool_minor_features(self):
         if len(self.df) <= self.n_major_features:
             return
         minor_feature_df = self.df.iloc[self.n_major_features:]  # extract minor features
-        self.df = self.df.iloc[0:self.n_major_features]  # remove from main df
+        self.df = self.df.iloc[0:self.n_major_features]  # remove minor features from main df
         self.df.loc[self.POOLED_FEATURE_NAME] = np.sum(minor_feature_df, axis=0)  # sum -> new row
-
-    def clean_up(self):
-        self.df = self.df.drop(columns=self.ROW_SUM)
 
 
 class PoolAndAverageSamplesByGroup(Processor):
