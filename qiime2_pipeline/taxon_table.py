@@ -90,9 +90,18 @@ def feature_label_to_taxon(s: str) -> str:
     """
     input: 'X; x__AAA; x__BBB; x__CCC; x__DDD; x__EEE; x__FFF; x__GGG'
     output: 'AAA|BBB|CCC|DDD|EEE|FFF|GGG'
+
+    input: 'X; Unassigned'
+    output: 'Unassigned'
     """
     items = s.split('; ')[1:]
-    return '|'.join(i[3:] for i in items)
+    new_items = []
+    for item in items:
+        if item[1:3] == '__':  # check if it starts with 'x__'
+            new_items.append(item[3:])  # remove 'x__'
+        else:
+            new_items.append(item)  # keep 'Unassigned' as is
+    return '|'.join(new_items)
 
 
 def trim_taxon(taxon: str, int_level: int) -> str:

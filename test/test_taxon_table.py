@@ -46,13 +46,20 @@ class TestCollapseTaxon(TestCase):
         self.assertDataFrameEqual(expected, actual)
 
 
-class TestFunction(TestCase):
+class TestFunctions(TestCase):
 
     def test_feature_label_to_taxon(self):
         actual = feature_label_to_taxon(
             s='X; x__AAA; x__BBB; x__CCC; x__DDD; x__EEE; x__FFF; x__GGG'
         )
         expected = 'AAA|BBB|CCC|DDD|EEE|FFF|GGG'
+        self.assertEqual(expected, actual)
+
+    def test_feature_label_to_taxon_unassigned(self):
+        actual = feature_label_to_taxon(
+            s='ASV_0001; Unassigned'
+        )
+        expected = 'Unassigned'
         self.assertEqual(expected, actual)
 
     def test_trim_taxon(self):
