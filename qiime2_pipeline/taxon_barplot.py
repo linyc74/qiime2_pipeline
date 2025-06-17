@@ -221,7 +221,10 @@ class PoolMinorFeatures(Processor):
         )
 
     def move_unassigned_to_bottom(self):
-        self.df['Is Unassigned'] = self.df.index.str.contains('Unassigned', case=False)
+        the_last_level = self.df.index.str.split('|').str[-1]  # get the last level of taxon name
+        unassigned = the_last_level.str.contains('unassigned', case=False)
+        unidentified = the_last_level.str.contains('unidentified', case=False)
+        self.df['Is Unassigned'] = unassigned | unidentified
         self.df = self.df.sort_values(
             by='Is Unassigned',
             ascending=True,
