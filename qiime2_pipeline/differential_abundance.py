@@ -3,9 +3,9 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.axes
 import matplotlib.pyplot as plt
-from typing import List, Dict, Any
 from itertools import combinations
 from scipy.stats import mannwhitneyu
+from typing import List, Dict, Any, Tuple
 from statsmodels.stats.multitest import multipletests
 from .template import Processor
 from .normalization import CountNormalization
@@ -19,14 +19,14 @@ class DifferentialAbundance(Processor):
 
     taxon_table_tsv_dict: Dict[str, str]
     sample_sheet: str
-    colors: list
+    colors: List[Tuple[float, float, float, float]]
     p_value: float
 
     def main(
             self,
             taxon_table_tsv_dict: Dict[str, str],
             sample_sheet: str,
-            colors: list,
+            colors: List[Tuple[float, float, float, float]],
             p_value: float):
 
         self.taxon_table_tsv_dict = taxon_table_tsv_dict
@@ -54,7 +54,7 @@ class OneTaxonLevelDifferentialAbundance(Processor):
     taxon_level: str
     taxon_tsv: str
     sample_sheet: str
-    colors: list
+    colors: List[Tuple[float, float, float, float]]
     p_value: float
 
     taxon_df: pd.DataFrame
@@ -64,7 +64,7 @@ class OneTaxonLevelDifferentialAbundance(Processor):
             taxon_level: str,
             taxon_tsv: str,
             sample_sheet: str,
-            colors: list,
+            colors: List[Tuple[float, float, float, float]],
             p_value: float):
 
         self.taxon_level = taxon_level
@@ -90,7 +90,6 @@ class OneTaxonLevelDifferentialAbundance(Processor):
         MannwhitneyuTestsAndBoxplots(self.settings).main(
             taxon_level=self.taxon_level,
             taxon_df=self.taxon_df,
-            sample_sheet=self.sample_sheet,
             colors=self.colors,
             p_value=self.p_value)
 
@@ -189,29 +188,28 @@ class MannwhitneyuTestsAndBoxplots(Processor):
 
     taxon_level: str
     taxon_df: pd.DataFrame
-    sample_sheet: str
-    colors: list
+    colors: List[Tuple[float, float, float, float]]
     p_value: float
+
+    groups: List[str]
 
     def main(
             self,
             taxon_level: str,
             taxon_df: pd.DataFrame,
-            sample_sheet: str,
-            colors: list,
+            colors: List[Tuple[float, float, float, float]],
             p_value: float):
 
         self.taxon_level = taxon_level
         self.taxon_df = taxon_df
-        self.sample_sheet = sample_sheet
         self.colors = colors
         self.p_value = p_value
 
         self.plot_all()
 
-        groups = pd.read_csv(self.sample_sheet, index_col=0)[GROUP_COLUMN].unique()
+        self.groups = self.taxon_df[GROUP_COLUMN].astype(str).unique().tolist()
 
-        for group_1, group_2 in combinations(groups, 2):
+        for group_1, group_2 in combinations(self.groups, 2):
             self.process_group_pair(group_1=group_1, group_2=group_2)
 
     def plot_all(self):
@@ -232,6 +230,8 @@ class MannwhitneyuTestsAndBoxplots(Processor):
         dstdir = f'{self.outdir}/{DSTDIR_NAME}/{self.taxon_level}/{group_1}-{group_2}'
         os.makedirs(dstdir, exist_ok=True)
 
+        color_1 = self.colors[self.groups.index(group_1)]
+        color_2 = self.colors[self.groups.index(group_2)]
         stats_data = []
 
         for taxon in self.taxon_df.columns:
@@ -252,7 +252,7 @@ class MannwhitneyuTestsAndBoxplots(Processor):
                     data=self.taxon_df[is_group_1 | is_group_2],
                     x=GROUP_COLUMN,
                     y=taxon,
-                    colors=self.colors[:2],  # only need two colors anyway
+                    colors=[color_1, color_2],
                     title=f'{taxon}\np = {pvalue:.4f}',
                     dstdir=dstdir)
 
@@ -302,7 +302,7 @@ class Boxplot(Processor):
     data: pd.DataFrame
     x: str
     y: str
-    colors: list
+    colors: List[Tuple[float, float, float, float]]
     title: str
     dstdir: str
 
@@ -313,7 +313,7 @@ class Boxplot(Processor):
             data: pd.DataFrame,
             x: str,
             y: str,
-            colors: list,
+            colors: List[Tuple[float, float, float, float]],
             title: str,
             dstdir: str):
 
