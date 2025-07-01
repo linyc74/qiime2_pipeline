@@ -166,6 +166,7 @@ class EmbeddingProcessTemplate(Processor, ABC):
         self.preprocessing()
         self.embedding()
 
+        self.reorder_sample_coordinate_df()
         self.add_group_column()
         self.make_dstdir()
         self.write_sample_coordinate()
@@ -185,14 +186,22 @@ class EmbeddingProcessTemplate(Processor, ABC):
     def embedding(self):
         pass
 
-    def make_dstdir(self):
-        self.dstdir = f'{self.outdir}/{self.DSTDIR_NAME}'
-        os.makedirs(self.dstdir, exist_ok=True)
+    def reorder_sample_coordinate_df(self):
+        # reorder sample ids according to sample sheet, to keep the color order consistent
+        # for sample ids not in sample sheet, append them at the end
+        all_ids = self.sample_coordinate_df.index.tolist()
+        sample_sheet_ids = pd.read_csv(self.sample_sheet, index_col=0).index.tolist()
+        other_ids = [s for s in all_ids if s not in sample_sheet_ids]
+        self.sample_coordinate_df = self.sample_coordinate_df.loc[sample_sheet_ids + other_ids]
 
     def add_group_column(self):
         self.sample_coordinate_df = AddGroupColumn(self.settings).main(
             df=self.sample_coordinate_df,
             sample_sheet=self.sample_sheet)
+
+    def make_dstdir(self):
+        self.dstdir = f'{self.outdir}/{self.DSTDIR_NAME}'
+        os.makedirs(self.dstdir, exist_ok=True)
 
     def write_sample_coordinate(self):
         tsv = self.__get_sample_coordinate_fpath(suffix='.tsv')
