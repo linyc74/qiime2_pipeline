@@ -3,7 +3,7 @@ from abc import ABC
 from .utils import edit_fpath
 from .template import Processor
 from .normalization import CountNormalization
-from .embedding_core_process import PCACore, TSNECore, EmbeddingProcessTemplate
+from .embedding_core_process import PCACore, EmbeddingProcessTemplate
 
 
 class MyBetaDiversity(Processor):
@@ -22,11 +22,10 @@ class MyBetaDiversity(Processor):
         self.sample_sheet = sample_sheet
         self.colors = colors
 
-        for Process in [PCAProcess, TSNEProcess]:
-            Process(self.settings).main(
-                tsv=self.feature_table_tsv,
-                sample_sheet=self.sample_sheet,
-                colors=self.colors)
+        PCAProcess(self.settings).main(
+            tsv=self.feature_table_tsv,
+            sample_sheet=self.sample_sheet,
+            colors=self.colors)
 
 
 class EmbeddingProcess(EmbeddingProcessTemplate, ABC):
@@ -81,28 +80,3 @@ class PCAProcess(EmbeddingProcess):
             sep='\t',
             header=['Proportion Explained']
         )
-
-
-class TSNEProcess(EmbeddingProcess):
-
-    NAME = 't-SNE'
-    XY_COLUMNS = ['t-SNE 1', 't-SNE 2']
-
-    def main(
-            self,
-            tsv: str,
-            sample_sheet: str,
-            colors: list):
-
-        self.tsv = tsv
-        self.sample_sheet = sample_sheet
-        self.colors = colors
-
-        self.run_main_workflow()
-
-    def embedding(self):
-        self.sample_coordinate_df = TSNECore(self.settings).main(
-            df=self.df,
-            data_structure='row_features'
-        )
-

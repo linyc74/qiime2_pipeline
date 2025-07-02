@@ -25,7 +25,7 @@ class Core(Processor, ABC):
     df: pd.DataFrame
     data_structure: str
 
-    embedding: Union[manifold.TSNE, manifold.MDS, decomposition.PCA]
+    embedding: Union[decomposition.PCA]
     sample_coordinate_df: pd.DataFrame
 
     def main_workflow(self):
@@ -89,52 +89,6 @@ class PCACore(Core):
 
     def set_proportion_explained_serise(self):
         self.proportion_explained_series = pd.Series(self.embedding.explained_variance_ratio_)
-
-
-class TSNECore(Core):
-
-    XY_COLUMNS = ['t-SNE 1', 't-SNE 2']
-    PERPLEXITY = 5.0
-
-    embedding: manifold.TSNE
-
-    def main(
-            self,
-            df: pd.DataFrame,
-            data_structure: str) -> pd.DataFrame:
-
-        self.df = df
-        self.data_structure = data_structure
-
-        self.main_workflow()
-
-        return self.sample_coordinate_df
-
-    def set_embedding(self):
-        if self.data_structure == 'distance_matrix':
-            metric = 'precomputed'
-            init = 'random'
-        else:
-            metric = 'euclidean'
-            init = 'pca'
-
-        self.embedding = manifold.TSNE(
-            n_components=self.N_COMPONENTS,
-            perplexity=self.PERPLEXITY,
-            early_exaggeration=12.0,
-            learning_rate=200.0,
-            n_iter=1000,
-            n_iter_without_progress=300,
-            min_grad_norm=1e-7,
-            metric=metric,
-            init=init,
-            verbose=1,
-            random_state=self.RANDOM_STATE,
-            method='barnes_hut',
-            angle=0.5,
-            n_jobs=self.threads,
-            square_distances='legacy'
-        )
 
 
 class EmbeddingProcessTemplate(Processor, ABC):

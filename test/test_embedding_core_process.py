@@ -1,5 +1,5 @@
 import pandas as pd
-from qiime2_pipeline.embedding_core_process import PCACore, TSNECore, ScatterPlot
+from qiime2_pipeline.embedding_core_process import PCACore, ScatterPlot
 from .setup import TestCase
 
 
@@ -19,18 +19,6 @@ class TestCores(TestCase):
         )
         expected = read_tsv(f'{self.indir}/pca_sample_coordinate_df.tsv')
         self.assertDataFrameEqual(expected, sample_coordinate_df)
-
-    def test_tsne_core(self):
-        sample_coordinate_df = TSNECore(self.settings).main(
-            df=self.feature_table_df,
-            data_structure='row_features'
-        )
-
-        # save tsv to avoid floating point imprecision error
-        actual = f'{self.outdir}/tsne_sample_coordinate_df.tsv'
-        expected = f'{self.indir}/tsne_sample_coordinate_df.tsv'
-        sample_coordinate_df.to_csv(actual, sep='\t')
-        self.assertFileEqual(expected, actual)
 
 
 class TestScatterPlot(TestCase):

@@ -8,7 +8,7 @@ from .utils import edit_fpath
 from .template import Processor, Settings
 from .importing import ImportFeatureTable
 from .exporting import ExportBetaDiversity
-from .embedding_core_process import EmbeddingProcessTemplate, TSNECore
+from .embedding_core_process import EmbeddingProcessTemplate
 
 
 class QiimeBetaDiversity(Processor):
@@ -40,11 +40,10 @@ class QiimeBetaDiversity(Processor):
             feature_table_qza=self.feature_table_qza,
             rooted_tree_qza=self.rooted_tree_qza)
 
-        for Batch in [BatchPCoAProcess, BatchTSNEProcess]:
-            Batch(self.settings).main(
-                distance_matrix_tsvs=self.distance_matrix_tsvs,
-                sample_sheet=self.sample_sheet,
-                colors=self.colors)
+        BatchPCoAProcess(self.settings).main(
+            distance_matrix_tsvs=self.distance_matrix_tsvs,
+            sample_sheet=self.sample_sheet,
+            colors=self.colors)
 
 
 #
@@ -250,30 +249,6 @@ class PCoAProcess(EmbeddingProcess):
         )
 
 
-class TSNEProcess(EmbeddingProcess):
-
-    NAME = 't-SNE'
-    XY_COLUMNS = ['t-SNE 1', 't-SNE 2']
-
-    def main(
-            self,
-            tsv: str,
-            sample_sheet: str,
-            colors: list):
-
-        self.tsv = tsv
-        self.sample_sheet = sample_sheet
-        self.colors = colors
-
-        self.run_main_workflow()
-
-    def embedding(self):
-        self.sample_coordinate_df = TSNECore(self.settings).main(
-            df=self.df,
-            data_structure='distance_matrix'
-        )
-
-
 #
 
 
@@ -308,10 +283,3 @@ class BatchPCoAProcess(BatchEmbeddingProcess):
     def __init__(self, settings: Settings):
         super().__init__(settings)
         self.embedding = PCoAProcess(self.settings)
-
-
-class BatchTSNEProcess(BatchEmbeddingProcess):
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-        self.embedding = TSNEProcess(self.settings)
