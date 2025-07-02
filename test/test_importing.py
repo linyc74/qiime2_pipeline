@@ -18,9 +18,17 @@ class TestImportFeatureTable(TestCase):
         expected = f'{self.workdir}/feature-table.qza'
         self.assertFileExists(expected, actual)
 
-    def test_data_integrity(self):
+    def test_data_integrity_1(self):
         qza = ImportFeatureTable(self.settings).main(
             feature_table_tsv=f'{self.indir}/feature-table.tsv')
+        actual = ExportFeatureTable(self.settings).main(
+            feature_table_qza=qza)
+        expected = f'{self.indir}/feature-table-from-qza.tsv'
+        self.assertFileEqual(expected, actual)
+
+    def test_data_integrity_2(self):
+        qza = ImportFeatureTable(self.settings).main(
+            feature_table_tsv=f'{self.indir}/feature-table-from-qza.tsv')
         actual = ExportFeatureTable(self.settings).main(
             feature_table_qza=qza)
         expected = f'{self.indir}/feature-table-from-qza.tsv'

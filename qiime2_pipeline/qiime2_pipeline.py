@@ -5,16 +5,15 @@ from .taxonomy import Taxonomy
 from .picrust2 import PICRUSt2
 from .template import Processor
 from .grouping import GetColors
+from .beta import BetaDiversity
 from .phylogeny import Phylogeny
 from .heatmap import PlotHeatmaps
 from .alpha import AlphaDiversity
 from .venn import PlotVennDiagrams
 from .taxon_table import TaxonTable
-from .beta_my import MyBetaDiversity
 from .labeling import FeatureLabeling
 from .generate_asv import GenerateASV
 from .exporting import ExportFeatureTable
-from .beta_qiime import QiimeBetaDiversity
 from .raw_read_counts import RawReadCounts
 from .taxon_barplot import PlotTaxonBarplots
 from .sample_sheet import TranscribeSampleSheet
@@ -258,14 +257,9 @@ class Qiime2Pipeline(Processor):
         rooted_tree_qza = Phylogeny(self.settings).main(
             seq_qza=self.feature_sequence_qza)  # no need to use taxonomy-labeled feature sequences
 
-        QiimeBetaDiversity(self.settings).main(
+        BetaDiversity(self.settings).main(
             feature_table_tsv=feature_table_tsv,
             rooted_tree_qza=rooted_tree_qza,
-            sample_sheet=self.sample_sheet,
-            colors=self.colors)
-
-        MyBetaDiversity(self.settings).main(
-            feature_table_tsv=feature_table_tsv,
             sample_sheet=self.sample_sheet,
             colors=self.colors)
 
