@@ -2,9 +2,14 @@ import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from typing import List, Tuple
+from itertools import combinations
+from scipy.stats import mannwhitneyu
+from typing import List, Tuple, Dict, Union
 from .template import Processor
 from .grouping import AddGroupColumn, GROUP_COLUMN
+
+
+DSTDIR_NAME = 'alpha-diversity'
 
 
 class AlphaDiversity(Processor):
@@ -19,7 +24,6 @@ class AlphaDiversity(Processor):
         'observed_features',
         'fisher_alpha',
     ]
-    ALPHA_DIVERSITY_DIRNAME = 'alpha-diversity'
 
     feature_table_qza: str
     sample_sheet: str
@@ -40,13 +44,21 @@ class AlphaDiversity(Processor):
         self.alpha_metrics = self.ALPHA_METRICS if alpha_metrics == [] else alpha_metrics
         self.colors = colors
 
+        os.makedirs(f'{self.outdir}/{DSTDIR_NAME}', exist_ok=True)
+
         self.df = pd.DataFrame()
         for metric in self.alpha_metrics:
             self.run_one(metric=metric)
-        self.add_group_column()
+
+        self.df = AddGroupColumn(self.settings).main(df=self.df, sample_sheet=self.sample_sheet)
+
         self.reorder_samples_by_sample_sheet()
-        self.save_csv()
-        self.plot()
+
+        self.df.to_csv(f'{self.outdir}/{DSTDIR_NAME}/alpha-diversity.csv', index=True)
+
+        Plot(self.settings).main(df=self.df, colors=self.colors)
+
+        MannWhitneyU(self.settings).main(df=self.df)
 
     def run_one(self, metric: str):
         qza = RunOneAlphaMetric(self.settings).main(
@@ -61,25 +73,9 @@ class AlphaDiversity(Processor):
             left_index=True,
             right_index=True)
 
-    def add_group_column(self):
-        self.df = AddGroupColumn(self.settings).main(
-            df=self.df,
-            sample_sheet=self.sample_sheet)
-
     def reorder_samples_by_sample_sheet(self):
         sample_order = pd.read_csv(self.sample_sheet, index_col=0).index
         self.df = self.df.loc[sample_order, :]
-
-    def save_csv(self):
-        dstdir = f'{self.outdir}/{self.ALPHA_DIVERSITY_DIRNAME}'
-        os.makedirs(dstdir, exist_ok=True)
-        self.df.to_csv(f'{dstdir}/alpha-diversity.csv', index=True)
-
-    def plot(self):
-        Plot(self.settings).main(
-            df=self.df,
-            dstdir=f'{self.outdir}/{self.ALPHA_DIVERSITY_DIRNAME}',
-            colors=self.colors)
 
 
 class RunOneAlphaMetric(Processor):
@@ -146,7 +142,6 @@ class ReadAlphaDiversityQza(Processor):
 class Plot(Processor):
 
     df: pd.DataFrame
-    dstdir: str
     colors: list
 
     figsize: Tuple[float, float]
@@ -157,14 +152,8 @@ class Plot(Processor):
 
     alpha_metrics: List[str]
 
-    def main(
-            self,
-            df: pd.DataFrame,
-            dstdir: str,
-            colors: list):
-
+    def main(self, df: pd.DataFrame, colors: list):
         self.df = df
-        self.dstdir = dstdir
         self.colors = colors
 
         self.set_parameters()
@@ -220,7 +209,7 @@ class Plot(Processor):
         plt.tight_layout()
 
         for ext in ['pdf', 'png']:
-            plt.savefig(f'{self.dstdir}/{metric}.{ext}', dpi=self.dpi)
+            plt.savefig(f'{self.outdir}/{DSTDIR_NAME}/{metric}.{ext}', dpi=self.dpi)
 
         plt.close()
 
@@ -235,3 +224,37 @@ def get_figsize_for_publication(n_groups: int) -> Tuple[float, float]:
     w = (1.2 * n_groups + 2) / 2.54
     h = 4 / 2.54
     return w, h
+
+
+class MannWhitneyU(Processor):
+
+    df: pd.DataFrame
+    stats_data: List[Dict[str, Union[str, float]]]
+
+    def main(self, df: pd.DataFrame):
+        self.df = df
+
+        alpha_metrics = [c for c in self.df.columns if c != GROUP_COLUMN]
+        groups = self.df[GROUP_COLUMN].unique()
+
+        self.stats_data = []
+
+        for metric in alpha_metrics:
+            for group1, group2 in combinations(groups, 2):
+                self.mann_whitney_u(metric=metric, group1=group1, group2=group2)
+
+        pd.DataFrame(self.stats_data).to_csv(
+            f'{self.outdir}/{DSTDIR_NAME}/alpha-diversity-mann-whitney-u.csv',
+            index=False)
+
+    def mann_whitney_u(self, metric: str, group1: str, group2: str):
+        result = mannwhitneyu(
+            x=self.df.loc[self.df[GROUP_COLUMN] == group1, metric],
+            y=self.df.loc[self.df[GROUP_COLUMN] == group2, metric],
+        )
+        self.stats_data.append({
+            'Diversity': metric,
+            'Group 1': group1,
+            'Group 2': group2,
+            'P value': result.pvalue
+        })

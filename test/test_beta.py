@@ -4,7 +4,7 @@ from .setup import TestCase
 from qiime2_pipeline.beta import BetaDiversity, RunAllBetaMetricsToDistanceMatrixTsvs, PCoAProcess, PCAProcess, PCACore, ScatterPlot
 
 
-class TestQiimeBetaDiversity(TestCase):
+class TestBetaDiversity(TestCase):
 
     def setUp(self):
         self.set_up(py_path=__file__)
