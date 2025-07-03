@@ -126,6 +126,8 @@ class TestScatterPlot(TestCase):
             y_column='PC2',
             hue_column='Group',
             colors=['#1f77b4', '#ff7f0e', '#2ca02c'],
+            x_label_suffix=' (0.0%)',
+            y_label_suffix=' (0.0%)',
             output_prefix=f'{self.outdir}/scatterplot')
 
     def test_long_name(self):
@@ -135,6 +137,8 @@ class TestScatterPlot(TestCase):
             y_column='PC2',
             hue_column='Group',
             colors=['#1f77b4', '#ff7f0e', '#2ca02c'],
+            x_label_suffix=' (0.0%)',
+            y_label_suffix=' (0.0%)',
             output_prefix=f'{self.outdir}/scatterplot')
 
     def test_number_name(self):
@@ -144,6 +148,8 @@ class TestScatterPlot(TestCase):
             y_column='PC2',
             hue_column='Group',
             colors=['#1f77b4', '#ff7f0e', '#2ca02c'],
+            x_label_suffix=' (0.0%)',
+            y_label_suffix=' (0.0%)',
             output_prefix=f'{self.outdir}/scatterplot')
 
     def test_many_groups(self):
@@ -158,6 +164,8 @@ class TestScatterPlot(TestCase):
                 'brown', 'gray', 'magenta', 'olive', 'navy', 'teal', 'lime', 'aqua', 'maroon', 'fuchsia',
                 'silver'
             ],
+            x_label_suffix=' (0.0%)',
+            y_label_suffix=' (0.0%)',
             output_prefix=f'{self.outdir}/scatterplot')
 
 

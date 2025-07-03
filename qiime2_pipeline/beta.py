@@ -6,8 +6,7 @@ from skbio.stats.ordination import pcoa
 from sklearn import decomposition
 from matplotlib.axes import Axes
 from matplotlib import pyplot as plt
-from abc import ABC, abstractmethod
-from typing import Tuple, Union, List
+from typing import Tuple, Optional, List
 from .importing import ImportFeatureTable
 from .exporting import ExportBetaDiversity
 from .normalization import CountNormalization
@@ -213,12 +212,12 @@ class RunOneBetaPhylogeneticMetricToTsv(Processor):
 #
 
 
-class EmbeddingProcess(Processor, ABC):
+class EmbeddingProcess(Processor):
 
     NAME: str
-    XY_COLUMNS: Tuple[str, str]
-    DSTDIR_NAME: str
-    GROUP_COLUMN: str = GROUP_COLUMN
+    XY_COLUMNS = ['PC1', 'PC2']
+    DSTDIR_NAME = 'beta-embedding'
+    GROUP_COLUMN = GROUP_COLUMN
 
     tsv: str
     sample_sheet: str
@@ -226,25 +225,14 @@ class EmbeddingProcess(Processor, ABC):
 
     df: pd.DataFrame
     sample_coordinate_df: pd.DataFrame
+    proportion_explained_series: Optional[pd.Series] = None
     dstdir: str
-
-    @abstractmethod
-    def main(
-            self,
-            tsv: str,
-            sample_sheet: str,
-            colors: list):
-        pass
 
     def read_tsv(self):
         self.df = pd.read_csv(
             self.tsv,
             sep='\t',
             index_col=0)
-
-    @abstractmethod
-    def embedding(self):
-        pass
 
     def reorder_sample_coordinate_df(self):
         # reorder sample ids according to sample sheet, to keep the color order consistent
@@ -268,13 +256,22 @@ class EmbeddingProcess(Processor, ABC):
         self.sample_coordinate_df.to_csv(tsv, sep='\t')
 
     def plot_sample_coordinate(self):
+        if self.proportion_explained_series is None:
+            x_label_suffix, y_label_suffix = '', ''
+        else:
+            x_label_suffix = f' ({self.proportion_explained_series[self.XY_COLUMNS[0]]:.2%})'
+            y_label_suffix = f' ({self.proportion_explained_series[self.XY_COLUMNS[1]]:.2%})'
+
         output_prefix = self.__get_sample_coordinate_fpath(suffix='')
+
         ScatterPlot(self.settings).main(
             sample_coordinate_df=self.sample_coordinate_df,
             x_column=self.XY_COLUMNS[0],
             y_column=self.XY_COLUMNS[1],
             hue_column=self.GROUP_COLUMN,
             colors=self.colors,
+            x_label_suffix=x_label_suffix,
+            y_label_suffix=y_label_suffix,
             output_prefix=output_prefix)
 
     def __get_sample_coordinate_fpath(self, suffix: str) -> str:
@@ -286,6 +283,21 @@ class EmbeddingProcess(Processor, ABC):
             dstdir=self.dstdir
         )
 
+    def write_proportion_explained(self):
+        if self.proportion_explained_series is None:
+            return
+        tsv = edit_fpath(
+            fpath=self.tsv,
+            old_suffix='.tsv',
+            new_suffix=f'-{self.NAME.lower()}-proportion-explained.tsv',
+            dstdir=self.dstdir
+        )
+        self.proportion_explained_series.to_csv(
+            tsv,
+            sep='\t',
+            header=['Proportion Explained']
+        )
+
 
 class ScatterPlot(Processor):
 
@@ -294,6 +306,8 @@ class ScatterPlot(Processor):
     y_column: str
     group_column: str
     colors: list
+    x_label_suffix: str
+    y_label_suffix: str
     output_prefix: str
 
     figsize: Tuple[float, float]
@@ -312,6 +326,8 @@ class ScatterPlot(Processor):
             y_column: str,
             hue_column: str,
             colors: list,
+            x_label_suffix: str,
+            y_label_suffix: str,
             output_prefix: str):
 
         self.sample_coordinate_df = sample_coordinate_df.copy()
@@ -319,6 +335,8 @@ class ScatterPlot(Processor):
         self.y_column = y_column
         self.group_column = hue_column
         self.colors = colors
+        self.x_label_suffix = x_label_suffix
+        self.y_label_suffix = y_label_suffix
         self.output_prefix = output_prefix
 
         self.set_figsize()
@@ -367,6 +385,8 @@ class ScatterPlot(Processor):
         )
         plt.gca().xaxis.set_tick_params(width=self.line_width)
         plt.gca().yaxis.set_tick_params(width=self.line_width)
+        plt.xlabel(f'{self.x_column}{self.x_label_suffix}')
+        plt.ylabel(f'{self.y_column}{self.y_label_suffix}')
         legend = plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
         legend.set_frame_on(False)
 
@@ -420,11 +440,7 @@ class GetFigsize(Processor):
 
 class PCoAProcess(EmbeddingProcess):
 
-    DSTDIR_NAME = 'beta-embedding'
     NAME = 'PCoA'
-    XY_COLUMNS = ['PC1', 'PC2']
-
-    proportion_explained_serise: pd.Series
 
     def main(
             self,
@@ -437,7 +453,9 @@ class PCoAProcess(EmbeddingProcess):
         self.colors = colors
 
         self.read_tsv()
-        self.embedding()  # generates sample_coordinate_df
+
+        self.embedding()
+
         self.reorder_sample_coordinate_df()
         self.add_group_column()
         self.make_dstdir()
@@ -450,31 +468,14 @@ class PCoAProcess(EmbeddingProcess):
         dist_mat = DistanceMatrix(df, list(df.columns))
         result = pcoa(distance_matrix=dist_mat)
         self.sample_coordinate_df = result.samples
-        self.proportion_explained_serise = result.proportion_explained
-
-    def write_proportion_explained(self):
-        tsv = edit_fpath(
-            fpath=self.tsv,
-            old_suffix='.tsv',
-            new_suffix=f'-{self.NAME.lower()}-proportion-explained.tsv',
-            dstdir=self.dstdir
-        )
-        self.proportion_explained_serise.to_csv(
-            tsv,
-            sep='\t',
-            header=['Proportion Explained']
-        )
+        self.proportion_explained_series = result.proportion_explained
 
 
 class PCAProcess(EmbeddingProcess):
 
-    DSTDIR_NAME = 'beta-embedding'
     NAME = 'PCA'
-    XY_COLUMNS = ['PC 1', 'PC 2']
     LOG_PSEUDOCOUNT = True
     NORMALIZE_BY_SAMPLE_READS = False
-
-    proportion_explained_series: pd.Series
 
     def main(
             self,
@@ -487,8 +488,10 @@ class PCAProcess(EmbeddingProcess):
         self.colors = colors
 
         self.read_tsv()
+
         self.count_normalization()
         self.embedding()
+
         self.reorder_sample_coordinate_df()
         self.add_group_column()
         self.make_dstdir()
@@ -508,22 +511,8 @@ class PCAProcess(EmbeddingProcess):
             data_structure='row_features'
         )
 
-    def write_proportion_explained(self):
-        tsv = edit_fpath(
-            fpath=self.tsv,
-            old_suffix='.tsv',
-            new_suffix=f'-{self.NAME.lower()}-proportion-explained.tsv',
-            dstdir=self.dstdir
-        )
-        self.proportion_explained_series.to_csv(
-            tsv,
-            sep='\t',
-            header=['Proportion Explained']
-        )
-
 
 class PCACore(Processor):
-
 
     XY_COLUMNS = ['PC1', 'PC2']
     DATA_STRUCTURES = [
@@ -580,4 +569,7 @@ class PCACore(Processor):
         )
 
     def set_proportion_explained_serise(self):
-        self.proportion_explained_series = pd.Series(self.embedding.explained_variance_ratio_)
+        self.proportion_explained_series = pd.Series(
+            self.embedding.explained_variance_ratio_,
+            index=self.XY_COLUMNS
+        )
