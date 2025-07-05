@@ -1,17 +1,18 @@
 import os
+import skbio
+import numpy as np
 import pandas as pd
 import seaborn as sns
-from skbio import DistanceMatrix
-from skbio.stats.ordination import pcoa
-from sklearn import decomposition
 from matplotlib.axes import Axes
 from matplotlib import pyplot as plt
-from typing import Tuple, Optional, List
+from sklearn import decomposition
+from itertools import combinations
+from typing import Tuple, Optional, List, Dict, Union
+from .utils import edit_fpath
+from .template import Processor
 from .importing import ImportFeatureTable
 from .exporting import ExportBetaDiversity
 from .normalization import CountNormalization
-from .utils import edit_fpath
-from .template import Processor
 from .grouping import GROUP_COLUMN, AddGroupColumn
 
 
@@ -50,11 +51,15 @@ class BetaDiversity(Processor):
             rooted_tree_qza=self.rooted_tree_qza)
 
         for tsv in self.distance_matrix_tsvs:
-            self.logger.debug(f'{PCoAProcess.NAME} for {tsv}')
+            self.logger.info(f'Run {PCoAProcess.NAME} for {tsv}')
             PCoAProcess(self.settings).main(
                 tsv=tsv,
                 sample_sheet=self.sample_sheet,
                 colors=self.colors)
+
+        RunANOSIMs(self.settings).main(
+            distance_matrix_tsvs=self.distance_matrix_tsvs,
+            sample_sheet=self.sample_sheet)
 
 
 #
@@ -447,7 +452,6 @@ class PCoAProcess(EmbeddingProcess):
             tsv: str,
             sample_sheet: str,
             colors: list):
-
         self.tsv = tsv
         self.sample_sheet = sample_sheet
         self.colors = colors
@@ -465,8 +469,8 @@ class PCoAProcess(EmbeddingProcess):
 
     def embedding(self):
         df = self.df
-        dist_mat = DistanceMatrix(df, list(df.columns))
-        result = pcoa(distance_matrix=dist_mat)
+        dist_mat = skbio.DistanceMatrix(df, list(df.columns))
+        result = skbio.stats.ordination.pcoa(distance_matrix=dist_mat)
         self.sample_coordinate_df = result.samples
         self.proportion_explained_series = result.proportion_explained
 
@@ -573,3 +577,77 @@ class PCACore(Processor):
             self.embedding.explained_variance_ratio_,
             index=self.XY_COLUMNS
         )
+
+
+#
+
+
+class RunANOSIMs(Processor):
+
+    PERMUTATIONS = 99999
+    SEED = 1218  # to ensure reproducible permutation every time, 1218 is a magic number, my son's birthday
+
+    distance_matrix_tsvs: List[str]
+    sample_sheet: str
+
+    stats_data: List[Dict[str, Union[str, float]]]
+
+    def main(self, distance_matrix_tsvs: List[str], sample_sheet: str):
+        self.distance_matrix_tsvs = distance_matrix_tsvs
+        self.sample_sheet = sample_sheet
+
+        self.stats_data = []
+
+        groups = pd.read_csv(self.sample_sheet, index_col=0)[GROUP_COLUMN].unique().tolist()
+
+        for tsv in self.distance_matrix_tsvs:
+            if len(groups) > 2:  # if more than 2 groups, run ANOSIM for all groups
+                self.logger.info(f'Run ANOSIM for {tsv} with all groups: {groups}')
+                self.anosim(distance_matrix_tsv=tsv, groups=groups)
+            for group1, group2 in combinations(groups, 2):
+                self.logger.info(f'Run pairwise ANOSIM for {tsv} with groups: {group1}, {group2}')
+                self.anosim(distance_matrix_tsv=tsv, groups=[group1, group2])
+
+        pd.DataFrame(self.stats_data).to_csv(path_or_buf=f'{self.outdir}/beta-diversity/beta-diversity-anosim.csv', index=False)
+
+    def anosim(self, distance_matrix_tsv: str, groups: List[str]):
+        df = pd.read_csv(self.sample_sheet, index_col=0)
+        sample_sheet_df = df[df[GROUP_COLUMN].isin(groups)]
+
+        sample_ids = sample_sheet_df.index.tolist()
+
+        distance_matrix_df = pd.read_csv(distance_matrix_tsv, sep='\t', index_col=0).loc[sample_ids, sample_ids]
+
+        p_value = anosim(
+            distance_matrix_df=distance_matrix_df,
+            sample_sheet_df=sample_sheet_df,
+            seed=self.SEED,
+            permutations=self.PERMUTATIONS)
+
+        filename = os.path.basename(distance_matrix_tsv).replace('.tsv', '')
+        self.stats_data.append({
+            'Distance': filename,
+            'Groups': '|'.join(groups),
+            'P value': p_value
+        })
+
+
+def anosim(
+        distance_matrix_df: pd.DataFrame,
+        sample_sheet_df: pd.DataFrame,
+        seed: int,
+        permutations: int) -> float:
+
+    ids = distance_matrix_df.columns.tolist()
+    distance_matrix = skbio.DistanceMatrix(distance_matrix_df, ids)
+
+    np.random.seed(seed)  # to ensure reproducible permutation every time
+
+    result: pd.Series = skbio.stats.distance.anosim(
+        distance_matrix=distance_matrix,
+        grouping=sample_sheet_df,
+        column=GROUP_COLUMN,
+        permutations=permutations
+    )
+
+    return result['p-value']

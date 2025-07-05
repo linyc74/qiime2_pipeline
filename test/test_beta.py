@@ -1,7 +1,7 @@
 import pandas as pd
 from os.path import exists
 from .setup import TestCase
-from qiime2_pipeline.beta import BetaDiversity, RunAllBetaMetricsToDistanceMatrixTsvs, PCoAProcess, PCAProcess, PCACore, ScatterPlot
+from qiime2_pipeline.beta import BetaDiversity, RunAllBetaMetricsToDistanceMatrixTsvs, PCoAProcess, PCAProcess, PCACore, ScatterPlot, RunANOSIMs, anosim
 
 
 class TestBetaDiversity(TestCase):
@@ -167,6 +167,33 @@ class TestScatterPlot(TestCase):
             x_label_suffix=' (0.0%)',
             y_label_suffix=' (0.0%)',
             output_prefix=f'{self.outdir}/scatterplot')
+
+
+class TestRunANOSIMs(TestCase):
+
+    def setUp(self):
+        self.set_up(py_path=__file__)
+
+    def tearDown(self):
+        self.tear_down()
+
+    def test_main(self):
+        RunANOSIMs(self.settings).main(
+            distance_matrix_tsvs=[
+                f'{self.indir}/anosim/braycurtis.tsv',
+                f'{self.indir}/anosim/weighted_unifrac.tsv',
+            ],
+            sample_sheet=f'{self.indir}/anosim/sample-sheet.csv',
+        )
+
+    def test_anosim(self):
+        actual = anosim(
+            distance_matrix_df=pd.read_csv(f'{self.indir}/anosim/braycurtis.tsv', sep='\t', index_col=0),
+            sample_sheet_df=pd.read_csv(f'{self.indir}/anosim/sample-sheet.csv', index_col=0),
+            seed=1218,
+            permutations=99999
+        )
+        self.assertEqual(actual, 0.00001)
 
 
 def read_tsv(tsv: str) -> pd.DataFrame:
