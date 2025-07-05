@@ -590,25 +590,45 @@ class RunANOSIMs(Processor):
     distance_matrix_tsvs: List[str]
     sample_sheet: str
 
+    eligible_groups: List[str]
     stats_data: List[Dict[str, Union[str, float]]]
 
     def main(self, distance_matrix_tsvs: List[str], sample_sheet: str):
         self.distance_matrix_tsvs = distance_matrix_tsvs
         self.sample_sheet = sample_sheet
 
+        self.set_eligible_groups()
         self.stats_data = []
 
-        groups = pd.read_csv(self.sample_sheet, index_col=0)[GROUP_COLUMN].unique().tolist()
+        if len(self.eligible_groups) < 2:
+            self.logger.info('Not enough eligible groups for ANOSIM, skip.')
+            return
 
         for tsv in self.distance_matrix_tsvs:
-            if len(groups) > 2:  # if more than 2 groups, run ANOSIM for all groups
-                self.logger.info(f'Run ANOSIM for {tsv} with all groups: {groups}')
-                self.anosim(distance_matrix_tsv=tsv, groups=groups)
-            for group1, group2 in combinations(groups, 2):
-                self.logger.info(f'Run pairwise ANOSIM for {tsv} with groups: {group1}, {group2}')
-                self.anosim(distance_matrix_tsv=tsv, groups=[group1, group2])
 
+            if len(self.eligible_groups) > 2:  # if more than 2 groups, run ANOSIM for all groups
+                self.logger.info(f'Run ANOSIM for {tsv} with all groups: {self.eligible_groups}')
+                self.anosim(distance_matrix_tsv=tsv, groups=self.eligible_groups)
+
+            for group1, group2 in combinations(self.eligible_groups, 2):
+                groups = [group1, group2]
+                self.logger.info(f'Run pairwise ANOSIM for {tsv} with groups: {groups}')
+                self.anosim(distance_matrix_tsv=tsv, groups=groups)
+
+        os.makedirs(f'{self.outdir}/beta-diversity', exist_ok=True)
         pd.DataFrame(self.stats_data).to_csv(path_or_buf=f'{self.outdir}/beta-diversity/beta-diversity-anosim.csv', index=False)
+
+    def set_eligible_groups(self):
+        df = pd.read_csv(self.sample_sheet, index_col=0)
+        groups = df[GROUP_COLUMN].unique().tolist()
+
+        self.eligible_groups = []
+        for g in groups:
+            n_samples = df[df[GROUP_COLUMN] == g].shape[0]
+            if n_samples == 1:
+                self.logger.info(f'Group "{g}" has only 1 sample, skip ANOSIM for this group.')
+            if n_samples > 1:  # at least 2 samples in the group
+                self.eligible_groups.append(g)
 
     def anosim(self, distance_matrix_tsv: str, groups: List[str]):
         df = pd.read_csv(self.sample_sheet, index_col=0)
