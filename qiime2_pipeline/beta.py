@@ -647,7 +647,7 @@ class RunANOSIMs(Processor):
         filename = os.path.basename(distance_matrix_tsv).replace('.tsv', '')
         self.stats_data.append({
             'Distance': filename,
-            'Groups': '|'.join(groups),
+            'Groups': '|'.join([str(g) for g in groups]),
             'P value': p_value
         })
 

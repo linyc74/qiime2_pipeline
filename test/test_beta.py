@@ -195,6 +195,15 @@ class TestRunANOSIMs(TestCase):
             sample_sheet=f'{self.indir}/anosim/sample-sheet-one-sample-group.csv',
         )
 
+    def test_number_groups(self):
+        RunANOSIMs(self.settings).main(
+            distance_matrix_tsvs=[
+                f'{self.indir}/anosim/braycurtis.tsv',
+                f'{self.indir}/anosim/weighted_unifrac.tsv',
+            ],
+            sample_sheet=f'{self.indir}/anosim/sample-sheet-number-groups.csv',
+        )
+
     def test_anosim(self):
         actual = anosim(
             distance_matrix_df=pd.read_csv(f'{self.indir}/anosim/braycurtis.tsv', sep='\t', index_col=0),
