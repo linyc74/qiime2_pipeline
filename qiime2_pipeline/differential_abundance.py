@@ -142,6 +142,7 @@ class PrepareTaxonDf(Processor):
         self.df = AddGroupColumn(self.settings).main(
             df=self.df,
             sample_sheet=self.sample_sheet)
+        self.df[GROUP_COLUMN] = self.df[GROUP_COLUMN].astype('str')  # convert to str to be safe, int group names might cause issues
 
 
 class AddSuffixToDuplicatedColumns(Processor):
@@ -207,7 +208,7 @@ class MannwhitneyuTestsAndBoxplots(Processor):
 
         self.plot_all()
 
-        self.groups = self.taxon_df[GROUP_COLUMN].astype(str).unique().tolist()
+        self.groups = self.taxon_df[GROUP_COLUMN].unique().tolist()
 
         for group_1, group_2 in combinations(self.groups, 2):
             self.process_group_pair(group_1=group_1, group_2=group_2)
