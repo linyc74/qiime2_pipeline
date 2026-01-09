@@ -90,16 +90,21 @@ class PlotOneHeatmap(Processor):
             by_sample_reads=self.NORMALIZE_BY_SAMPLE_READS)
 
     def clustermap(self):
-        output_prefix = edit_fpath(
-            fpath=self.tsv,
-            old_suffix='.tsv',
-            new_suffix='',
-            dstdir=self.dstdir)
+        for cluster_columns, suffix in [
+            (True, '-sample-clustered'),
+            (False, '-sample-unclustered')
+        ]:
+            output_prefix = edit_fpath(
+                fpath=self.tsv,
+                old_suffix='.tsv',
+                new_suffix=suffix,
+                dstdir=self.dstdir)
 
-        Clustermap(self.settings).main(
-            data=self.df,
-            sample_sheet=self.sample_sheet,
-            output_prefix=output_prefix)
+            Clustermap(self.settings).main(
+                data=self.df,
+                sample_sheet=self.sample_sheet,
+                cluster_columns=cluster_columns,
+                output_prefix=output_prefix)
 
 
 class FilterByCumulativeReads(Processor):
@@ -164,7 +169,6 @@ class FilterByCumulativeReads(Processor):
 
 class Clustermap(Processor):
 
-    CLUSTER_COLUMNS = True
     COLORMAP = 'PuBu'
     Y_LABEL_CHAR_WIDTH = 0.14 / 2.54
     X_LABEL_CHAR_WIDTH = 0.14 / 2.54
@@ -179,6 +183,7 @@ class Clustermap(Processor):
 
     data: pd.DataFrame
     sample_sheet: str
+    cluster_columns: bool
     output_prefix: str
 
     x_label_padding: float
@@ -190,10 +195,12 @@ class Clustermap(Processor):
             self,
             data: pd.DataFrame,
             sample_sheet: str,
+            cluster_columns: bool,
             output_prefix: str):
 
         self.data = data.copy()
         self.sample_sheet = sample_sheet
+        self.cluster_columns = cluster_columns
         self.output_prefix = output_prefix
 
         self.tag_group_names_on_sample_columns()
@@ -242,7 +249,7 @@ class Clustermap(Processor):
             xticklabels=True,  # include every x label
             yticklabels=True,  # include every y label
             row_cluster=row_cluster,
-            col_cluster=self.CLUSTER_COLUMNS,
+            col_cluster=self.cluster_columns,
             dendrogram_ratio=dendrogram_ratio,
             linewidth=0.25)
         self.__set_plotted_data()
@@ -290,7 +297,6 @@ class Clustermap(Processor):
     def save_fig(self):
         # must use grid.savefig(), but not plt.savefig()
         # plt.savefig() crops out the colorbar
-
         plt.tight_layout()
         dpi = self.__downsize_dpi_if_too_large()
         for ext in ['pdf', 'png']:
