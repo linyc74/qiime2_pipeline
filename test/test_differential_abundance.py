@@ -59,6 +59,6 @@ class TestOneTaxonLevelDifferentialAbundance(TestCase):
             taxon_level='genus',
             taxon_tsv=f'{self.indir}/error-separator-table.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
-            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0)],
+            colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0), (0.1, 0.9, 0.5, 1.0), (0.6, 0.2, 0.4, 1.0)],
             p_value=0.05
         )

@@ -225,7 +225,8 @@ class MannwhitneyuTestsAndBoxplots(Processor):
                 y=taxon,
                 colors=self.colors,
                 title=taxon,
-                dstdir=dstdir)
+                png=f'{dstdir}/{taxon}.png'
+            )
 
     def process_group_pair(self, group_1: str, group_2: str):
         dstdir = f'{self.outdir}/{DSTDIR_NAME}/{self.taxon_level}/{group_1}-{group_2}'
@@ -254,8 +255,9 @@ class MannwhitneyuTestsAndBoxplots(Processor):
                     x=GROUP_COLUMN,
                     y=taxon,
                     colors=[color_1, color_2],
-                    title=f'{taxon}\np = {pvalue:.4f}',
-                    dstdir=dstdir)
+                    title=f'{taxon}\n$p = {pvalue:.4f}$',
+                    png=f'{dstdir}/{pvalue:.4f}_{taxon}.png'
+                )
 
             stats_data.append({
                 'Taxon': taxon,
@@ -305,7 +307,7 @@ class Boxplot(Processor):
     y: str
     colors: List[Tuple[float, float, float, float]]
     title: str
-    dstdir: str
+    png: str
 
     ax: matplotlib.axes.Axes
 
@@ -316,14 +318,14 @@ class Boxplot(Processor):
             y: str,
             colors: List[Tuple[float, float, float, float]],
             title: str,
-            dstdir: str):
+            png: str):
 
         self.data = data
         self.x = x
         self.y = y
         self.colors = colors
         self.title = title
-        self.dstdir = dstdir
+        self.png = png
 
         self.init()
         self.plot()
@@ -369,5 +371,5 @@ class Boxplot(Processor):
 
     def save(self):
         plt.tight_layout()
-        plt.savefig(f'{self.dstdir}/{self.y}.png', dpi=self.DPI)
+        plt.savefig(self.png, dpi=self.DPI)
         plt.close()
