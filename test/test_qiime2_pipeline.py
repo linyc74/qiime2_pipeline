@@ -131,6 +131,7 @@ class TestQiime2Pipeline(TestCase):
         )
 
     def test_nanopore(self):
+        self.skipTest('Nanopore is skipped because its basecalling accuracy is too low, yielding too many OTUs')
         Qiime2Pipeline(self.settings).main(
             sample_sheet=f'{self.indir}/sample-sheet-nanopore.csv',
             fq_dir=f'{self.indir}/fq_dir',

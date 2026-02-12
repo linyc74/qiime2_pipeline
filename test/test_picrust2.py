@@ -1,3 +1,4 @@
+from os.path import exists
 from qiime2_pipeline.picrust2 import PICRUSt2
 from .setup import TestCase
 
@@ -20,8 +21,10 @@ class TestPICRUSt2(TestCase):
             'picrust2-EC': f'{self.outdir}/picrust2/picrust2-EC-table.tsv',
             'picrust2-KEGG-ortholog': f'{self.outdir}/picrust2/picrust2-KEGG-ortholog-table.tsv',
         }
-        for e, a in zip(expected, actual):
-            self.assertFileExists(e, a)
+        self.assertDictEqual(expected, actual)
+        for fpath in actual.values():
+            with self.subTest(fpath=fpath):
+                self.assertTrue(exists(fpath))
 
     def test_fungi_should_fail(self):
         actual = PICRUSt2(self.settings).main(
