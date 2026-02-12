@@ -1,3 +1,4 @@
+from os.path import exists
 from .setup import TestCase
 from qiime2_pipeline.lefse_plot_res import LefSePlotRes
 
@@ -12,7 +13,9 @@ class TestLefSePlotRes(TestCase):
 
     def test_main(self):
         LefSePlotRes().main(
-            input_file=f'{self.outdir}/lefse/lefse-genus-result.txt',
-            output_file=f'{self.outdir}/lefse/lefse-genus-result.png',
+            input_file=f'{self.indir}/lefse-genus-features-result.tsv',
+            output_file=f'{self.outdir}/lefse-genus-features.png',
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
             colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0)]
         )
+        self.assertTrue(exists(f'{self.outdir}/lefse-genus-features.png'))
