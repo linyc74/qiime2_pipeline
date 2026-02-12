@@ -208,6 +208,7 @@ class Plot(Processor):
 
         plt.tight_layout()
 
+        os.makedirs(f'{self.outdir}/{DSTDIR_NAME}', exist_ok=True)
         for ext in ['pdf', 'png']:
             plt.savefig(f'{self.outdir}/{DSTDIR_NAME}/{metric}.{ext}', dpi=self.dpi)
 
