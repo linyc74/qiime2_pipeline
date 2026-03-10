@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.10.4-beta'
+__VERSION__ = '2.11.0-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -257,13 +257,6 @@ OPTIONAL = [
         }
     },
     {
-        'keys': ['--run-picrust2'],
-        'properties': {
-            'action': 'store_true',
-            'help': 'run PICRUSt2 analysis',
-        }
-    },
-    {
         'keys': ['-t', '--threads'],
         'properties': {
             'type': int,
@@ -362,7 +355,6 @@ class EntryPoint:
             skip_differential_abundance=args.skip_differential_abundance,
             differential_abundance_p_value=args.differential_abundance_p_value,
             min_abundance_per_group=args.min_abundance_per_group,
-            run_picrust2=args.run_picrust2,
 
             threads=args.threads,
             debug=args.debug)

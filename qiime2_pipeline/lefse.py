@@ -70,7 +70,7 @@ class OneLefSe(Processor):
         os.makedirs(f'{self.outdir}/{DSTDIR}', exist_ok=True)
 
         self.lefse_features_workflow()
-        if self.name in self.TAXON_LEVELS:  # do not run cladogram for the picrust2 pathway table
+        if self.name in self.TAXON_LEVELS:
             self.lefse_cladogram_workflow()
 
     def lefse_features_workflow(self):

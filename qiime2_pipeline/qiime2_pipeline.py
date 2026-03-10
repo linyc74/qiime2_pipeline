@@ -2,7 +2,6 @@ from os import makedirs
 from typing import List, Optional, Dict
 from .lefse import LefSe
 from .taxonomy import Taxonomy
-from .picrust2 import PICRUSt2
 from .template import Processor
 from .grouping import GetColors
 from .beta import BetaDiversity
@@ -56,7 +55,6 @@ class Qiime2Pipeline(Processor):
     skip_differential_abundance: bool
     differential_abundance_p_value: float
     min_abundance_per_group: float
-    run_picrust2: bool
 
     colors: list
     feature_table_qza: str
@@ -67,7 +65,6 @@ class Qiime2Pipeline(Processor):
     labeled_feature_sequence_fa: str
     labeled_feature_sequence_qza: str
     taxon_table_tsv_dict: Dict[str, str]
-    picrust2_table_tsv_dict: Dict[str, str]
 
     def main(
             self,
@@ -102,8 +99,7 @@ class Qiime2Pipeline(Processor):
             invert_colors: bool,
             skip_differential_abundance: bool,
             differential_abundance_p_value: float,
-            min_abundance_per_group: float,
-            run_picrust2: bool):
+            min_abundance_per_group: float):
 
         self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
@@ -137,7 +133,6 @@ class Qiime2Pipeline(Processor):
         self.skip_differential_abundance = skip_differential_abundance
         self.differential_abundance_p_value = differential_abundance_p_value
         self.min_abundance_per_group = min_abundance_per_group
-        self.run_picrust2 = run_picrust2
 
         self.transcribe_sample_sheet()
 
@@ -149,7 +144,6 @@ class Qiime2Pipeline(Processor):
         self.taxonomic_classification()
         self.feature_labeling()
         self.taxon_table()
-        self.picrust2()
 
         self.alpha_diversity()
         self.alpha_rarefaction()
@@ -232,14 +226,6 @@ class Qiime2Pipeline(Processor):
         self.taxon_table_tsv_dict = TaxonTable(self.settings).main(
             labeled_feature_table_tsv=self.labeled_feature_table_tsv)
 
-    def picrust2(self):
-        if self.run_picrust2:
-            self.picrust2_table_tsv_dict = PICRUSt2(self.settings).main(
-                labeled_feature_sequence_fa=self.labeled_feature_sequence_fa,
-                labeled_feature_table_tsv=self.labeled_feature_table_tsv)
-        else:
-            self.picrust2_table_tsv_dict = {}
-
     def alpha_diversity(self):
         AlphaDiversity(self.settings).main(
             feature_table_qza=self.feature_table_qza,  # no need to use taxonomy-labeled feature table
@@ -288,7 +274,6 @@ class Qiime2Pipeline(Processor):
 
     def lefse(self):
         table_tsv_dict = self.taxon_table_tsv_dict.copy()
-        table_tsv_dict.update(self.picrust2_table_tsv_dict)
         LefSe(self.settings).main(
             table_tsv_dict=table_tsv_dict,
             sample_sheet=self.sample_sheet,
