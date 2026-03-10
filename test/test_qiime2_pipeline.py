@@ -37,6 +37,7 @@ class TestQiime2Pipeline(TestCase):
             invert_colors=True,
             skip_differential_abundance=False,
             differential_abundance_p_value=0.05,
+            min_abundance_per_group=0.0,
             run_picrust2=False,
         )
 
@@ -67,6 +68,7 @@ class TestQiime2Pipeline(TestCase):
             invert_colors=True,
             skip_differential_abundance=False,
             differential_abundance_p_value=0.05,
+            min_abundance_per_group=0.0,
             run_picrust2=False,
         )
 
@@ -97,6 +99,7 @@ class TestQiime2Pipeline(TestCase):
             invert_colors=True,
             skip_differential_abundance=False,
             differential_abundance_p_value=0.05,
+            min_abundance_per_group=0.0,
             run_picrust2=False,
         )
 
@@ -127,6 +130,7 @@ class TestQiime2Pipeline(TestCase):
             invert_colors=True,
             skip_differential_abundance=False,
             differential_abundance_p_value=0.05,
+            min_abundance_per_group=0.0,
             run_picrust2=False,
         )
 
@@ -158,5 +162,6 @@ class TestQiime2Pipeline(TestCase):
             invert_colors=True,
             skip_differential_abundance=True,
             differential_abundance_p_value=0.05,
+            min_abundance_per_group=0.0,
             run_picrust2=False,
         )

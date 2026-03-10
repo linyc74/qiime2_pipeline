@@ -20,7 +20,8 @@ class TestDifferentialAbundance(TestCase):
             taxon_table_tsv_dict=taxon_table_tsv_dict,
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0), (0.1, 0.9, 0.5, 1.0), (0.6, 0.2, 0.4, 1.0)],
-            p_value=0.05
+            p_value=0.05,
+            min_abundance_per_group=5.0
         )
 
     def test_number_groups(self):
@@ -33,7 +34,8 @@ class TestDifferentialAbundance(TestCase):
             taxon_table_tsv_dict=taxon_table_tsv_dict,
             sample_sheet=f'{self.indir}/sample-sheet-number-groups.csv',
             colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0), (0.1, 0.9, 0.5, 1.0), (0.6, 0.2, 0.4, 1.0)],
-            p_value=0.05
+            p_value=0.05,
+            min_abundance_per_group=0.0
         )
 
 
@@ -51,7 +53,8 @@ class TestOneTaxonLevelDifferentialAbundance(TestCase):
             taxon_tsv=f'{self.indir}/genus-table.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0), (0.1, 0.9, 0.5, 1.0), (0.6, 0.2, 0.4, 1.0)],
-            p_value=0.05
+            p_value=0.05,
+            min_abundance_per_group=0.0
         )
 
     def test_error_separator(self):
@@ -60,5 +63,6 @@ class TestOneTaxonLevelDifferentialAbundance(TestCase):
             taxon_tsv=f'{self.indir}/error-separator-table.tsv',
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colors=[(0.2, 0.5, 0.7, 1.0), (0.9, 0.1, 0.1, 1.0), (0.1, 0.9, 0.5, 1.0), (0.6, 0.2, 0.4, 1.0)],
-            p_value=0.05
+            p_value=0.05,
+            min_abundance_per_group=0.0
         )

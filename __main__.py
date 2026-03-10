@@ -244,7 +244,16 @@ OPTIONAL = [
             'type': float,
             'required': False,
             'default': 0.05,
-            'help': 'p value cutoff for differential abundance (default: %(default)s)',
+            'help': 'p value cutoff for differential abundance plotting (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--min-abundance-per-group'],
+        'properties': {
+            'type': float,
+            'required': False,
+            'default': 0.0,
+            'help': 'minimum abundance per group for differential abundance plotting and FDR correction (default: %(default)s)',
         }
     },
     {
@@ -352,6 +361,7 @@ class EntryPoint:
             publication_figure=args.publication_figure,
             skip_differential_abundance=args.skip_differential_abundance,
             differential_abundance_p_value=args.differential_abundance_p_value,
+            min_abundance_per_group=args.min_abundance_per_group,
             run_picrust2=args.run_picrust2,
 
             threads=args.threads,

@@ -27,12 +27,14 @@ class DifferentialAbundance(Processor):
             taxon_table_tsv_dict: Dict[str, str],
             sample_sheet: str,
             colors: List[Tuple[float, float, float, float]],
-            p_value: float):
+            p_value: float,
+            min_abundance_per_group: float):
 
         self.taxon_table_tsv_dict = taxon_table_tsv_dict
         self.sample_sheet = sample_sheet
         self.colors = colors
         self.p_value = p_value
+        self.min_abundance_per_group = min_abundance_per_group
 
         for taxon_level, taxon_tsv in self.taxon_table_tsv_dict.items():
             OneTaxonLevelDifferentialAbundance(self.settings).main(
@@ -40,7 +42,8 @@ class DifferentialAbundance(Processor):
                 taxon_tsv=taxon_tsv,
                 sample_sheet=self.sample_sheet,
                 colors=self.colors,
-                p_value=self.p_value)
+                p_value=self.p_value,
+                min_abundance_per_group=self.min_abundance_per_group)
 
         self.zip_dstdir()
 
@@ -65,13 +68,15 @@ class OneTaxonLevelDifferentialAbundance(Processor):
             taxon_tsv: str,
             sample_sheet: str,
             colors: List[Tuple[float, float, float, float]],
-            p_value: float):
+            p_value: float,
+            min_abundance_per_group: float):
 
         self.taxon_level = taxon_level
         self.taxon_tsv = taxon_tsv
         self.sample_sheet = sample_sheet
         self.colors = colors
         self.p_value = p_value
+        self.min_abundance_per_group = min_abundance_per_group
 
         self.logger.info(f'Processing "{self.taxon_tsv}" at {self.taxon_level} level')
         self.read_taxon_tsv()
@@ -91,7 +96,8 @@ class OneTaxonLevelDifferentialAbundance(Processor):
             taxon_level=self.taxon_level,
             taxon_df=self.taxon_df,
             colors=self.colors,
-            p_value=self.p_value)
+            p_value=self.p_value,
+            min_abundance_per_group=self.min_abundance_per_group)
 
 
 class PrepareTaxonDf(Processor):
@@ -199,12 +205,14 @@ class MannwhitneyuTestsAndBoxplots(Processor):
             taxon_level: str,
             taxon_df: pd.DataFrame,
             colors: List[Tuple[float, float, float, float]],
-            p_value: float):
+            p_value: float,
+            min_abundance_per_group: float):
 
         self.taxon_level = taxon_level
         self.taxon_df = taxon_df
         self.colors = colors
         self.p_value = p_value
+        self.min_abundance_per_group = min_abundance_per_group
 
         self.plot_all()
 
@@ -244,12 +252,26 @@ class MannwhitneyuTestsAndBoxplots(Processor):
             is_group_1 = self.taxon_df[GROUP_COLUMN] == group_1
             is_group_2 = self.taxon_df[GROUP_COLUMN] == group_2
 
+            mean_1 = self.taxon_df.loc[is_group_1, taxon].mean()
+            mean_2 = self.taxon_df.loc[is_group_2, taxon].mean()
+    
             statistic, pvalue = mannwhitneyu(
                 x=self.taxon_df.loc[is_group_1, taxon],
                 y=self.taxon_df.loc[is_group_2, taxon]
             )
 
-            if pvalue <= self.p_value:
+            stats_data.append({  # put in the table no matter what
+                'Taxon': taxon,
+                'Mean 1 (%)': mean_1,
+                'Mean 2 (%)': mean_2,
+                'Statistics': statistic,
+                'P value': pvalue,
+            })
+
+            significant = pvalue <= self.p_value
+            abundant = mean_1 >= self.min_abundance_per_group or mean_2 >= self.min_abundance_per_group
+
+            if significant and abundant:
                 Boxplot(self.settings).main(
                     data=self.taxon_df[is_group_1 | is_group_2],
                     x=GROUP_COLUMN,
@@ -259,14 +281,6 @@ class MannwhitneyuTestsAndBoxplots(Processor):
                     png=f'{dstdir}/{pvalue:.4f}_{taxon}.png'
                 )
 
-            stats_data.append({
-                'Taxon': taxon,
-                'Mean 1 (%)': self.taxon_df.loc[is_group_1, taxon].mean(),
-                'Mean 2 (%)': self.taxon_df.loc[is_group_2, taxon].mean(),
-                'Statistics': statistic,
-                'P value': pvalue,
-            })
-
         self.__save_stats_data(stats_data=stats_data, dstdir=dstdir)
 
     def __save_stats_data(self, stats_data: List[Dict[str, Any]], dstdir: str):
@@ -274,13 +288,22 @@ class MannwhitneyuTestsAndBoxplots(Processor):
             by='P value',
             ascending=True
         )
+
+        # only consider abundant taxa for FDR correction
+        a = stats_df['Mean 1 (%)'] >= self.min_abundance_per_group
+        b = stats_df['Mean 2 (%)'] >= self.min_abundance_per_group
+        abundant_taxa = a | b
+        p_values = stats_df.loc[abundant_taxa, 'P value']
+
         rejected, pvals_corrected, _, _ = multipletests(
-            stats_df['P value'],
+            p_values,
             alpha=0.1,
             method='fdr_bh',  # Benjamini-Hochberg
             is_sorted=False,
             returnsorted=False)
-        stats_df['Benjamini-Hochberg adjusted P value'] = pvals_corrected
+
+        stats_df.loc[abundant_taxa, 'Benjamini-Hochberg adjusted P value'] = pvals_corrected
+
         stats_df.to_csv(
             f'{dstdir}/Mann-Whitney-U.csv',
             index=False

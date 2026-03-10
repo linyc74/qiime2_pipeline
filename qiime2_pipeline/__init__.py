@@ -39,6 +39,7 @@ def main(
         publication_figure: bool,
         skip_differential_abundance: bool,
         differential_abundance_p_value: float,
+        min_abundance_per_group: float,
         run_picrust2: bool,
 
         threads: int,
@@ -92,6 +93,7 @@ def main(
         invert_colors=invert_colors,
         skip_differential_abundance=skip_differential_abundance,
         differential_abundance_p_value=differential_abundance_p_value,
+        min_abundance_per_group=min_abundance_per_group,
         run_picrust2=run_picrust2)
 
     if not debug:
