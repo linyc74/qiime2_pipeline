@@ -77,7 +77,7 @@ class Decontam(Processor):
             f'--i-decontam-scores {self.decontam_scores_qza}',
             f'--i-table {self.feature_table_qza}',
             f'--p-threshold {self.decontam_threshold}',
-            f'--o-visualization {output_qzv}',
+            f'--o-visualization "{output_qzv}"',
             f'1>> "{log}"',
             f'2>> "{log}"'
         ])
