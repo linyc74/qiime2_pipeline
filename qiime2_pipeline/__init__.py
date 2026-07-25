@@ -23,6 +23,9 @@ def main(
         otu_identity: float,
         skip_otu: bool,
 
+        dna_concentration_column: str,
+        decontam_threshold: float,
+
         feature_classifier: str,
         nb_classifier_qza: str,
         classifier_reads_per_batch: int,
@@ -76,6 +79,9 @@ def main(
 
         otu_identity=otu_identity,
         skip_otu=skip_otu,
+
+        dna_concentration_column=None if dna_concentration_column.lower() == 'none' else dna_concentration_column,
+        decontam_threshold=decontam_threshold,
 
         feature_classifier=feature_classifier,
         nb_classifier_qza=None if nb_classifier_qza.lower() == 'none' else nb_classifier_qza,

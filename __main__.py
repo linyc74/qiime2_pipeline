@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.11.0'
+__VERSION__ = '2.11.1-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -116,6 +116,23 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--dna-concentration-column'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'None',
+            'help': 'DNA concentration column in the sample sheet for frequency-based decontamination, "None" for no decontamination (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--decontam-threshold'],
+        'properties': {
+            'type': float,
+            'required': False,
+            'default': 0.1,
+            'help': 'threshold score for frequency-based decontamination (default: %(default)s)',
+        }
+    },
         'keys': ['--feature-classifier'],
         'properties': {
             'type': str,
@@ -337,6 +354,9 @@ class EntryPoint:
 
             otu_identity=args.otu_identity,
             skip_otu=args.skip_otu,
+
+            dna_concentration_column=args.dna_concentration_column,
+            decontam_threshold=args.decontam_threshold,
 
             feature_classifier=args.feature_classifier,
             nb_classifier_qza=args.nb_classifier_qza,

@@ -2,6 +2,7 @@ from os import makedirs
 from typing import List, Optional, Dict
 from .lefse import LefSe
 from .taxonomy import Taxonomy
+from .decontam import Decontam
 from .template import Processor
 from .grouping import GetColors
 from .beta import BetaDiversity
@@ -38,6 +39,9 @@ class Qiime2Pipeline(Processor):
 
     otu_identity: float
     skip_otu: bool
+
+    dna_concentration_column: Optional[str]
+    decontam_threshold: float
 
     feature_classifier: str
     nb_classifier_qza: Optional[str]
@@ -84,6 +88,9 @@ class Qiime2Pipeline(Processor):
             otu_identity: float,
             skip_otu: bool,
 
+            dna_concentration_column: Optional[str],
+            decontam_threshold: float,
+
             feature_classifier: str,
             nb_classifier_qza: Optional[str],
             classifier_reads_per_batch: int,
@@ -117,6 +124,9 @@ class Qiime2Pipeline(Processor):
         self.otu_identity = otu_identity
         self.skip_otu = skip_otu
 
+        self.dna_concentration_column = dna_concentration_column
+        self.decontam_threshold = decontam_threshold
+
         self.feature_classifier = feature_classifier
         self.nb_classifier_qza = nb_classifier_qza
         self.classifier_reads_per_batch = classifier_reads_per_batch
@@ -140,6 +150,7 @@ class Qiime2Pipeline(Processor):
         self.set_colors()
 
         self.generate_asv_otu()
+        self.decontamination()
 
         self.taxonomic_classification()
         self.feature_labeling()
@@ -202,6 +213,16 @@ class Qiime2Pipeline(Processor):
 
         else:
             raise ValueError(f'Invalid sequencing platform: {self.sequencing_platform}')
+
+    def decontamination(self):
+        if self.dna_concentration_column is None:
+            return
+        self.feature_table_qza, self.feature_sequence_qza = Decontam(self.settings).main(
+            feature_table_qza=self.feature_table_qza,
+            feature_sequence_qza=self.feature_sequence_qza,
+            sample_sheet=self.sample_sheet,
+            dna_concentration_column=self.dna_concentration_column,
+            decontam_threshold=self.decontam_threshold)
 
     def taxonomic_classification(self):
         self.taxonomy_qza = Taxonomy(self.settings).main(
