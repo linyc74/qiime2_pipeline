@@ -133,6 +133,7 @@ OPTIONAL = [
             'help': 'threshold score for frequency-based decontamination (default: %(default)s)',
         }
     },
+    {
         'keys': ['--feature-classifier'],
         'properties': {
             'type': str,
