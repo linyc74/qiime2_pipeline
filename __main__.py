@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.11.1-beta'
+__VERSION__ = '2.12.0-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -121,7 +121,7 @@ OPTIONAL = [
             'type': str,
             'required': False,
             'default': 'None',
-            'help': 'DNA concentration column in the sample sheet for frequency-based decontamination, "None" for no decontamination (default: %(default)s)',
+            'help': 'DNA concentration column in the sample sheet for frequency-based decontamination, "None" to skip decontamination (default: %(default)s)',
         }
     },
     {

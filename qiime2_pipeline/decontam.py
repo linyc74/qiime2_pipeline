@@ -1,6 +1,8 @@
 import pandas as pd
 from typing import Tuple
 from .template import Processor
+from .utils import get_temp_path
+from .exporting import ExportFeatureTable
 
 
 class Decontam(Processor):
@@ -11,9 +13,9 @@ class Decontam(Processor):
     dna_concentration_column: str
     decontam_threshold: float
 
-    concentration_tsv: str
-
+    dna_concentration_tsv: str
     decontam_scores_qza: str
+
     decontam_table_qza: str
     decontam_sequence_qza: str
 
@@ -31,15 +33,17 @@ class Decontam(Processor):
         self.dna_concentration_column = dna_concentration_column
         self.decontam_threshold = decontam_threshold
 
-        self.write_concentration_tsv()
+        self.write_dna_concentration_tsv()
         self.identify_scores()
         self.visualize_score_histogram()
         self.remove_from_feature_table()
         self.remove_from_feature_sequences()
 
+        self.print_summary()
+
         return self.decontam_table_qza, self.decontam_sequence_qza
 
-    def write_concentration_tsv(self):
+    def write_dna_concentration_tsv(self):
         if self.sample_sheet.endswith('.csv'):
             df = pd.read_csv(self.sample_sheet, index_col=0)
         else:
@@ -51,8 +55,8 @@ class Decontam(Processor):
         df.index.name = 'sample-id'
         df = df.rename(columns={self.dna_concentration_column: 'dna-concentration'})
 
-        self.concentration_tsv = f'{self.workdir}/dna-concentration.tsv'
-        df.to_csv(self.concentration_tsv, sep='\t', index=True)
+        self.dna_concentration_tsv = f'{self.workdir}/dna-concentration.tsv'
+        df.to_csv(self.dna_concentration_tsv, sep='\t', index=True)
 
     def identify_scores(self):
         self.decontam_scores_qza = f'{self.workdir}/decontam-scores.qza'
@@ -60,7 +64,7 @@ class Decontam(Processor):
         cmd = self.CMD_LINEBREAK.join([
             'qiime quality-control decontam-identify',
             f'--i-table {self.feature_table_qza}',
-            f'--m-metadata-file {self.concentration_tsv}',
+            f'--m-metadata-file {self.dna_concentration_tsv}',
             f'--p-method frequency',
             f'--p-freq-concentration-column "dna-concentration"',
             f'--o-decontam-scores {self.decontam_scores_qza}',
@@ -109,3 +113,26 @@ class Decontam(Processor):
             f'2>> "{log}"'
         ])
         self.call(cmd)
+
+    def print_summary(self):
+        before = CountFeatures(self.settings).main(feature_table_qza=self.feature_table_qza)
+        after = CountFeatures(self.settings).main(feature_table_qza=self.decontam_table_qza)
+        msg = f'''\
+Before decontamination: {before} features
+After decontamination: {after} features
+Decontamination removed {before - after} features
+Decontamination removed {((before - after) / before) * 100:.2f}% of features
+'''
+        self.logger.info(msg)
+
+
+class CountFeatures(Processor):
+
+    feature_table_qza: str
+    
+    def main(self, feature_table_qza: str) -> int:
+        self.feature_table_qza = feature_table_qza
+
+        tsv = ExportFeatureTable(self.settings).main(feature_table_qza=self.feature_table_qza)
+        df = pd.read_csv(tsv, sep='\t')
+        return len(df)

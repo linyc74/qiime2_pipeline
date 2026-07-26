@@ -215,6 +215,9 @@ class Qiime2Pipeline(Processor):
             raise ValueError(f'Invalid sequencing platform: {self.sequencing_platform}')
 
     def decontamination(self):
+        # decontam needs to work right after ASV/OTU generation, before taxonomy annotation
+        # because taxonomy annotation adds SPACES to feature names, not compatible with fasta header format,
+        # so it breaks decontam
         if self.dna_concentration_column is None:
             return
         self.feature_table_qza, self.feature_sequence_qza = Decontam(self.settings).main(
