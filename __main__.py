@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.12.0'
+__VERSION__ = '2.12.1-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -50,6 +50,15 @@ OPTIONAL = [
             'required': False,
             'default': 'qiime2_pipeline_outdir',
             'help': 'path to the output directory (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--workdir'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'None',
+            'help': 'path to the working directory, "None" to use a temporary directory (default: %(default)s)',
         }
     },
     {
@@ -344,6 +353,7 @@ class EntryPoint:
             fq1_suffix=args.fq1_suffix,
             fq2_suffix=args.fq2_suffix,
             outdir=args.outdir,
+            workdir=args.workdir,
 
             sequencing_platform=args.sequencing_platform,
 
