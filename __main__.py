@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.12.1'
+__VERSION__ = '2.12.2-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -58,7 +58,7 @@ OPTIONAL = [
             'type': str,
             'required': False,
             'default': 'None',
-            'help': 'path to the working directory, "None" to use a temporary directory (default: %(default)s)',
+            'help': 'path to the temporary working directory, "None" to create one based on the outdir (default: %(default)s)',
         }
     },
     {

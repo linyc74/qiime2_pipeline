@@ -372,7 +372,8 @@ class PercentageBarplot(Processor):
                 color=color,
                 width=0.8,
                 edgecolor='black',
-                linewidth=0.25
+                linewidth=0.25,
+                label=self.data.index[row]  # set the label (i.e. taxon name) for the legend box
             )
             bottom += self.data.iloc[row, :]
 
@@ -389,7 +390,12 @@ class PercentageBarplot(Processor):
         plt.gca().xaxis.set_tick_params(width=self.LINE_WIDTH)
         plt.gca().yaxis.set_tick_params(width=self.LINE_WIDTH)
 
-        legend = plt.legend(self.data.index, bbox_to_anchor=(1, 1))
+        handles, labels = plt.gca().get_legend_handles_labels()
+        legend = plt.legend(
+            handles=handles[::-1],  # reverse the order of the legend items, to match the order of stacked bars
+            labels=labels[::-1],
+            bbox_to_anchor=(1, 1)
+        )
         legend.set_frame_on(False)
 
         plt.tight_layout()
