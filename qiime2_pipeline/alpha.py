@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -295,10 +296,10 @@ class Statistics(Processor):
             'Group 1': group1,
             'Group 2': group2,
             'Test': 'Mann—Whitney U',
-            'Group 1 N': len(x),
-            'Group 2 N': len(y),
-            'Group 1 Mean': x.mean(),
-            'Group 2 Mean': y.mean(),
+            'N 1': len(x),
+            'N 2': len(y),
+            'Mean 1': x.mean(),
+            'Mean 2': y.mean(),
             'p-value': result.pvalue,
         })
     
@@ -307,34 +308,41 @@ class Statistics(Processor):
         in_group1_or_group2 = self.df[GROUP_COLUMN].isin([group1, group2])
         df = self.df.loc[in_group1_or_group2, :]
 
+        # pdf: paired data frame, subject x group
         pdf = pd.pivot_table(
             df,
             index=self.subject_column,
             columns=GROUP_COLUMN,
             values=metric)
 
-        # because there are only group1 and group2 samples
-        # there should be only two columns for the two groups
-        assert len(pdf.columns) == 2
-
         pdf.dropna(inplace=True)  # drop any subjects with missing data, i.e. no paired measurements
 
-        x = pdf[pdf.columns[0]]
-        y = pdf[pdf.columns[1]]
-
-        if len(x) == 0:  # no paired measurements
-            p_value = 1.0
-        elif (y == 0).all() and (x == 0).all():  # all paired measurements are 0
-            p_value = 1.0
+        # because there are only group1 and group2 samples, there should be 2 columns for the 2 groups
+        # however, if there are less than 2 columns, it means that there are no paired measurements
+        n_cols = len(pdf.columns)
+        if n_cols < 2:
+            n_paired = 0
+            p_value = np.nan
         else:
-            p_value = wilcoxon(x=x, y=y).pvalue
+            n_paired = len(pdf)
+            x = pdf[group1]
+            y = pdf[group2]
+            if n_paired == 0:
+                p_value = np.nan
+            elif (y == 0).all() and (x == 0).all():  # all paired measurements are 0, no change at all
+                p_value = np.nan
+            else:
+                p_value = wilcoxon(x=x, y=y).pvalue
 
+        mean1 = pdf[group1].mean() if group1 in pdf.columns else np.nan
+        mean2 = pdf[group2].mean() if group2 in pdf.columns else np.nan
         self.stats_data.append({
             'Diversity': metric,
             'Group 1': group1,
             'Group 2': group2,
             'Test': 'Wilcoxon signed-rank',
-            'N Paired': len(x),
-            'Mean Change': (y - x).mean(),
+            'N Paired': n_paired,
+            'Mean 1': mean1,
+            'Mean 2': mean2,
             'p-value': p_value
         })

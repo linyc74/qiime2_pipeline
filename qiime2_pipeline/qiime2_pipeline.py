@@ -314,6 +314,7 @@ class Qiime2Pipeline(Processor):
         DifferentialAbundance(self.settings).main(
             taxon_table_tsv_dict=self.taxon_table_tsv_dict,
             sample_sheet=self.sample_sheet,
+            subject_column=self.subject_column,
             colors=self.colors,
             p_value=self.differential_abundance_p_value,
             min_abundance_per_group=self.min_abundance_per_group)
