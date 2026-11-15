@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.12.2'
+__VERSION__ = '2.13.0-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -284,6 +284,15 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--subject-column'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'None',
+            'help': 'subject column in the sample sheet for paired statistics, "None" for unpaired statistics (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['-t', '--threads'],
         'properties': {
             'type': int,
@@ -386,6 +395,7 @@ class EntryPoint:
             skip_differential_abundance=args.skip_differential_abundance,
             differential_abundance_p_value=args.differential_abundance_p_value,
             min_abundance_per_group=args.min_abundance_per_group,
+            subject_column=args.subject_column,
 
             threads=args.threads,
             debug=args.debug)

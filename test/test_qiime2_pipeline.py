@@ -40,6 +40,7 @@ class TestQiime2Pipeline(TestCase):
             skip_differential_abundance=False,
             differential_abundance_p_value=0.05,
             min_abundance_per_group=0.0,
+            subject_column=None,
         )
 
     def test_single_end(self):
@@ -72,6 +73,7 @@ class TestQiime2Pipeline(TestCase):
             skip_differential_abundance=False,
             differential_abundance_p_value=0.05,
             min_abundance_per_group=0.0,
+            subject_column=None,
         )
 
     def test_fungi(self):
@@ -104,6 +106,7 @@ class TestQiime2Pipeline(TestCase):
             skip_differential_abundance=False,
             differential_abundance_p_value=0.05,
             min_abundance_per_group=0.0,
+            subject_column=None,
         )
 
     def test_pacbio(self):
@@ -136,6 +139,7 @@ class TestQiime2Pipeline(TestCase):
             skip_differential_abundance=False,
             differential_abundance_p_value=0.05,
             min_abundance_per_group=0.0,
+            subject_column=None,
         )
 
     def test_nanopore(self):
@@ -169,4 +173,5 @@ class TestQiime2Pipeline(TestCase):
             skip_differential_abundance=True,
             differential_abundance_p_value=0.05,
             min_abundance_per_group=0.0,
+            subject_column=None,
         )

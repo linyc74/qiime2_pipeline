@@ -3,8 +3,8 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from itertools import combinations
-from scipy.stats import mannwhitneyu
-from typing import List, Tuple, Dict, Union
+from scipy.stats import mannwhitneyu, wilcoxon
+from typing import List, Tuple, Dict, Union, Optional
 from .template import Processor
 from .grouping import AddGroupColumn, GROUP_COLUMN
 
@@ -27,6 +27,7 @@ class AlphaDiversity(Processor):
 
     feature_table_qza: str
     sample_sheet: str
+    subject_column: Optional[str]
     alpha_metrics: List[str]
     colors: list
 
@@ -36,15 +37,15 @@ class AlphaDiversity(Processor):
             self,
             feature_table_qza: str,
             sample_sheet: str,
+            subject_column: Optional[str],
             alpha_metrics: List[str],
             colors: list):
 
         self.feature_table_qza = feature_table_qza
         self.sample_sheet = sample_sheet
+        self.subject_column = subject_column
         self.alpha_metrics = self.ALPHA_METRICS if alpha_metrics == [] else alpha_metrics
         self.colors = colors
-
-        os.makedirs(f'{self.outdir}/{DSTDIR_NAME}', exist_ok=True)
 
         self.df = pd.DataFrame()
         for metric in self.alpha_metrics:
@@ -52,13 +53,17 @@ class AlphaDiversity(Processor):
 
         self.df = AddGroupColumn(self.settings).main(df=self.df, sample_sheet=self.sample_sheet)
 
+        if self.subject_column is not None:
+            self.add_subject_column()
+
         self.reorder_samples_by_sample_sheet()
 
+        os.makedirs(f'{self.outdir}/{DSTDIR_NAME}', exist_ok=True)
         self.df.to_csv(f'{self.outdir}/{DSTDIR_NAME}/alpha-diversity.csv', index=True)
 
-        Plot(self.settings).main(df=self.df, colors=self.colors)
+        Plot(self.settings).main(df=self.df, colors=self.colors, subject_column=self.subject_column)
 
-        MannWhitneyU(self.settings).main(df=self.df)
+        Statistics(self.settings).main(df=self.df, subject_column=self.subject_column)
 
     def run_one(self, metric: str):
         qza = RunOneAlphaMetric(self.settings).main(
@@ -72,6 +77,18 @@ class AlphaDiversity(Processor):
             how='outer',
             left_index=True,
             right_index=True)
+
+    def add_subject_column(self):
+        sample_sheet_df = pd.read_csv(self.sample_sheet, index_col=0)[self.subject_column]  # only take the subject column
+        self.df = self.df.merge(
+            right=sample_sheet_df,
+            how='left',
+            left_index=True,
+            right_index=True
+        )
+        cols = list(self.df.columns)
+        cols = [cols[0]] + [cols[-1]] + cols[1:-1]  # move the subject column to the second position
+        self.df = self.df[cols]
 
     def reorder_samples_by_sample_sheet(self):
         sample_order = pd.read_csv(self.sample_sheet, index_col=0).index
@@ -143,6 +160,7 @@ class Plot(Processor):
 
     df: pd.DataFrame
     colors: list
+    subject_column: Optional[str]
 
     figsize: Tuple[float, float]
     box_width: float
@@ -152,9 +170,10 @@ class Plot(Processor):
 
     alpha_metrics: List[str]
 
-    def main(self, df: pd.DataFrame, colors: list):
+    def main(self, df: pd.DataFrame, colors: list, subject_column: Optional[str]):
         self.df = df
         self.colors = colors
+        self.subject_column = subject_column
 
         self.set_parameters()
         self.set_alpha_metrics()
@@ -178,11 +197,10 @@ class Plot(Processor):
 
     def set_alpha_metrics(self):
         self.alpha_metrics = [
-            c for c in self.df.columns if c != GROUP_COLUMN
+            c for c in self.df.columns if c not in [GROUP_COLUMN, self.subject_column]
         ]
 
     def plot_one(self, metric: str):
-
         plt.rcParams['font.size'] = self.fontsize
         plt.rcParams['axes.linewidth'] = self.line_width
 
@@ -196,6 +214,18 @@ class Plot(Processor):
             width=self.box_width,
             linewidth=self.line_width
         )
+        if self.subject_column is not None:
+            sns.lineplot(
+                data=self.df,
+                x=GROUP_COLUMN,
+                y=metric,
+                units=self.subject_column,
+                estimator=None,
+                color='black',
+                alpha=0.25,
+                linewidth=self.line_width,
+                sort=False
+            )
         sns.stripplot(
             data=self.df,
             x=GROUP_COLUMN,
@@ -227,35 +257,84 @@ def get_figsize_for_publication(n_groups: int) -> Tuple[float, float]:
     return w, h
 
 
-class MannWhitneyU(Processor):
+class Statistics(Processor):
 
     df: pd.DataFrame
+    subject_column: Optional[str]
     stats_data: List[Dict[str, Union[str, float]]]
 
-    def main(self, df: pd.DataFrame):
+    def main(self, df: pd.DataFrame, subject_column: Optional[str]):
         self.df = df
+        self.subject_column = subject_column
 
-        alpha_metrics = [c for c in self.df.columns if c != GROUP_COLUMN]
+        alpha_metrics = [c for c in self.df.columns if c not in [GROUP_COLUMN, self.subject_column]]
         groups = self.df[GROUP_COLUMN].unique()
 
         self.stats_data = []
 
+        if self.subject_column is None:
+            test = self.mann_whitney_u
+        else:
+            test = self.wilcoxon_signed_rank
+
         for metric in alpha_metrics:
             for group1, group2 in combinations(groups, 2):
-                self.mann_whitney_u(metric=metric, group1=group1, group2=group2)
+                test(metric=metric, group1=group1, group2=group2)
 
+        os.makedirs(f'{self.outdir}/{DSTDIR_NAME}', exist_ok=True)     
         pd.DataFrame(self.stats_data).to_csv(
-            f'{self.outdir}/{DSTDIR_NAME}/alpha-diversity-mann-whitney-u.csv',
+            f'{self.outdir}/{DSTDIR_NAME}/alpha-diversity-statistics.csv',
             index=False)
 
     def mann_whitney_u(self, metric: str, group1: str, group2: str):
-        result = mannwhitneyu(
-            x=self.df.loc[self.df[GROUP_COLUMN] == group1, metric],
-            y=self.df.loc[self.df[GROUP_COLUMN] == group2, metric],
-        )
+        x = self.df.loc[self.df[GROUP_COLUMN] == group1, metric]
+        y = self.df.loc[self.df[GROUP_COLUMN] == group2, metric]
+        result = mannwhitneyu(x=x, y=y)
         self.stats_data.append({
             'Diversity': metric,
             'Group 1': group1,
             'Group 2': group2,
-            'P value': result.pvalue
+            'Test': 'Mann—Whitney U',
+            'Group 1 N': len(x),
+            'Group 2 N': len(y),
+            'Group 1 Mean': x.mean(),
+            'Group 2 Mean': y.mean(),
+            'p-value': result.pvalue,
+        })
+    
+    def wilcoxon_signed_rank(self, metric: str, group1: str, group2: str):
+        # keep only group1 and group2 samples
+        in_group1_or_group2 = self.df[GROUP_COLUMN].isin([group1, group2])
+        df = self.df.loc[in_group1_or_group2, :]
+
+        pdf = pd.pivot_table(
+            df,
+            index=self.subject_column,
+            columns=GROUP_COLUMN,
+            values=metric)
+
+        # because there are only group1 and group2 samples
+        # there should be only two columns for the two groups
+        assert len(pdf.columns) == 2
+
+        pdf.dropna(inplace=True)  # drop any subjects with missing data, i.e. no paired measurements
+
+        x = pdf[pdf.columns[0]]
+        y = pdf[pdf.columns[1]]
+
+        if len(x) == 0:  # no paired measurements
+            p_value = 1.0
+        elif (y == 0).all() and (x == 0).all():  # all paired measurements are 0
+            p_value = 1.0
+        else:
+            p_value = wilcoxon(x=x, y=y).pvalue
+
+        self.stats_data.append({
+            'Diversity': metric,
+            'Group 1': group1,
+            'Group 2': group2,
+            'Test': 'Wilcoxon signed-rank',
+            'N Paired': len(x),
+            'Mean Change': (y - x).mean(),
+            'p-value': p_value
         })

@@ -59,6 +59,7 @@ class Qiime2Pipeline(Processor):
     skip_differential_abundance: bool
     differential_abundance_p_value: float
     min_abundance_per_group: float
+    subject_column: Optional[str]
 
     colors: list
     feature_table_qza: str
@@ -106,7 +107,9 @@ class Qiime2Pipeline(Processor):
             invert_colors: bool,
             skip_differential_abundance: bool,
             differential_abundance_p_value: float,
-            min_abundance_per_group: float):
+            min_abundance_per_group: float,
+            subject_column: Optional[str]
+        ):
 
         self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
@@ -143,6 +146,7 @@ class Qiime2Pipeline(Processor):
         self.skip_differential_abundance = skip_differential_abundance
         self.differential_abundance_p_value = differential_abundance_p_value
         self.min_abundance_per_group = min_abundance_per_group
+        self.subject_column = subject_column
 
         self.transcribe_sample_sheet()
 
@@ -254,6 +258,7 @@ class Qiime2Pipeline(Processor):
         AlphaDiversity(self.settings).main(
             feature_table_qza=self.feature_table_qza,  # no need to use taxonomy-labeled feature table
             sample_sheet=self.sample_sheet,
+            subject_column=self.subject_column,
             alpha_metrics=self.alpha_metrics,
             colors=self.colors)
 
