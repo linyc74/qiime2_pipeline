@@ -57,7 +57,16 @@ class TestGetColors(TestCase):
         ]
         self.assertListEqual(expected, actual)
 
-    def test_input_color_names(self):
+    def test_one_input_color_name(self):
+        actual = GetColors(self.settings).main(
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
+            colormap='red',
+            invert_colors=False
+        )
+        expected = [(1.0, 0.0, 0.0, 1.0)]
+        self.assertListEqual(expected, actual)
+
+    def test_two_input_color_names(self):
         actual = GetColors(self.settings).main(
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colormap='red,green',
@@ -69,7 +78,18 @@ class TestGetColors(TestCase):
         ]
         self.assertListEqual(expected, actual)
 
-    def test_input_hex_colors(self):
+    def test_one_input_hex_color(self):
+        actual = GetColors(self.settings).main(
+            sample_sheet=f'{self.indir}/sample-sheet.csv',
+            colormap='#59A257',
+            invert_colors=False
+        )
+        expected = [
+            (0.34901960784313724, 0.6352941176470588, 0.3411764705882353, 1.0),
+        ]
+        self.assertListEqual(expected, actual)
+
+    def test_two_input_hex_colors(self):
         actual = GetColors(self.settings).main(
             sample_sheet=f'{self.indir}/sample-sheet.csv',
             colormap='#59A257,#4A759D',

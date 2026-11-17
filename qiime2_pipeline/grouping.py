@@ -100,14 +100,14 @@ class GetColors(Processor):
         df = pd.read_csv(self.sample_sheet, index_col=0)
         n_groups = len(df[GROUP_COLUMN].unique())
 
-        if ',' in self.colormap:
+        if self.colormap in plt.colormaps:
+            cmap = plt.colormaps[self.colormap]
+            colors = [cmap(i) for i in range(n_groups)]
+        else:
             names = self.colormap.split(',')
             if len(names) != n_groups:
                 self.logger.info(f'WARNING! Number of colors "{self.colormap}" does not match number of groups ({n_groups})')
             colors = [to_rgba(n) for n in names]
-        else:
-            cmap = plt.colormaps[self.colormap]
-            colors = [cmap(i) for i in range(n_groups)]
 
         if self.invert_colors:
             colors = colors[::-1]
