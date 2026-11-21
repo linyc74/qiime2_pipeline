@@ -21,6 +21,12 @@ def main(
         paired_end_mode: str,
         max_expected_error_bases: float,
 
+        pacbio_forward_primer: str,
+        pacbio_reverse_primer: str,
+        pacbio_primer_max_mismatch: int,
+        pacbio_min_length: int,
+        pacbio_max_length: int,
+
         otu_identity: float,
         skip_otu: bool,
 
@@ -79,6 +85,12 @@ def main(
 
         paired_end_mode=paired_end_mode,
         max_expected_error_bases=max_expected_error_bases,
+
+        pacbio_forward_primer=pacbio_forward_primer,
+        pacbio_reverse_primer=pacbio_reverse_primer,
+        pacbio_primer_max_mismatch=pacbio_primer_max_mismatch,
+        pacbio_min_length=pacbio_min_length,
+        pacbio_max_length=pacbio_max_length,
 
         otu_identity=otu_identity,
         skip_otu=skip_otu,

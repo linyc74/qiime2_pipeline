@@ -17,6 +17,11 @@ class GenerateASV(Processor):
     clip_r1_5_prime: int
     clip_r2_5_prime: int
     max_expected_error_bases: float
+    pacbio_forward_primer: str
+    pacbio_reverse_primer: str
+    pacbio_primer_max_mismatch: int
+    pacbio_min_length: int
+    pacbio_max_length: int
 
     feature_table_qza: str
     feature_sequence_qza: str
@@ -31,7 +36,12 @@ class GenerateASV(Processor):
             paired_end_mode: str,
             clip_r1_5_prime: int,
             clip_r2_5_prime: int,
-            max_expected_error_bases: float) -> Tuple[str, str]:
+            max_expected_error_bases: float,
+            pacbio_forward_primer: str,
+            pacbio_reverse_primer: str,
+            pacbio_primer_max_mismatch: int,
+            pacbio_min_length: int,
+            pacbio_max_length: int) -> Tuple[str, str]:
 
         self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
@@ -42,6 +52,11 @@ class GenerateASV(Processor):
         self.clip_r1_5_prime = clip_r1_5_prime
         self.clip_r2_5_prime = clip_r2_5_prime
         self.max_expected_error_bases = max_expected_error_bases
+        self.pacbio_forward_primer = pacbio_forward_primer
+        self.pacbio_reverse_primer = pacbio_reverse_primer
+        self.pacbio_primer_max_mismatch = pacbio_primer_max_mismatch
+        self.pacbio_min_length = pacbio_min_length
+        self.pacbio_max_length = pacbio_max_length
 
         if self.pacbio:
             self.generate_asv_pacbio()
@@ -59,7 +74,12 @@ class GenerateASV(Processor):
             sample_sheet=self.sample_sheet,
             fq_dir=self.fq_dir,
             fq_suffix=self.fq1_suffix,
-            max_expected_error_bases=self.max_expected_error_bases)
+            max_expected_error_bases=self.max_expected_error_bases,
+            pacbio_forward_primer=self.pacbio_forward_primer,
+            pacbio_reverse_primer=self.pacbio_reverse_primer,
+            pacbio_primer_max_mismatch=self.pacbio_primer_max_mismatch,
+            pacbio_min_length=self.pacbio_min_length,
+            pacbio_max_length=self.pacbio_max_length)
 
     def generate_asv_single_end(self):
         self.feature_table_qza, self.feature_sequence_qza = GenerateASVSingleEnd(self.settings).main(
@@ -87,6 +107,11 @@ class GenerateASVPacBio(Processor):
     fq_dir: str
     fq_suffix: str
     max_expected_error_bases: float
+    pacbio_forward_primer: str
+    pacbio_reverse_primer: str
+    pacbio_primer_max_mismatch: int
+    pacbio_min_length: int
+    pacbio_max_length: int
 
     feature_sequence_qza: str
     feature_table_qza: str
@@ -96,12 +121,22 @@ class GenerateASVPacBio(Processor):
             sample_sheet: str,
             fq_dir: str,
             fq_suffix: str,
-            max_expected_error_bases: float) -> Tuple[str, str]:
+            max_expected_error_bases: float,
+            pacbio_forward_primer: str,
+            pacbio_reverse_primer: str,
+            pacbio_primer_max_mismatch: int,
+            pacbio_min_length: int,
+            pacbio_max_length: int) -> Tuple[str, str]:
 
         self.sample_sheet = sample_sheet
         self.fq_dir = fq_dir
         self.fq_suffix = fq_suffix
         self.max_expected_error_bases = max_expected_error_bases
+        self.pacbio_forward_primer = pacbio_forward_primer
+        self.pacbio_reverse_primer = pacbio_reverse_primer
+        self.pacbio_primer_max_mismatch = pacbio_primer_max_mismatch
+        self.pacbio_min_length = pacbio_min_length
+        self.pacbio_max_length = pacbio_max_length
 
         # 1 importing
         single_end_seq_qza = ImportSingleEndFastq(self.settings).main(
@@ -112,7 +147,12 @@ class GenerateASVPacBio(Processor):
         # 2 denoise
         self.feature_table_qza, self.feature_sequence_qza = Dada2PacBio(self.settings).main(
             demultiplexed_seq_qza=single_end_seq_qza,
-            max_expected_error_bases=self.max_expected_error_bases)
+            max_expected_error_bases=self.max_expected_error_bases,
+            pacbio_forward_primer=self.pacbio_forward_primer,
+            pacbio_reverse_primer=self.pacbio_reverse_primer,
+            pacbio_primer_max_mismatch=self.pacbio_primer_max_mismatch,
+            pacbio_min_length=self.pacbio_min_length,
+            pacbio_max_length=self.pacbio_max_length)
 
         return self.feature_table_qza, self.feature_sequence_qza
 
@@ -368,22 +408,45 @@ class Dada2PacBio(Dada2Base):
       Callahan et al., High-throughput amplicon sequencing of the full-length 16S rRNA gene with single-nucleotide resolution (doi: 10.1093/nar/gkz569)
     """
 
-    FORWARD_PRIMER = 'AGRGTTYGATYMTGGCTCAG'  # 27F
-    REVERSE_PRIMER = 'RGYTACCTTGTTACGACTT'  # 1492R
-    MIN_LENGTH = 1000
-    MAX_LENGTH = 1600
     MIN_FOLD_PARENT_OVER_ABUNDANCE = 3.5
+
+    pacbio_forward_primer: str
+    pacbio_reverse_primer: str
+    pacbio_primer_max_mismatch: int
+    pacbio_min_length: int
+    pacbio_max_length: int
+
+    def main(
+            self,
+            demultiplexed_seq_qza: str,
+            max_expected_error_bases: float,
+            pacbio_forward_primer: str,
+            pacbio_reverse_primer: str,
+            pacbio_primer_max_mismatch: int,
+            pacbio_min_length: int,
+            pacbio_max_length: int) -> Tuple[str, str]:
+
+        self.pacbio_forward_primer = pacbio_forward_primer
+        self.pacbio_reverse_primer = pacbio_reverse_primer
+        self.pacbio_primer_max_mismatch = pacbio_primer_max_mismatch
+        self.pacbio_min_length = pacbio_min_length
+        self.pacbio_max_length = pacbio_max_length
+
+        return super().main(
+            demultiplexed_seq_qza=demultiplexed_seq_qza,
+            max_expected_error_bases=max_expected_error_bases)
 
     def set_cmd(self):
         log = f'{self.outdir}/qiime-dada2-denoise-ccs.log'
         self.cmd = self.CMD_LINEBREAK.join([
             'qiime dada2 denoise-ccs',
             f'--i-demultiplexed-seqs {self.demultiplexed_seq_qza}',
-            f'--p-front {self.FORWARD_PRIMER}',
-            f'--p-adapter {self.REVERSE_PRIMER}',
+            f'--p-front {self.pacbio_forward_primer}',
+            f'--p-adapter {self.pacbio_reverse_primer}',
+            f'--p-max-mismatch {self.pacbio_primer_max_mismatch}',
             f'--p-max-ee {self.max_expected_error_bases}',
-            f'--p-min-len {self.MIN_LENGTH}',
-            f'--p-max-len {self.MAX_LENGTH}',
+            f'--p-min-len {self.pacbio_min_length}',
+            f'--p-max-len {self.pacbio_max_length}',
             f'--p-min-fold-parent-over-abundance {self.MIN_FOLD_PARENT_OVER_ABUNDANCE}',
             f'--p-n-threads {self.threads}',
             f'--o-representative-sequences {self.feature_sequence_qza}',

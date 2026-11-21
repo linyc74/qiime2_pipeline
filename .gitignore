@@ -2,13 +2,11 @@
 __pycache__/
 *.py[cod]
 
-# PyCharm
+# IDE / AI / macOS
 .idea/
-
-# VSCode / Cursor
 .vscode/
-
-# Mac OS
+.cursor/
+.claude
 .DS_Store
 
 # Test / data
@@ -16,5 +14,6 @@ __pycache__/
 test/test_*/
 test/*outdir*/
 test/*workdir*/
-
+stdout.log
+stderr.log
 todo.md

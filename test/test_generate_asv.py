@@ -21,6 +21,11 @@ class TestGenerateASV(TestCase):
             clip_r1_5_prime=0,
             clip_r2_5_prime=0,
             max_expected_error_bases=8.,
+            pacbio_forward_primer='AGRGTTYGATYMTGGCTCAG',
+            pacbio_reverse_primer='RGYTACCTTGTTACGACTT',
+            pacbio_primer_max_mismatch=2,
+            pacbio_min_length=1000,
+            pacbio_max_length=1600,
         )
         for expected, actual in [
             (f'{self.workdir}/dada2-feature-table.qza', feature_table_qza),
@@ -39,6 +44,11 @@ class TestGenerateASV(TestCase):
             clip_r1_5_prime=17,
             clip_r2_5_prime=0,
             max_expected_error_bases=2.,
+            pacbio_forward_primer='',
+            pacbio_reverse_primer='',
+            pacbio_primer_max_mismatch=0,
+            pacbio_min_length=0,
+            pacbio_max_length=0,
         )
         for expected, actual in [
             (f'{self.workdir}/dada2-feature-table.qza', feature_table_qza),
@@ -57,6 +67,11 @@ class TestGenerateASV(TestCase):
             clip_r1_5_prime=17,
             clip_r2_5_prime=0,
             max_expected_error_bases=2.,
+            pacbio_forward_primer='',
+            pacbio_reverse_primer='',
+            pacbio_primer_max_mismatch=0,
+            pacbio_min_length=0,
+            pacbio_max_length=0,
         )
         for expected, actual in [
             (f'{self.workdir}/dada2-feature-table.qza', feature_table_qza),
@@ -75,6 +90,11 @@ class TestGenerateASV(TestCase):
             clip_r1_5_prime=17,
             clip_r2_5_prime=0,
             max_expected_error_bases=2.,
+            pacbio_forward_primer='',
+            pacbio_reverse_primer='',
+            pacbio_primer_max_mismatch=0,
+            pacbio_min_length=0,
+            pacbio_max_length=0,
         )
         for expected, actual in [
             (f'{self.workdir}/dada2-feature-table.qza', feature_table_qza),

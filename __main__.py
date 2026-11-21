@@ -2,7 +2,7 @@ import argparse
 import qiime2_pipeline
 
 
-__VERSION__ = '2.13.1-beta'
+__VERSION__ = '2.14.0-beta'
 
 
 PROG = 'python qiime2_pipeline'
@@ -106,6 +106,51 @@ OPTIONAL = [
             'required': False,
             'default': 2.0,
             'help': 'max number of expected error bases for DADA2, i.e. the sum error rates across all bases (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--pacbio-forward-primer'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'AGRGTTYGATYMTGGCTCAG',
+            'help': 'forward primer sequence for PacBio CCS reads, e.g. 16S rDNA 27F (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--pacbio-reverse-primer'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'RGYTACCTTGTTACGACTT',
+            'help': 'reverse primer sequence for PacBio CCS reads, e.g. 16S rDNA 1492R (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--pacbio-primer-max-mismatch'],
+        'properties': {
+            'type': int,
+            'required': False,
+            'default': 2,
+            'help': 'max number of mismatches allowed in PacBio primer matching (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--pacbio-min-length'],
+        'properties': {
+            'type': int,
+            'required': False,
+            'default': 1000,
+            'help': 'minimum read length (bp) for PacBio CCS reads (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--pacbio-max-length'],
+        'properties': {
+            'type': int,
+            'required': False,
+            'default': 1600,
+            'help': 'maximum read length (bp) for PacBio CCS reads (default: %(default)s)',
         }
     },
     {
@@ -371,6 +416,12 @@ class EntryPoint:
 
             paired_end_mode=args.paired_end_mode,
             max_expected_error_bases=args.max_expected_error_bases,
+
+            pacbio_forward_primer=args.pacbio_forward_primer,
+            pacbio_reverse_primer=args.pacbio_reverse_primer,
+            pacbio_primer_max_mismatch=args.pacbio_primer_max_mismatch,
+            pacbio_min_length=args.pacbio_min_length,
+            pacbio_max_length=args.pacbio_max_length,
 
             otu_identity=args.otu_identity,
             skip_otu=args.skip_otu,

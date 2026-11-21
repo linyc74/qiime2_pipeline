@@ -37,6 +37,12 @@ class Qiime2Pipeline(Processor):
     paired_end_mode: str
     max_expected_error_bases: float
 
+    pacbio_forward_primer: str
+    pacbio_reverse_primer: str
+    pacbio_primer_max_mismatch: int
+    pacbio_min_length: int
+    pacbio_max_length: int
+
     otu_identity: float
     skip_otu: bool
 
@@ -86,6 +92,12 @@ class Qiime2Pipeline(Processor):
             paired_end_mode: str,
             max_expected_error_bases: float,
 
+            pacbio_forward_primer: str,
+            pacbio_reverse_primer: str,
+            pacbio_primer_max_mismatch: int,
+            pacbio_min_length: int,
+            pacbio_max_length: int,
+
             otu_identity: float,
             skip_otu: bool,
 
@@ -123,6 +135,12 @@ class Qiime2Pipeline(Processor):
 
         self.paired_end_mode = paired_end_mode
         self.max_expected_error_bases = max_expected_error_bases
+
+        self.pacbio_forward_primer = pacbio_forward_primer
+        self.pacbio_reverse_primer = pacbio_reverse_primer
+        self.pacbio_primer_max_mismatch = pacbio_primer_max_mismatch
+        self.pacbio_min_length = pacbio_min_length
+        self.pacbio_max_length = pacbio_max_length
 
         self.otu_identity = otu_identity
         self.skip_otu = skip_otu
@@ -208,7 +226,12 @@ class Qiime2Pipeline(Processor):
                 paired_end_mode=self.paired_end_mode,
                 clip_r1_5_prime=self.clip_r1_5_prime,
                 clip_r2_5_prime=self.clip_r2_5_prime,
-                max_expected_error_bases=self.max_expected_error_bases)
+                max_expected_error_bases=self.max_expected_error_bases,
+                pacbio_forward_primer=self.pacbio_forward_primer,
+                pacbio_reverse_primer=self.pacbio_reverse_primer,
+                pacbio_primer_max_mismatch=self.pacbio_primer_max_mismatch,
+                pacbio_min_length=self.pacbio_min_length,
+                pacbio_max_length=self.pacbio_max_length)
             if not self.skip_otu:
                 self.feature_table_qza, self.feature_sequence_qza = GenerateOTU(self.settings).main(
                     feature_table_qza=self.feature_table_qza,
