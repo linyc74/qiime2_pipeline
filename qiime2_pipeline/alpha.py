@@ -285,6 +285,7 @@ class Statistics(Processor):
         os.makedirs(f'{self.outdir}/{DSTDIR_NAME}', exist_ok=True)     
         pd.DataFrame(self.stats_data).to_csv(
             f'{self.outdir}/{DSTDIR_NAME}/alpha-diversity-statistics.csv',
+            encoding='utf-8-sig',
             index=False)
 
     def mann_whitney_u(self, metric: str, group1: str, group2: str):
